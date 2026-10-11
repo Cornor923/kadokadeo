@@ -77,6 +77,9 @@ class Hero extends Human {
 				hold.root._y += hd[1];
 				hold.root._rotation = hd[2] * sens;
 			}
+			// (the hero put somewhere else at once: the body he holds goes with him)
+			if (root.cut)
+				hold.root.teleport();
 		}
 
 		// BONUS
@@ -388,6 +391,7 @@ class Hero extends Human {
 			oy -= 1;
 			swapSquare(3);
 			updatePos();
+			teleport();
 			playAnim("hangClimb");
 			scr(backToNormal, 14);
 		} else {
@@ -457,6 +461,7 @@ class Hero extends Human {
 			if (mon != null) {
 				var ax = (mon.root._x - mon.sens * 6) - sens * 2;
 				setPos(ax, root._y);
+				teleport();
 				mon.knockOutTimer = 80;
 				mon.mtag(ARMLOCK);
 				playAnim("armLock");
@@ -510,6 +515,7 @@ class Hero extends Human {
 		ox = 0.5 - sens * 0.4;
 		oy = 0.5;
 		updatePos();
+		teleport();
 	}
 
 	// GROUND
@@ -736,6 +742,7 @@ class Hero extends Human {
 			hold.root.setColor(0x00FF00);
 
 		oy = 1 / Cs.CS;
+		teleport();
 		hold = mon;
 		holdStyle = KNEE;
 		stopPhys();
@@ -781,6 +788,7 @@ class Hero extends Human {
 				return;
 
 			oy = 0.5;
+			teleport();
 
 			hold.state = null;
 			hold.setSens(sens);
@@ -788,12 +796,18 @@ class Hero extends Human {
 
 			scr(hold.playAnim.bind("grappling"), 3);
 			scr(releaseBody.bind(sens * 4, -2, Cs.DAMAGE_HEAD_CRUSHER, null), 7);
-			scr(moveTo.bind(px + sens, py), 12);
+			scr(crushMove.bind(px + sens, py), 12);
 			scr(setOffset.bind(ox, oy), 0);
 			scr(backToNormal, 0);
 			hold.mtag(HEADCRUSHER);
 			return;
 		}
+	}
+
+	// end of the head crusher: on the square of the monster, where the animation ends
+	function crushMove(x:Int, y:Int) {
+		moveTo(x, y);
+		teleport();
 	}
 
 	// DAMAGE
@@ -805,6 +819,7 @@ class Hero extends Human {
 	// FATALITY
 	public function fatalityGrabbed(e:Ent) {
 		Game.me.focus = e;
+		Game.me.cutCamera();
 		interrupt();
 		stopPhys();
 		kill();

@@ -21,8 +21,11 @@ import pixi.filters.colormatrix.ColorMatrixFilter;
 class MC {
 	public static var all:Array<MC> = [];
 
-	// a move longer than this between two Flash frames is not interpolated (pixels of the parent)
-	static inline var SNAP = 60;
+	// a move longer than this between two Flash frames is not interpolated (pixels of the parent): a safety net for the
+	// jumps the code makes (Game.decale shifts the level by 650 px, the map 1300), above the fastest moves of the game (a
+	// fall from the tower reaches ~40 px a frame, the map following it at x2): snapped, the map of a fall would jump
+	// while the hero inside it is interpolated
+	static inline var SNAP = 200;
 
 	// _x loops over this period (a scrolling plane, Num.sMod): the move shown takes the short way, not back across
 	public var wrapX:Float = 0;
@@ -64,6 +67,8 @@ class MC {
 	// state of the previous Flash frame (display)
 	var fresh:Bool = true;
 	var snap:Bool = false;
+	// teleport() during the current Flash frame
+	public var cut(default, null):Bool = false;
 	var px:Float = 0;
 	var py:Float = 0;
 	var pxs:Float = 100;
@@ -301,6 +306,11 @@ class MC {
 				continue;
 			}
 			m.fresh = false;
+			// a jump in the Flash frame that ends, not shown yet (two Flash frames in a step): the state PIXI interpolates
+			// from is dropped at the next display, or it would cross the screen during the step
+			if (m.cut || m.jumped())
+				m.snap = true;
+			m.cut = false;
 			m.px = m.x;
 			m.py = m.y;
 			m.pxs = m.xs;
@@ -315,11 +325,23 @@ class MC {
 		Clip.flushRemoved();
 	}
 
-	// a move the code makes at once (a level shifted by Game.decale, the camera on a new focus): not interpolated
+	// the move of the current Flash frame is one the code makes at once (the level shifted by Game.decale, the camera
+	// on a new focus, the hero put on the square he climbs to while his animation starts from the old one): shown at
+	// once, wherever the clip is at the end of the frame
 	public function teleport():Void {
-		px = x;
-		py = y;
-		snap = true;
+		if (!removed)
+			cut = true;
+	}
+
+	inline function jumped():Bool {
+		var dx = x - px;
+		if (wrapX > 0) {
+			if (dx > wrapX / 2)
+				dx -= wrapX;
+			else if (dx < -wrapX / 2)
+				dx += wrapX;
+		}
+		return Math.abs(dx) > SNAP || Math.abs(y - py) > SNAP;
 	}
 
 	public static function displayAll(f:Float):Void {
@@ -342,8 +364,8 @@ class MC {
 			else if (dx < -wrapX / 2)
 				dx += wrapX;
 		}
-		// a jump (a teleport, the level shifted by Game.decale, the camera on a new focus): shown at once
-		var jump = Math.abs(dx) > SNAP || Math.abs(y - py) > SNAP;
+		// a jump (a teleport, a move too long to come from the game): shown at once
+		var jump = cut || jumped();
 		if (jump)
 			f = 1;
 		var nx = px + dx * f;
@@ -388,6 +410,7 @@ class MC {
 			}
 		}
 		snap = hide;
+		cut = false;
 		s.visible = vis && !hide && (clip == null || !clip.selfRemoved);
 	}
 

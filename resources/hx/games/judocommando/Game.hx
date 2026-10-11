@@ -362,10 +362,15 @@ class Game implements kado.GameInterface {
 	}
 
 	function decale() {
-		for (e in ents)
+		for (e in ents) {
 			e.setPos(e.root._x - transDec, e.root._y);
-		for (sp in Sprite.spriteList)
+			e.root.teleport();
+		}
+		for (sp in Sprite.spriteList) {
 			sp.x -= transDec;
+			sp.root.teleport();
+		}
+		cutCamera();
 		loadLevel(levelOrder[lvl]);
 		opx -= transDec;
 		ttw.sx -= transDec;
@@ -707,6 +712,12 @@ class Game implements kado.GameInterface {
 	// SCROLL
 	var plans:Array<Plan>;
 	var pvx:Float;
+	// display: the camera jumps during this Flash frame (the focus put somewhere else at once, a new focus)
+	var camCut:Bool = false;
+
+	public function cutCamera() {
+		camCut = true;
+	}
 
 	function initScroll() {
 		plans = [];
@@ -762,6 +773,10 @@ class Game implements kado.GameInterface {
 					mc._y = bdy;
 			}
 			pvx = vx;
+		}
+		if (camCut) {
+			map.teleport();
+			camCut = false;
 		}
 	}
 

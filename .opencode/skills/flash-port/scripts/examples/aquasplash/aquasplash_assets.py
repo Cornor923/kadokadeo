@@ -38,6 +38,7 @@ K = 2          # texture pixels per Flash pixel (the game is drawn x2)
 # game.swf is the released game (graphics compiled in, instance names obfuscated); gfx.swf is the same library
 G = R.SWF(W + 'game.swf', W + 'shp4_game', Z=4)
 G.flash_replace = True
+G.overlay = True      # the orange copy of the ball in play (sprite 74) and playBonus (sprite 100) is an 'overlay' layer
 Z = G.Z
 
 pivots = {}

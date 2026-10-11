@@ -120,6 +120,9 @@ class Human extends Ent {
 			state = null;
 			stopPhys();
 			root._y = lim - Cs.CS * 0.5;
+			// display: the fall of the last frame ended below the ground, the crash is drawn from its place at once (the
+			// camera does not move, held at gry - 50)
+			root.teleport();
 			updatePos = function() {};
 			playAnim("crash");
 			life = 0;

@@ -202,6 +202,14 @@ class Ent {
 		oy = y;
 	}
 
+	// display: the move of this Flash frame is made at once by the code (the animation it starts is drawn from the new
+	// place), not interpolated; the camera following the entity jumps with it
+	public function teleport() {
+		root.teleport();
+		if (Game.me.focus == this)
+			Game.me.cutCamera();
+	}
+
 	public function insertInGrid() {
 		sq = Game.me.getSq(px, py);
 		if (sq != null)

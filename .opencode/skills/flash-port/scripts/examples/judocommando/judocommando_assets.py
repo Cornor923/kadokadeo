@@ -84,8 +84,10 @@ for sid in (HERO,) + MON_SETS:
     E.strategy_for[sid] = 'flat'
     E.code_for[sid] = ('smc',)
 for sid in MON_SETS:
-    # Mon.playAnim = root.smc.gotoAndStop(label): the frames of the labels only
-    E.frames_for[sid] = label_frames(sid)
+    # Mon.playAnim = root.smc.gotoAndStop(label): the frames of the labels, and frame 4 (the top of a ladder:
+    # Human.updateLadder plays "crouch" then root.smc.gotoAndStop(4), the "stand" of frame 1 still there in the SWF;
+    # left empty, the monster vanished until backToNormal)
+    E.frames_for[sid] = sorted(set(label_frames(sid)) | {4})
 for sid, sd in G.sprites.items():
     for ops in sd.frames:
         for k, v in ops:
