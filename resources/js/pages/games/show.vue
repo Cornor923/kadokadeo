@@ -1,5 +1,6 @@
 <script setup>
 const { isLoading, error, fetchGame } = useGames()
+const { isLoading: isFavoriteLoading, error: favoriteError, put } = useApi()
 const authStore = useAuthStore()
 const route = useRoute()
 
@@ -10,6 +11,16 @@ const scores = ref([])
 const personalBest = ref(null)
 const personalBestForPeriod = ref(null)
 const isArkadeo = computed(() => game.value?.is_arkadeo ?? false)
+
+function toggleFavorite() {
+  if (!game.value || isFavoriteLoading.value) return
+
+  put(`/games/${game.value.id}/favorite`, { is_favorite: !game.value.is_favorite })
+    .then((response) => {
+      game.value.is_favorite = response.data.is_favorite
+    })
+    .catch(() => null)
+}
 
 fetchGame(gameId).then((data) => {
   game.value = data.data
@@ -62,6 +73,7 @@ watchEffect((onInvalidate) => {
       <p v-if="authStore.user?.kado_games >= 0">
         Il vous reste {{ authStore.user.kado_games }} parties à jouer aujourd'hui
       </p>
+      <MessageError v-if="favoriteError">{{ favoriteError }}</MessageError>
 
 
       <div :class="{'w-full h-full fixed z-20 inset-0 bg-black/75': isZoomed}">
@@ -77,11 +89,18 @@ watchEffect((onInvalidate) => {
               <div class="relative gameint1 mx-auto max-w-full! shrink-0" :class="[game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado', {'order-2 mt-4 lg:order-1 lg:mt-0': isZoomed}]" :style="{ width: surfaceWidth + 'px' }">
                 <nav class="absolute -top-10 right-0 text-xs">
                   <ul class="flex justify-end gap-2">
-                    <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5 grayscale">
-                      <div class="pt-1 font-bold text-center hover:text-kado-orange cursor-pointer" title="Ajouter/retirer des jeux favoris">
-                        <img src="/gfx/iconGameDisliked.gif" alt="favori" class="size-4" />
+                    <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
+                      <button
+                        type="button"
+                        class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange cursor-pointer disabled:cursor-wait"
+                        :title="game.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+                        :aria-pressed="!!game.is_favorite"
+                        :disabled="isFavoriteLoading"
+                        @click="toggleFavorite"
+                      >
+                        <img :src="game.is_favorite ? '/gfx/iconGameLiked.gif' : '/gfx/iconGameDisliked.gif'" alt="" class="size-4" />
                         Favori
-                      </div>
+                      </button>
                     </li>
                     <li v-if="!isArkadeo" class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                       <div class="pt-1 font-bold text-center hover:text-kado-orange cursor-pointer"

@@ -16,6 +16,10 @@ const gamesFiltered = computed(() => {
         game.category_id === categories.value.find((c) => c.name === route.query.category)?.id,
     )
   }
+  const favs = games.value.filter((game) => game.is_favorite)
+  if (favs.length > 0) {
+    return favs
+  }
   return games.value
 })
 
@@ -33,7 +37,8 @@ function getStarImage(game) {
 <template>
   <NavTabs
     :items="[
-      { label: 'Tous les jeux', value: 'all', route: { name: 'games.index' } },
+      {
+        label: 'Sélection', value: 'favs', route: {name: 'games.index'} },
       ...categories.map((cat) => ({
         label: cat.name,
         value: cat.name,

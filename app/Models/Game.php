@@ -13,10 +13,11 @@ class Game extends Model
 
     public const GAMES_MANIFEST_CACHE_KEY = 'gamesdata_manifest';
 
-    protected $fillable = ['name', 'description', 'category_id', 'image_path', 'stars', 'is_active', 'is_arkadeo'];
+    protected $fillable = ['name', 'description', 'category_id', 'image_path', 'stars', 'is_active', 'is_arkadeo', 'score_rankv1'];
 
     protected $casts = [
         'stars' => 'json',
+        'score_rankv1' => 'integer',
     ];
 
     protected $with = ['category'];

@@ -89,6 +89,38 @@ const stars = [
 
     <p>Si un joueur est seul dans son niveau, il ne pourra monter que s'il y a des joueurs dans le niveau suivant. Sinon, il faudra au moins 2 joueurs pour prétendre à monter.</p>
 
+    <h3>Classement V1</h3>
+
+    <p>Chaque période, la compétition du classement V1 a lieu. Il s'agit d'un classement dans lequel les 12 meilleurs scores de chaque joueur sont additionnés pour atteindre un maximum de 18.000 points</p>
+    <p>Les scores de chaque jeu sont convertis dans une échelle allant de 0 à 1500 selon les critères suivants : </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Score atteint</th>
+          <th>Nombre de points V1</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><img src="/gfx/iconGreenStar.gif" alt="Etoile verte" /></td>
+          <td>1000</td>
+        </tr>
+        <tr>
+          <td><img src="/gfx/iconOrangeStar.gif" alt="Etoile orange" /></td>
+          <td>1100</td>
+        </tr>
+        <tr>
+          <td><img src="/gfx/iconRedStar.gif" alt="Etoile rouge" /></td>
+          <td>1150</td>
+        </tr>
+        <tr>
+          <td>Score V1</td>
+          <td>1500</td>
+        </tr>
+      </tbody>
+    </table>
+
     <!-- <div class="grid grid-cols-2">
       <div v-for="(colorClass, colorName) in colors" :key="colorName" class="h-10 flex items-center relative">
         <div :class="['h-10 w-full', colorClass]"></div>

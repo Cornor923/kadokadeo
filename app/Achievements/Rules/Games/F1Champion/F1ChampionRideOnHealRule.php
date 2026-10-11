@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\F1Champion;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class F1ChampionRideOnHealRule extends F1ChampionRule

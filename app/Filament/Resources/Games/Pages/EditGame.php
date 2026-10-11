@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Filament\Resources\Games\GameResource;
-use App\Models\Game;
 use App\Models\Run;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;

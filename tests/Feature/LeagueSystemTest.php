@@ -241,4 +241,42 @@ class LeagueSystemTest extends TestCase
         $this->assertDatabaseCount('poids_plume_results', 2);
         $this->assertDatabaseCount('user_points', 2);
     }
+
+    public function test_current_period_feather_leaderboard_counts_paradise_wins_per_game(): void
+    {
+        $leagueService = app(LeagueService::class);
+        $paradise = $leagueService->getParadiseLeague();
+        $currentPeriod = Period::factory()->create([
+            'start_at' => now()->subDays(2),
+            'end_at' => now()->addDays(11),
+        ]);
+        $previousPeriod = Period::factory()->create([
+            'start_at' => now()->subDays(30),
+            'end_at' => now()->subDays(17),
+        ]);
+        $gameOne = Game::factory()->create(['name' => 'Feather Game One']);
+        $gameTwo = Game::factory()->create(['name' => 'Feather Game Two']);
+        $gameThree = Game::factory()->create(['name' => 'Feather Game Three']);
+        $playerA = User::factory()->create(['display_name' => 'feather-player-a']);
+        $playerB = User::factory()->create(['display_name' => 'feather-player-b']);
+        $playerWithoutFeathers = User::factory()->create(['display_name' => 'no-feathers']);
+
+        Run::factory()->for($currentPeriod)->for($gameOne)->for($playerWithoutFeathers)
+            ->for($leagueService->getBeginnerLeague(), 'league')->create(['score' => 9999]);
+        Run::factory()->for($currentPeriod)->for($gameOne)->for($playerA)->for($paradise, 'league')->create(['score' => 100]);
+        Run::factory()->for($currentPeriod)->for($gameOne)->for($playerB)->for($paradise, 'league')->create(['score' => 90]);
+        Run::factory()->for($currentPeriod)->for($gameTwo)->for($playerA)->for($paradise, 'league')->create(['score' => 100]);
+        Run::factory()->for($currentPeriod)->for($gameThree)->for($playerB)->for($paradise, 'league')->create(['score' => 200]);
+        Run::factory()->for($previousPeriod)->for($gameTwo)->for($playerB)->for($paradise, 'league')->create(['score' => 1000]);
+
+        $this->actingAs($playerA, 'sanctum')
+            ->getJson('/api/competition/poids-plumes')
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonPath('0.rank', 1)
+            ->assertJsonPath('0.user.display_name', 'feather-player-a')
+            ->assertJsonPath('0.feathers_count', 2)
+            ->assertJsonPath('1.user.display_name', 'feather-player-b')
+            ->assertJsonPath('1.feathers_count', 1);
+    }
 }

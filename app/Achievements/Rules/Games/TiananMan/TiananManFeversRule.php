@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\TiananMan;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TiananManFeversRule extends TiananManRule
@@ -15,7 +14,7 @@ class TiananManFeversRule extends TiananManRule
 
     public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (! $this->validate($event)) {
+        if (!$this->validate($event)) {
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 

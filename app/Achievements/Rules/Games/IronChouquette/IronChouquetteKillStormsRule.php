@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteKillStormsRule extends IronChouquetteRule

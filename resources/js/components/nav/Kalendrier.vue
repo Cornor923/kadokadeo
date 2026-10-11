@@ -25,7 +25,7 @@ const logout = () => {
       <li><RouterLink to="/" @click="logout"><img src="/gfx/kalendarPreviousDay.gif" alt="logout"></RouterLink></li>
       <li><RouterLink to="/" class="grayscale"><img src="/gfx/kalendarIconMail.gif" alt="mail"></RouterLink></li>
       <li><RouterLink to="/" class="grayscale"><img src="/gfx/kalendarIconForum.gif" alt="forum"></RouterLink></li>
-      <li><RouterLink to="/" class="grayscale"><img src="/gfx/kalendarIconScore.gif" alt="scores"></RouterLink></li>
+      <li><RouterLink :to="{ name: 'profile.index' }"><img src="/gfx/kalendarIconScore.gif" alt="scores"></RouterLink></li>
       <li><RouterLink to="/" class="grayscale"><img src="/gfx/kalendarIconClan.gif" alt="clans"></RouterLink></li>
     </ul>
     <ul class="navKalendrierButtonsBottom">

@@ -12,6 +12,41 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+
+      # Yarn 4 from .yarnrc.yml (yarnPath)
+      - name: Install Node dependencies
+        run: yarn install --immutable
+
+      - name: Pint
+        run: vendor/bin/pint --test
+
+      - name: ESLint
+        run: yarn eslint ./resources/js
+
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +85,7 @@ jobs:
         run: php artisan test
 
   deploy:
-    needs: tests
+    needs: [lint, tests]
     runs-on: ubuntu-latest
     steps:
       - name: Update the release of the channel

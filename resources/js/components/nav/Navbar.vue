@@ -8,8 +8,8 @@
           <img src="/gfx/menuGames.png" alt="Jeux" class="h-fit w-auto" />
         </RouterLink>
       </li>
-      <li class="grayscale">
-        <RouterLink to="/">
+      <li>
+        <RouterLink :to="{ name: 'competition.index' }">
           <img src="/gfx/menuCompetition.png" alt="Compétition" class="h-fit w-auto" />
         </RouterLink>
       </li>

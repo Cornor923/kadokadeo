@@ -536,8 +536,17 @@
     background: url('/gfx/menuIconScores.gif') -2px 3px no-repeat;
   }
 
+  #containerSide ul#menuSide li.worldrecords a {
+    background: url('/gfx/iconKingPiou.png') -2px -1px no-repeat;
+    background-size: auto 22px;
+  }
+
   #containerSide ul#menuSide li.account a {
     background: url('/gfx/menuIconAccount.gif') 0px 3px no-repeat;
+  }
+
+  #containerSide ul#menuSide li.forum a {
+    background: url('/gfx/menuIconForum.gif') 0px 1px no-repeat;
   }
 
   #containerSide ul#menuSide li.help a {

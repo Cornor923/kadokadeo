@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\Interwheel;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class InterwheelMaxFallHeightRule extends InterwheelRule

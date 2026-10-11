@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\AntiCheatNotices;
-use App\Filament\Widgets\LaravelLogTailWidget;
 use App\Http\Controllers\RunReplayController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;

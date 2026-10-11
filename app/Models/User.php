@@ -83,6 +83,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(UserAchievementProgress::class);
     }
 
+    public function favorite()
+    {
+        return $this->hasMany(UserFavoriteGame::class);
+    }
+
     //
 
     public function canAccessPanel(Panel $panel): bool

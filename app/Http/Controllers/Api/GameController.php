@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
+use App\Models\UserFavoriteGame;
 use App\Services\GameService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -17,7 +18,7 @@ class GameController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware('auth:sanctum', only: ['index', 'show', 'daily']),
+            new Middleware('auth:sanctum', only: ['index', 'show', 'daily', 'setFavorite']),
         ];
     }
 
@@ -48,6 +49,8 @@ class GameController extends Controller implements HasMiddleware
             ->orderBy('name', 'asc')
             ->get();
 
+        $request->user()->load('favorite');
+
         $categories = \App\Models\Category::all();
 
         return GameResource::collection($games)->additional([
@@ -55,13 +58,30 @@ class GameController extends Controller implements HasMiddleware
         ]);
     }
 
-    public function show(Game $game)
+    public function show(Game $game, Request $request)
     {
         Gate::authorize('view', $game);
 
         $game->load('controls');
+        $request->user()->load('favorite');
 
         return GameResource::make($game);
+    }
+
+    public function setFavorite(Game $game, Request $request)
+    {
+        Gate::authorize('view', $game);
+        $data = $request->validate(['is_favorite' => 'required|boolean']);
+        $isFavorite = (bool) $data['is_favorite'];
+        $favorite = ['user_id' => $request->user()->id, 'game_id' => $game->id];
+
+        if ($isFavorite) {
+            UserFavoriteGame::insertOrIgnore($favorite);
+        } else {
+            UserFavoriteGame::where($favorite)->delete();
+        }
+
+        return response()->json(['is_favorite' => $isFavorite]);
     }
 
     public function daily(GameService $gameService)

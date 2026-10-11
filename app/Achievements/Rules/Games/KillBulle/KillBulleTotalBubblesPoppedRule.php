@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\KillBulle;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class KillBulleTotalBubblesPoppedRule extends KillBulleRule

@@ -15,7 +15,7 @@ class PeriodController extends Controller
 
         $res = PeriodResource::make($currentPeriod);
         $maxAge = now()->diffInSeconds(now()->endOfDay());
-        $etag = md5('daily-' . now()->endOfDay()->toDateString());
+        $etag = md5('daily-'.now()->endOfDay()->toDateString());
 
         return $res->toResponse($request)
             ->setEtag($etag)

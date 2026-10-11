@@ -41,21 +41,15 @@ class RunsPlayedChart extends ChartWidget
                 end: Carbon::parse($endDate)->endOfDay(),
             );
         match ($period) {
-            'day' =>
-                [$dataCompleted->perDay(), $dataNotCompleted->perDay()],
-            'week' =>
-                [$dataCompleted->perWeek(), $dataNotCompleted->perWeek()],
-            'month' =>
-                [$dataCompleted->perMonth(), $dataNotCompleted->perMonth()],
-            'year' =>
-                [$dataCompleted->perYear(), $dataNotCompleted->perYear()],
-            default =>
-                [$dataCompleted->perMonth(), $dataNotCompleted->perMonth(),]
+            'day' => [$dataCompleted->perDay(), $dataNotCompleted->perDay()],
+            'week' => [$dataCompleted->perWeek(), $dataNotCompleted->perWeek()],
+            'month' => [$dataCompleted->perMonth(), $dataNotCompleted->perMonth()],
+            'year' => [$dataCompleted->perYear(), $dataNotCompleted->perYear()],
+            default => [$dataCompleted->perMonth(), $dataNotCompleted->perMonth()]
         };
 
         $dataCompleted = $dataCompleted->count();
         $dataNotCompleted = $dataNotCompleted->count();
-
 
         return [
             'datasets' => [

@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\Kaskade2;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class Kaskade2TotalBlocksRule extends Kaskade2Rule

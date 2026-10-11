@@ -9,16 +9,45 @@ const authSore = useAuthStore()
 const { isLoading: isHistoryLoading, error: historyError, results: historyResults, hasNextPage: historyHasNextPage, fetchGameHistory } = useUserGameHistory(userId.value ?? authSore.user.etwin_id)
 
 const { fetchProfile, isLoading, error } = useProfile()
+const { isLoading: isRecordsLoading, error: recordsError, get } = useApi()
 const leagueStore = useLeagueStore()
 const achievementStore = useAchievementStore()
 
 const profile = ref(null)
+const personalRecords = ref([])
+const rankingSort = ref({ key: 'game', direction: 'asc' })
+
+const sortedRankingRuns = computed(() => {
+  const sorters = {
+    level: (leftRun, rightRun) => (leftRun.league_id ?? 0) - (rightRun.league_id ?? 0),
+    position: (leftRun, rightRun) => (leftRun.league_rank ?? 0) - (rightRun.league_rank ?? 0),
+    game: (leftRun, rightRun) => leftRun.game.name.localeCompare(rightRun.game.name),
+    score: (leftRun, rightRun) => leftRun.score - rightRun.score,
+  }
+  const direction = rankingSort.value.direction === 'asc' ? 1 : -1
+
+  return [...(profile.value?.best_period_runs ?? [])].sort((leftRun, rightRun) => {
+    return direction * sorters[rankingSort.value.key](leftRun, rightRun)
+  })
+})
+
+function sortRankingsBy(key) {
+  if (rankingSort.value.key === key) {
+    rankingSort.value.direction = rankingSort.value.direction === 'asc' ? 'desc' : 'asc'
+  } else {
+    rankingSort.value = { key, direction: 'asc' }
+  }
+}
 
 watchEffect(() => {
   fetchProfile(userId.value).then((data) => {
     profile.value = data
   })
 })
+
+get('/user-records').then((response) => {
+  personalRecords.value = response.data
+}).catch(() => {})
 
 const starsByColor = computed(() => {
   return Object.values(profile.value.best_period_runs).reduce((acc, run) => {
@@ -62,6 +91,12 @@ function getStarId(run) {
   return getStarIdFromScore(run.score)
 }
 
+function getProgressPercent(record) {
+  if (record.current_score === null || record.score === null) return 0
+  if (record.score <= 0) return record.current_score <= 0 ? 100 : 0
+  return Math.min(100, Math.round((record.current_score / record.score) * 100))
+}
+
 const gameAchievements = computed(() => {
   return achievementStore.achievements?.reduce((acc, achievement) => {
     if (!acc[achievement.game.name]) {
@@ -78,7 +113,7 @@ const gameAchievements = computed(() => {
     :items="[
       { label: 'moi', value: 'me' },
       { label: 'dernière période', value: 'last', disabled: true },
-      { label: 'stats', value: 'stats', disabled: true },
+      { label: 'stats', value: 'stats' },
     ]"
   >
     <template #panel="{ item }">
@@ -97,7 +132,7 @@ const gameAchievements = computed(() => {
             </div>
             <h2>Statut</h2>
 
-            <div class="grid md:grid-cols-2 ">
+            <div class="grid md:grid-cols-2">
               <div class="grid grid-cols-3 justify-items-center">
                 <div class="flex items-end">
                   <GreenStar class="size-20" />
@@ -149,19 +184,34 @@ const gameAchievements = computed(() => {
             </div>
 
             <h2>Classements</h2>
-
             <div class="px-2">
               <table class="w-full">
                 <thead>
                   <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-right">
-                    <th>Niveau</th>
-                    <th>Position</th>
-                    <th>Jeu</th>
-                    <th>Score</th>
+                    <th :aria-sort="rankingSort.key === 'level' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
+                      <button type="button" class="inline-flex items-center gap-1 cursor-pointer" @click="sortRankingsBy('level')">
+                        Niveau <span aria-hidden="true">{{ rankingSort.key === 'level' ? (rankingSort.direction === 'asc' ? '▲' : '▼') : '' }}</span>
+                      </button>
+                    </th>
+                    <th :aria-sort="rankingSort.key === 'position' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
+                      <button type="button" class="inline-flex items-center gap-1 cursor-pointer" @click="sortRankingsBy('position')">
+                        Position <span aria-hidden="true">{{ rankingSort.key === 'position' ? (rankingSort.direction === 'asc' ? '▲' : '▼') : '' }}</span>
+                      </button>
+                    </th>
+                    <th :aria-sort="rankingSort.key === 'game' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
+                      <button type="button" class="inline-flex items-center gap-1 cursor-pointer" @click="sortRankingsBy('game')">
+                        Jeu <span aria-hidden="true">{{ rankingSort.key === 'game' ? (rankingSort.direction === 'asc' ? '▲' : '▼') : '' }}</span>
+                      </button>
+                    </th>
+                    <th :aria-sort="rankingSort.key === 'score' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
+                      <button type="button" class="inline-flex items-center gap-1 cursor-pointer" @click="sortRankingsBy('score')">
+                        Score <span aria-hidden="true">{{ rankingSort.key === 'score' ? (rankingSort.direction === 'asc' ? '▲' : '▼') : '' }}</span>
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="run in profile.best_period_runs.sort((a, b) => a.game.name.localeCompare(b.game.name))" :key="run.id">
+                  <tr v-for="run in sortedRankingRuns" :key="run.id">
                     <td>
                       <img v-if="run.league_id" :src="`/gfx/leagues/${run.league_id}s.svg`" class="w-6 h-auto" />
                     </td>
@@ -213,7 +263,6 @@ const gameAchievements = computed(() => {
             </template>
 
             <h2>Historique</h2>
-
             <GamesGameScoreTable :show-pos="false"
                                  :show-player="false"
                                  show-game
@@ -233,7 +282,65 @@ const gameAchievements = computed(() => {
           <div v-else-if="item.value === 'last'">
             <ProfileLastPeriod :profile="profile" />
           </div>
-          <div v-else-if="item.value === 'stats'">Stats</div>
+          <div v-else-if="item.value === 'stats'">
+            <h1 class="mt-0 text-center">Records de {{ authSore.user.display_name }}</h1>
+            <Loader v-if="isRecordsLoading">Chargement des records...</Loader>
+            <MessageError v-else-if="recordsError">Error: {{ recordsError }}</MessageError>
+            <div v-else class="px-8 sm:px-16">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-center">
+                    <th>Jeu</th>
+                    <th>Score actuel</th>
+                    <th>Votre record</th>
+                    <th>Progression</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="record in personalRecords" :key="record.game.id">
+                    <td class="text-left">
+                      <div class="flex items-center gap-2">
+                        <img v-if="record.league"
+                             :src="`/gfx/leagues/${record.league.id}s.svg`"
+                             :alt="record.league.name"
+                             class="size-6 shrink-0 object-contain" />
+                        <RouterLink :to="{ name: 'games.records', params: { id: record.game.id } }">
+                          {{ record.game.name }}
+                        </RouterLink>
+                      </div>
+                    </td>
+                    <td class="text-left">
+                      <div v-if="record.current_score !== null" class="inline-flex items-center justify-start gap-1">
+                        <component :is="getStarImage({ game: record.game, score: record.current_score })" class="size-[25px] shrink-0" />
+                        <Number color="green" :value="record.current_score" />
+                      </div>
+                    </td>
+                    <td class="text-left">
+                      <div v-if="record.score !== null" class="inline-flex items-center justify-start gap-1">
+                        <component :is="getStarImage({ game: record.game, score: record.score })" class="size-[25px] shrink-0" />
+                        <Number color="orange" :value="record.score" />
+                      </div>
+                    </td>
+                    <td class="text-left">
+                      <div v-if="record.current_score !== null && record.score !== null" class="inline-flex min-w-28 items-center justify-start gap-2">
+                        <div
+                          role="progressbar"
+                          :aria-label="`Progression du score de ${record.game.name}`"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                          :aria-valuenow="getProgressPercent(record)"
+                          class="h-2.5 w-20 overflow-hidden rounded border border-kado-cyan-700 bg-kado-cyan-400"
+                        >
+                          <div class="h-full bg-kado-green-500 transition-[width]" :style="{ width: `${getProgressPercent(record)}%` }"></div>
+                        </div>
+                        <span class="w-9 text-left text-xs">{{ getProgressPercent(record) }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </template>

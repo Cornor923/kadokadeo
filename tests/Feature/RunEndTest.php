@@ -30,7 +30,7 @@ class RunEndTest extends TestCase
         openssl_public_encrypt(base64_encode($aesKey), $encryptedKey, app(RunService::class)->getPublicKey());
 
         return [
-            'payload' => base64_encode($iv . $cipher),
+            'payload' => base64_encode($iv.$cipher),
             'key' => base64_encode($encryptedKey),
             'sign' => base64_encode(hash_hmac('sha256', $json, $aesKey, true)),
         ];

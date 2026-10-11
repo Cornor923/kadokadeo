@@ -26,6 +26,7 @@ class ChocoMoucheFiveLevelsWithoutLifeLossRule extends ChocoMoucheRule
         for ($level = 0; $level < $completedLevels; $level++) {
             if (in_array(-1, $discoveries[$level], true) || in_array(-2, $discoveries[$level], true)) {
                 $streak = 0;
+
                 continue;
             }
 

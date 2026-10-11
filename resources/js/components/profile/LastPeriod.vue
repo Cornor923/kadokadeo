@@ -1,7 +1,7 @@
 <script setup>
 import KadoPoints from '@svg/k.svg'
 
-const props = defineProps({
+defineProps({
   profile: { type: Object, required: true },
 })
 </script>
@@ -84,9 +84,9 @@ const props = defineProps({
   </table>
 
   <p class="text-center">
-    <input type="button" value="Période précédente" class="pinkButton h-6 w-auto pt-px" /> 
+    <input type="button" value="Période précédente" class="pinkButton h-6 w-auto pt-px" />
     <input type="button" value="Période suivante" class="h-6 w-auto pt-px ml-4" />
   </p>
   <!-- <pre>{{ profile }}</pre> -->
-  
+
 </template>

@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\PiouPiou;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class PiouPiouElevationRule extends PiouPiouRule

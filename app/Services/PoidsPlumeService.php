@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Game;
 use App\Models\Period;
 use App\Models\PoidsPlumeResult;
+use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PoidsPlumeService
@@ -17,17 +19,7 @@ class PoidsPlumeService
     public function closePeriod(Period $period): void
     {
         $paradiseLeague = $this->leagueService->getParadiseLeague();
-        $feathersByUser = [];
-
-        foreach (Game::query()->get() as $game) {
-            $winnerRun = $this->scoreService->getLeaderBoard($game, $period->id, $paradiseLeague->id)->first();
-
-            if (!$winnerRun) {
-                continue;
-            }
-
-            $feathersByUser[$winnerRun->user_id][] = $game->id;
-        }
+        $feathersByUser = $this->getFeathersByUser($period, $paradiseLeague->id);
 
         if ($feathersByUser === []) {
             return;
@@ -74,5 +66,46 @@ class PoidsPlumeService
                 $result->save();
             }
         });
+    }
+
+    public function getLeaderboardForPeriod(?Period $period): Collection
+    {
+        $feathersCountByUser = [];
+
+        if ($period) {
+            $paradiseLeague = $this->leagueService->getParadiseLeague();
+            $feathersByUser = $this->getFeathersByUser($period, $paradiseLeague->id);
+            $feathersCountByUser = array_map('count', $feathersByUser);
+        }
+
+        return User::query()
+            ->whereIn('id', array_keys($feathersCountByUser))
+            ->get(['id', 'etwin_id', 'display_name'])
+            ->map(fn (User $user) => [
+                'user' => [
+                    'etwin_id' => $user->etwin_id,
+                    'display_name' => $user->display_name,
+                ],
+                'feathers_count' => $feathersCountByUser[$user->id] ?? 0,
+            ])
+            ->sort(fn ($leftPlayer, $rightPlayer) => ($rightPlayer['feathers_count'] <=> $leftPlayer['feathers_count'])
+                ?: strcasecmp($leftPlayer['user']['display_name'], $rightPlayer['user']['display_name']))
+            ->values()
+            ->map(fn ($player, $index) => ['rank' => $index + 1] + $player);
+    }
+
+    private function getFeathersByUser(Period $period, int $paradiseLeagueId): array
+    {
+        $feathersByUser = [];
+
+        foreach (Game::query()->get() as $game) {
+            $winnerRun = $this->scoreService->getLeaderBoard($game, $period->id, $paradiseLeagueId)->first();
+
+            if ($winnerRun) {
+                $feathersByUser[$winnerRun->user_id][] = $game->id;
+            }
+        }
+
+        return $feathersByUser;
     }
 }

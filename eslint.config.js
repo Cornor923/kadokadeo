@@ -48,7 +48,7 @@ export default defineConfig([
       'unused-imports/no-unused-imports': 'error',
 
       // syntaxe JS
-      indent: ['error', 2],
+      // indent: ['error', 2],
       quotes: ['error', 'single'],
       semi: ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],

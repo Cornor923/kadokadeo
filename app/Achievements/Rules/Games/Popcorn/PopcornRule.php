@@ -83,7 +83,7 @@ abstract class PopcornRule implements AchievementRule
 
                 $current = 0;
             } elseif ($event === $eventType && $current !== null) {
-                ++$current;
+                $current++;
             }
         }
 

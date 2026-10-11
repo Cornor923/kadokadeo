@@ -33,7 +33,7 @@ const replayGame = computed(() => run.value && { ...run.value.game, gamedata: ru
               seed: run.seed,
               contractScore: run.contract_score,
               contractPoints: run.contract_points,
-              assetBase: run.gamedata?.asset_base ?? undefined,
+              assetBase: replayGame.gamedata?.asset_base ?? undefined,
             }"
             :game-width="300"
             :game-height="320"

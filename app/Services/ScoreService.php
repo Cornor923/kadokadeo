@@ -58,6 +58,114 @@ class ScoreService
             ->first();
     }
 
+    public function getBestScore(Game $game, ?int $userId, ?int $periodId = null): ?Run
+    {
+        return $game->runs()
+            ->whereNotNull('score')
+            ->where('is_cheat', false)
+            ->when($periodId, fn ($q) => $q->where('period_id', $periodId))
+            ->orderBy('score', 'desc')
+            ->orderBy('play_time_seconds')
+            ->orderBy('completed_at')
+            ->orderBy('id')
+            ->first();
+    }
+
+    public function getUserBestScoresByPeriod(Game $game, int $userId): Collection
+    {
+        return $game->runs()
+            ->select('period_id')
+            ->selectRaw('MAX(score) as score')
+            ->where('user_id', $userId)
+            ->whereNotNull('score')
+            ->where('is_cheat', false)
+            ->groupBy('period_id')
+            ->pluck('score', 'period_id');
+    }
+
+    public function get1500Leaderboard(?int $periodId): Collection
+    {
+        $bestScores = collect();
+        if ($periodId !== null) {
+            $bestScores = Run::query()
+                ->whereHas('game', fn (Builder $query) => $query->where('is_active', true))
+                ->where('period_id', $periodId)
+                ->select('user_id', 'game_id')
+                ->selectRaw('MAX(score) as score')
+                ->whereNotNull('score')
+                ->where('is_cheat', false)
+                ->groupBy('user_id', 'game_id')
+                ->get();
+        }
+
+        $games = Game::query()
+            ->whereIn('id', $bestScores->pluck('game_id')->unique())
+            ->get(['id', 'name', 'stars', 'score_rankv1'])
+            ->keyBy('id');
+
+        $playerScores = $bestScores->groupBy('user_id')->map(function (Collection $scores) use ($games) {
+            return $scores
+                ->map(fn ($score) => [
+                    'game' => [
+                        'id' => (int) $score->game_id,
+                        'name' => $games->get($score->game_id)?->name ?? '',
+                    ],
+                    'score' => $this->calculateScoreOn1500(
+                        (int) $score->score,
+                        $games->get($score->game_id)?->stars ?? [],
+                        $games->get($score->game_id)?->score_rankv1,
+                    ),
+                ])
+                ->sort(fn ($left, $right) => $right['score'] <=> $left['score'])
+                ->take(12)
+                ->values();
+        });
+
+        return User::query()
+            ->get(['id', 'etwin_id', 'display_name'])
+            ->map(fn (User $user) => [
+                'user' => [
+                    'etwin_id' => $user->etwin_id,
+                    'display_name' => $user->display_name,
+                ],
+                'score' => $playerScores->get($user->id, collect())->sum('score'),
+                'games' => $playerScores->get($user->id, collect())->map(fn ($gameScore) => [
+                    'game' => $gameScore['game'],
+                    'score' => $gameScore['score'],
+                ]),
+            ])
+            ->filter(fn ($player) => $player['score'] > 0)
+            ->sort(fn ($leftPlayer, $rightPlayer) => ($rightPlayer['score'] <=> $leftPlayer['score'])
+                ?: strcasecmp($leftPlayer['user']['display_name'], $rightPlayer['user']['display_name']))
+            ->values()
+            ->map(fn ($player, $index) => ['rank' => $index + 1] + $player);
+    }
+
+    public function calculateScoreOn1500(int $score, array $thresholds, ?int $scoreRankV1 = null): int
+    {
+        if (count($thresholds) < 3) {
+            return 0;
+        }
+
+        [$green, $orange, $red] = array_map('floatval', array_slice($thresholds, 0, 3));
+
+        if ($green <= 0 || $orange <= $green || $red <= $orange || $scoreRankV1 === null || $scoreRankV1 <= $red || $score <= 0) {
+            return 0;
+        }
+
+        if ($score <= $green) {
+            $points = ($score / $green) * 1000;
+        } elseif ($score <= $orange) {
+            $points = 1000 + (($score - $green) / ($orange - $green)) * 100;
+        } elseif ($score <= $red) {
+            $points = 1100 + (($score - $orange) / ($red - $orange)) * 50;
+        } else {
+            $points = 1150 + (($score - $red) / ($scoreRankV1 - $red)) * 350;
+        }
+
+        return (int) round(min($points, 1500));
+    }
+
     private function getBestRunsPerUserSubquery(Game $game, ?int $periodId = null, ?int $leagueId = null): Builder
     {
         return Run::query()

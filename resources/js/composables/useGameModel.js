@@ -5,14 +5,14 @@ import RedStar from '@svg/redStar.svg'
 
 function getStarImage(starId) {
   switch (starId) {
-  case 0:
-    return GreenStar
-  case 1:
-    return OrangeStar
-  case 2:
-    return RedStar
-  default:
-    return GreyStar
+    case 0:
+      return GreenStar
+    case 1:
+      return OrangeStar
+    case 2:
+      return RedStar
+    default:
+      return GreyStar
   }
 }
 

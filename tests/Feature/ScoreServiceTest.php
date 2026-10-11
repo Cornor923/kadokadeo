@@ -17,6 +17,54 @@ class ScoreServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_competition_can_load_a_previous_period(): void
+    {
+        $currentPeriod = Period::factory()->create([
+            'start_at' => now()->subDay(),
+            'end_at' => now()->addDay(),
+        ]);
+        $previousPeriod = Period::factory()->create([
+            'start_at' => now()->subDays(2),
+            'end_at' => now()->subDay(),
+        ]);
+        $game = Game::factory()->create([
+            'is_active' => true,
+            'score_rankv1' => 40,
+        ]);
+        $currentPlayer = User::factory()->create(['display_name' => 'Current player']);
+        $previousPlayer = User::factory()->create(['display_name' => 'Previous player']);
+        $zeroScorePlayer = User::factory()->create(['display_name' => 'Zero score player']);
+
+        Run::factory()->for($currentPeriod)->for($game)->for($currentPlayer)->create(['score' => 1000]);
+        Run::factory()->for($previousPeriod)->for($game)->for($previousPlayer)->create(['score' => 2000]);
+        Run::factory()->for($previousPeriod)->for($game)->for($zeroScorePlayer)->create(['score' => 0]);
+
+        $user = User::factory()->create();
+        $token = $user->createToken('kadokadeo')->plainTextToken;
+        $this->withToken($token)
+            ->getJson('/api/competition?period='.$previousPeriod->id)
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.user.display_name', 'Previous player')
+            ->assertJsonPath('0.score', 1500)
+            ->assertJsonPath('0.games.0.game.name', $game->name)
+            ->assertJsonPath('0.games.0.score', 1500);
+    }
+
+    public function test_ranking_v1_interpolates_between_the_four_score_thresholds(): void
+    {
+        $service = app(ScoreService::class);
+        $thresholds = [100, 200, 300];
+
+        foreach ([0 => 0, 50 => 500, 100 => 1000, 150 => 1050, 200 => 1100, 250 => 1125, 300 => 1150, 400 => 1325, 500 => 1500, 600 => 1500] as $score => $points) {
+            $this->assertSame($points, $service->calculateScoreOn1500($score, $thresholds, 500));
+        }
+
+        $this->assertSame(0, $service->calculateScoreOn1500(400, $thresholds));
+        $this->assertSame(0, $service->calculateScoreOn1500(400, $thresholds, 300));
+        $this->assertSame(0, $service->calculateScoreOn1500(400, [], 500));
+    }
+
     public function test_leaderboard_uses_each_players_best_run_only(): void
     {
         $game = Game::factory()->create();

@@ -24,6 +24,7 @@ class BinaryCast implements CastsAttributes
         if ($value) {
             return bin2hex($value);
         }
+
         return null;
     }
 
@@ -53,7 +54,8 @@ class BinaryCast implements CastsAttributes
             if (is_null($data)) {
                 return null;
             }
-            return DB::raw("decode('" . $data . "', 'hex')");
+
+            return DB::raw("decode('".$data."', 'hex')");
         }
 
         return $value;

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserStar extends Model
 {
     public $timestamps = false;
+
     protected $fillable = [
         'user_id',
         'period_id',

@@ -3,13 +3,14 @@
 namespace Tests\Unit;
 
 use App\Services\RunService;
-use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\TestCase;
 
 class RunServiceTest extends TestCase
 {
     private string $publicKey;
+
     private string $privateKey;
+
     private RunService $runService;
 
     protected function setUp(): void
@@ -44,7 +45,7 @@ class RunServiceTest extends TestCase
         rmdir('storage/app/tests');
     }
 
-    public function testGetAesKeyFromEncrypted()
+    public function test_get_aes_key_from_encrypted()
     {
         // Random AES key
         $aesKey = random_bytes(16);
@@ -58,7 +59,7 @@ class RunServiceTest extends TestCase
         $this->assertEquals($aesKey, $result);
     }
 
-    public function testGetDecryptedPayload()
+    public function test_get_decrypted_payload()
     {
         $aesKey = random_bytes(16);
         $algo = 'aes-128-ctr';
@@ -68,7 +69,7 @@ class RunServiceTest extends TestCase
         $payload = json_encode(['foo' => 'bar']);
         $cipherText = openssl_encrypt($payload, $algo, $aesKey, OPENSSL_RAW_DATA, $iv);
 
-        $payloadRaw = $iv . $cipherText;
+        $payloadRaw = $iv.$cipherText;
         $payloadBase64 = base64_encode($payloadRaw);
 
         $result = $this->invokePrivateMethod($this->runService, 'getDecryptedPayload', [$payloadBase64, $aesKey]);
@@ -81,6 +82,7 @@ class RunServiceTest extends TestCase
         $reflection = new \ReflectionClass(get_class($object));
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
+
         return $method->invokeArgs($object, $parameters);
     }
 }

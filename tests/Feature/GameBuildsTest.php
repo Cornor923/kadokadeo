@@ -20,7 +20,9 @@ class GameBuildsTest extends TestCase
     use RefreshDatabase;
 
     private const CURRENT = 'bee4b73f901e';
+
     private const OLD = '596f189240bb';
+
     private const LEGACY = 'f8df6af08735';
 
     private string $fixtures;
@@ -94,6 +96,7 @@ class GameBuildsTest extends TestCase
             $response = $this->postJson("/api/runs/games/{$game->id}", ['build' => $hash]);
             if ($kept === null) {
                 $response->assertUnprocessable();
+
                 continue;
             }
             $response->assertSuccessful();

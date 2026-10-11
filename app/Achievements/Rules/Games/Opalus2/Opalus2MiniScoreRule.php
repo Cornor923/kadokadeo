@@ -3,7 +3,6 @@
 namespace App\Achievements\Rules\Games\Opalus2;
 
 use App\Achievements\AchievementRuleResult;
-use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class Opalus2MiniScoreRule extends Opalus2Rule

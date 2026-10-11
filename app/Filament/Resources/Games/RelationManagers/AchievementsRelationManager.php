@@ -119,24 +119,24 @@ class AchievementsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                                SelectFilter::make('category')
-                                    ->options(self::categoryOptions()),
-                                SelectFilter::make('progress_scope')
-                                    ->options(self::progressScopeOptions()),
-                                TernaryFilter::make('is_active'),
-                            ])
+                SelectFilter::make('category')
+                    ->options(self::categoryOptions()),
+                SelectFilter::make('progress_scope')
+                    ->options(self::progressScopeOptions()),
+                TernaryFilter::make('is_active'),
+            ])
             ->headerActions([
-                                CreateAction::make(),
-                            ])
+                CreateAction::make(),
+            ])
             ->recordActions([
-                                EditAction::make(),
-                                DeleteAction::make(),
-                            ])
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->toolbarActions([
-                                BulkActionGroup::make([
-                                    DeleteBulkAction::make(),
-                                ]),
-                            ]);
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     private static function categoryOptions(): array

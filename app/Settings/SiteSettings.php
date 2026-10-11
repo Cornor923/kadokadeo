@@ -25,7 +25,7 @@ class SiteSettings extends Settings
      */
     public function announcement(): ?array
     {
-        if (! $this->announcement_enabled || blank($this->announcement_content)) {
+        if (!$this->announcement_enabled || blank($this->announcement_content)) {
             return null;
         }
 

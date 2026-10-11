@@ -38,6 +38,7 @@ class GameForm
                 Toggle::make('is_arkadeo')
                     ->label('Jeu Arkadéo')
                     ->required(),
+                TextInput::make('score_rankv1')->label('Score 1500'),
             ]);
     }
 }
