@@ -8,6 +8,7 @@ import ktrain.MC.FilterSpec;
 
 // Game.hx of the original (Haxe for Flash 8), line by line, as compiled in the released game.swf; the port's own parts
 // are at the end
+
 @:expose('GameKTrain')
 class Game implements kado.GameInterface {
 	// in the locomotive: up / down change the speed, left / right send the driver out; outside, the arrows walk;
@@ -18,45 +19,45 @@ class Game implements kado.GameInterface {
 			{
 				id: "left",
 				label: "◀",
-				leftPx: 16,
-				bottomPx: 30,
-				size: 76,
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.LEFT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
 				label: "▶",
-				leftPx: 102,
-				bottomPx: 30,
-				size: 76,
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.RIGHT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "up",
 				label: "▲",
-				rightPx: 16,
-				bottomPx: 112,
-				size: 76,
+				rightPx: 20,
+				bottomPx: 90,
+				size: 60,
 				keyCode: KeyboardManager.UP,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "down",
 				label: "▼",
-				rightPx: 16,
-				bottomPx: 30,
-				size: 76,
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.DOWN,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "brake",
 				label: "■",
-				rightPx: 102,
-				bottomPx: 30,
-				size: 76,
+				rightPx: 20,
+				bottomPx: 160,
+				size: 60,
 				keyCode: KeyboardManager.SPACE,
 			},
 		],
@@ -322,8 +323,10 @@ class Game implements kado.GameInterface {
 				kd = true;
 		}
 
-		if (KeyboardManager.isDown(KeyboardManager.UP) || KeyboardManager.isDown(KeyboardManager.DOWN)
-			|| KeyboardManager.isDown(KeyboardManager.LEFT) || KeyboardManager.isDown(KeyboardManager.RIGHT)) {
+		if (KeyboardManager.isDown(KeyboardManager.UP)
+			|| KeyboardManager.isDown(KeyboardManager.DOWN)
+			|| KeyboardManager.isDown(KeyboardManager.LEFT)
+			|| KeyboardManager.isDown(KeyboardManager.RIGHT)) {
 			kd = true;
 			Man.go();
 		}
@@ -509,7 +512,11 @@ class Game implements kado.GameInterface {
 		if (renderer == null)
 			return;
 		var holder = new pixi.core.display.Container();
-		for (f in ([new FlashBlur([4], [0]), new FlashBlur([4, 6], [0, 0]), new FlashColorMatrix([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0])] : Array<Dynamic>)) {
+		for (f in ([
+			new FlashBlur([4], [0]),
+			new FlashBlur([4, 6], [0, 0]),
+			new FlashColorMatrix([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0])
+		] : Array<Dynamic>)) {
 			var s = new pixi.core.sprites.Sprite(pixi.core.textures.Texture.WHITE);
 			s.filters = [f];
 			holder.addChild(s);
@@ -696,7 +703,9 @@ class CoalAnim implements Anim {
 		var r = Math.atan2(mc._y - (Loco.mc._y + Const.LOCO_H / 2), mc._x - Loco.mc._x);
 		X = Math.sin(r);
 		Y = Math.cos(r);
-		d = [1.56, 0, 0, 0, -90.16, 0, 1.56, 0, 0, -90.16, 0, 0, 1.56, 0, -90.16, 0, 0, 0, 1, 0];
+		d = [
+			1.56, 0, 0, 0, -90.16, 0, 1.56, 0, 0, -90.16, 0, 0, 1.56, 0, -90.16, 0, 0, 0, 1, 0
+		];
 		#if debug
 		game.stats.stations++;
 		#end

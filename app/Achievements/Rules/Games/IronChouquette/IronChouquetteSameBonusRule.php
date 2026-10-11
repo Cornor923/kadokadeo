@@ -20,7 +20,6 @@ class IronChouquetteSameBonusRule extends IronChouquetteRule
         $maxSameBonus = 0;
 
         $this->iterateThroughBonuses($event, function ($bonusSlots) use (&$maxSameBonus) {
-            dump($bonusSlots);
             $bonuses = collect($bonusSlots);
             $sameBonusCount = $bonuses->filter(fn ($b) => $b !== -1)->countBy(fn ($b) => $b)->max();
             $maxSameBonus = max($maxSameBonus, $sameBonusCount);

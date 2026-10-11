@@ -35,7 +35,7 @@ class Game implements kado.GameInterface {
 		buttons: [
 			{
 				id: "up",
-				label: "^",
+				label: "▲",
 				leftPx: 64,
 				bottomPx: 76,
 				size: 56,
@@ -44,7 +44,7 @@ class Game implements kado.GameInterface {
 			},
 			{
 				id: "left",
-				label: "<",
+				label: "◀",
 				leftPx: 8,
 				bottomPx: 20,
 				size: 56,
@@ -53,7 +53,7 @@ class Game implements kado.GameInterface {
 			},
 			{
 				id: "right",
-				label: ">",
+				label: "▶",
 				leftPx: 120,
 				bottomPx: 20,
 				size: 56,
@@ -62,7 +62,7 @@ class Game implements kado.GameInterface {
 			},
 			{
 				id: "down",
-				label: "v",
+				label: "▼",
 				leftPx: 64,
 				bottomPx: 20,
 				size: 56,

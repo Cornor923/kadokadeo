@@ -498,8 +498,12 @@ class Hero extends Phys {
 	public function updateShoot() {
 		var flFire = KeyboardManager.isDown(KeyboardManager.SPACE) || KeyboardManager.isDown(KeyboardManager.ENTER);
 
-		if (lastLaser != null && lastLaser._visible)
+		if (lastLaser != null && lastLaser._visible) {
 			lastLaser.removeMovieClip();
+			// its lines are freed (graphics card buffers), the plasma stamp of last frame (if any) is flushed
+			lastLaser.destroy({children: true});
+			lastLaser = null;
+		}
 
 		for (i in 0...6) {
 			var a = weapons[i];
@@ -680,8 +684,8 @@ class Hero extends Phys {
 							// DRAW
 							//*
 							laserFlip = (laserFlip + 1) % 2;
-							var s0 = KadoKadeoManager.I(12) + (a[0] + laserFlip * 2) * KadoKadeoManager.I(3);
-							var s1 = KadoKadeoManager.S(1) + (a[0] + laserFlip) * KadoKadeoManager.S(2.5);
+							var s0 = 12 + (a[0] + laserFlip * 2) * KadoKadeoManager.I(3);
+							var s1 = 1 + (a[0] + laserFlip) * KadoKadeoManager.S(2.5);
 							var mc = Cs.game.dm.empty(Game.DP_PARTS);
 
 							mc.lineStyle(s0, 0xFF0000, 30, "round", "round");
@@ -703,7 +707,7 @@ class Hero extends Phys {
 							var ba = 2;
 							var br = 2;
 							var ra = KadoKadeoManager.I(3) + s1;
-							mc.lineStyle(KadoKadeoManager.I(1), 0xFFFFFF, 100, "round", "round");
+							mc.lineStyle(1, 0xFFFFFF, 100, "round", "round");
 							for (n in 0...3) {
 								var k = 0;
 								var st = Seed.randomVfx(list.length - 3);
@@ -724,12 +728,10 @@ class Hero extends Phys {
 							if (Cs.game.gfxMode >= 1) {
 								mc.blendMode = BlendModes.ADD;
 								Cs.game.plasmaDraw(mc, 1);
-								mc.removeMovieClip();
-								// only drawn into the plasma: its lines are freed (graphics card buffers) once the plasma has them
-								mc.destroy({children: true});
-							} else {
-								lastLaser = mc;
 							}
+							// not in the original with the plasma (only drawn into it): also shown at full resolution
+							// for one frame, the plasma upscale x4 made its thin lines blocky
+							lastLaser = mc;
 							//*/
 							laserList = list;
 

@@ -13,6 +13,7 @@ import pixi.core.textures.Texture;
 typedef Spawn = {x:Float, y:Float, sc:KKConst, color:Int};
 
 // Game.hx of the original (Haxe for Flash 8), line by line; the port's own parts are at the end
+
 @:expose('GameDigestomax')
 class Game implements kado.GameInterface {
 	// left / right walk (and swallow the fruit beside), down swallows the fruit below, up the fruit above (held: the
@@ -21,39 +22,39 @@ class Game implements kado.GameInterface {
 		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
+				id: "up",
+				label: "▲",
+				leftPx: 64,
+				bottomPx: 76,
+				size: 56,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
 				id: "left",
 				label: "◀",
-				leftPx: 20,
-				bottomPx: 30,
-				size: 80,
+				leftPx: 8,
+				bottomPx: 20,
+				size: 56,
 				keyCode: KeyboardManager.LEFT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
 				label: "▶",
-				leftPx: 112,
-				bottomPx: 30,
-				size: 80,
+				leftPx: 120,
+				bottomPx: 20,
+				size: 56,
 				keyCode: KeyboardManager.RIGHT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "down",
 				label: "▼",
-				rightPx: 112,
-				bottomPx: 30,
-				size: 80,
+				leftPx: 64,
+				bottomPx: 20,
+				size: 56,
 				keyCode: KeyboardManager.DOWN,
-				shape: TouchButtonShape.SQUARE,
-			},
-			{
-				id: "up",
-				label: "▲",
-				rightPx: 20,
-				bottomPx: 30,
-				size: 80,
-				keyCode: KeyboardManager.UP,
 				shape: TouchButtonShape.SQUARE,
 			},
 		],
@@ -129,6 +130,7 @@ class Game implements kado.GameInterface {
 	// the score of KKApi (addScore), nothing after the game over
 	var score:Int = 0;
 	var over:Bool = false;
+
 	#if debug
 	// test harness: events of the game (coverage)
 	public var stats = {
@@ -693,8 +695,7 @@ class Game implements kado.GameInterface {
 		p.root.clip.filters = [new FlashGlow(4, 4, 10, 0xFFFFFF)];
 		// Col.setPercentColor(p.root.smc.smc, 70, col): the black text gets the offsets int(0.7 * colour)
 		if (col != null)
-			d.setColour((Std.int(0.7 * ((col >> 16) & 0xFF)) << 16) | (Std.int(0.7 * ((col >> 8) & 0xFF)) << 8)
-				| Std.int(0.7 * (col & 0xFF)));
+			d.setColour((Std.int(0.7 * ((col >> 16) & 0xFF)) << 16) | (Std.int(0.7 * ((col >> 8) & 0xFF)) << 8) | Std.int(0.7 * (col & 0xFF)));
 		return p;
 	}
 
@@ -781,8 +782,7 @@ class Game implements kado.GameInterface {
 		var m = Std.int(Math.round(Std.int(100 - prc) / 100 * 255));
 		flashMul.tint = (m << 16) | (m << 8) | m;
 		var c = prc / 100;
-		flashAdd.tint = (Std.int(c * ((flashCol >> 16) & 0xFF)) << 16) | (Std.int(c * ((flashCol >> 8) & 0xFF)) << 8)
-			| Std.int(c * (flashCol & 0xFF));
+		flashAdd.tint = (Std.int(c * ((flashCol >> 16) & 0xFF)) << 16) | (Std.int(c * ((flashCol >> 8) & 0xFF)) << 8) | Std.int(c * (flashCol & 0xFF));
 	}
 
 	// the glow filters and the masks of the beak compile their shaders now, not at the first fruit
@@ -872,10 +872,14 @@ class Game implements kado.GameInterface {
 	// test bot: the grid (colours, -1 empty, 20 the hero), the hero, the stomach (the next poop last), whether the game
 	// waits for a key (the hero's control in updatePlay)
 	public function debugBot():Dynamic {
-		var g = [for (x in 0...Cs.XMAX) [for (y in 0...Cs.YMAX) {
-			var b = cell(x, y);
-			b == null ? -1 : b.color;
-		}]];
+		var g = [
+			for (x in 0...Cs.XMAX) [
+				for (y in 0...Cs.YMAX) {
+					var b = cell(x, y);
+					b == null ? -1 : b.color;
+				}
+			]
+		];
 		return {
 			grid: g,
 			hx: hero.px,

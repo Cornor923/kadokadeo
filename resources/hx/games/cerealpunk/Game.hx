@@ -16,35 +16,37 @@ class Game implements kado.GameInterface {
 				id: "left",
 				label: "◀",
 				leftPx: 20,
-				bottomPx: 30,
-				size: 80,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.LEFT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
 				label: "▶",
-				leftPx: 112,
-				bottomPx: 30,
-				size: 80,
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.RIGHT,
 				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "down",
 				label: "▼",
-				rightPx: 112,
-				bottomPx: 30,
-				size: 80,
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "up",
 				label: "▲",
 				rightPx: 20,
-				bottomPx: 30,
-				size: 80,
+				bottomPx: 90,
+				size: 60,
 				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
 			},
 		],
 	};
@@ -95,7 +97,14 @@ class Game implements kado.GameInterface {
 	var ghash:Int = 0;
 
 	// test harness: rare events of the game (coverage)
-	public static var cov = {stones: 0, bonusDie: 0, bubbles: 0, hsKept: 0, hsLost: 0, combos: 0};
+	public static var cov = {
+		stones: 0,
+		bonusDie: 0,
+		bubbles: 0,
+		hsKept: 0,
+		hsLost: 0,
+		combos: 0
+	};
 	#end
 
 	public function new(mc:ASprite, ?isReplay:Bool = false) {
@@ -115,7 +124,14 @@ class Game implements kado.GameInterface {
 		MC.clearAll();
 		Clip.reset();
 		#if debug
-		cov = {stones: 0, bonusDie: 0, bubbles: 0, hsKept: 0, hsLost: 0, combos: 0};
+		cov = {
+			stones: 0,
+			bonusDie: 0,
+			bubbles: 0,
+			hsKept: 0,
+			hsLost: 0,
+			combos: 0
+		};
 		#end
 		// mt.Timer before its first update: Manager.init creates the game, whose constructor calls main() once, before
 		// the first Manager.main (Timer.update)
