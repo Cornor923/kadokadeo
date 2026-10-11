@@ -238,7 +238,7 @@ const scoreOn1500 = computed(() => {
                 <td class="text-right">
                   <span class="inline-flex items-center justify-end gap-0.5">
                     <img
-                      v-for="(featherIndex, index) in Math.max(player.feathers_count, 3)"
+                      v-for="(featherIndex, index) in player.feathers_count"
                       :key="featherIndex"
                       src="/gfx/iconFeather.gif"
                       alt=""
@@ -246,7 +246,7 @@ const scoreOn1500 = computed(() => {
                       class="feather-icon size-4"
                       :style="{ marginLeft: index === 0 ? '0' : '-8px', zIndex: index + 1 }"
                     />
-                    <span class="sr-only">{{ Math.max(player.feathers_count, 3) }} plume(s)</span>
+                    <span class="sr-only">{{ player.feathers_count }} plume(s)</span>
                   </span>
                 </td>
               </tr>
