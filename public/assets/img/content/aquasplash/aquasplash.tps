@@ -252,35 +252,164 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">src/flame/1.png</key>
-            <key type="filename">src/flame/2.png</key>
-            <key type="filename">src/flame/3.png</key>
-            <key type="filename">src/flame/4.png</key>
-            <key type="filename">src/flame/5.png</key>
-            <key type="filename">src/flame/6.png</key>
-            <key type="filename">src/flame/7.png</key>
-            <key type="filename">src/flame/8.png</key>
-            <key type="filename">src/flame/9.png</key>
-            <key type="filename">src/flame/10.png</key>
-            <key type="filename">src/flame/11.png</key>
-            <key type="filename">src/flame/12.png</key>
-            <key type="filename">src/flame/13.png</key>
-            <key type="filename">src/flame/14.png</key>
-            <key type="filename">src/flame/15.png</key>
-            <key type="filename">src/flame/16.png</key>
-            <key type="filename">src/flame/17.png</key>
-            <key type="filename">src/flame/18.png</key>
-            <key type="filename">src/flame/19.png</key>
-            <key type="filename">src/flame/20.png</key>
-            <key type="filename">src/flame/21.png</key>
-            <key type="filename">src/flame/22.png</key>
-            <key type="filename">src/flame/23.png</key>
-            <key type="filename">src/flame/24.png</key>
-            <key type="filename">src/flame/25.png</key>
-            <key type="filename">src/flame/26.png</key>
-            <key type="filename">src/flame/27.png</key>
-            <key type="filename">src/flame/28.png</key>
-            <key type="filename">src/flame/29.png</key>
+            <key type="filename">src/flameA/1.png</key>
+            <key type="filename">src/flameA/2.png</key>
+            <key type="filename">src/flameA/3.png</key>
+            <key type="filename">src/flameA/4.png</key>
+            <key type="filename">src/flameA/5.png</key>
+            <key type="filename">src/flameA/6.png</key>
+            <key type="filename">src/flameA/7.png</key>
+            <key type="filename">src/flameA/8.png</key>
+            <key type="filename">src/flameA/9.png</key>
+            <key type="filename">src/flameA/10.png</key>
+            <key type="filename">src/flameA/11.png</key>
+            <key type="filename">src/flameA/12.png</key>
+            <key type="filename">src/flameA/13.png</key>
+            <key type="filename">src/flameA/14.png</key>
+            <key type="filename">src/flameA/15.png</key>
+            <key type="filename">src/flameA/16.png</key>
+            <key type="filename">src/flameA/17.png</key>
+            <key type="filename">src/flameA/18.png</key>
+            <key type="filename">src/flameA/19.png</key>
+            <key type="filename">src/flameA/20.png</key>
+            <key type="filename">src/flameA/21.png</key>
+            <key type="filename">src/flameA/22.png</key>
+            <key type="filename">src/flameA/23.png</key>
+            <key type="filename">src/flameA/24.png</key>
+            <key type="filename">src/flameA/25.png</key>
+            <key type="filename">src/flameA/26.png</key>
+            <key type="filename">src/flameA/27.png</key>
+            <key type="filename">src/flameA/28.png</key>
+            <key type="filename">src/flameA/29.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.498866,0.591522</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9Paddings</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">src/flameB/1.png</key>
+            <key type="filename">src/flameB/2.png</key>
+            <key type="filename">src/flameB/3.png</key>
+            <key type="filename">src/flameB/4.png</key>
+            <key type="filename">src/flameB/5.png</key>
+            <key type="filename">src/flameB/6.png</key>
+            <key type="filename">src/flameB/7.png</key>
+            <key type="filename">src/flameB/8.png</key>
+            <key type="filename">src/flameB/9.png</key>
+            <key type="filename">src/flameB/10.png</key>
+            <key type="filename">src/flameB/11.png</key>
+            <key type="filename">src/flameB/12.png</key>
+            <key type="filename">src/flameB/13.png</key>
+            <key type="filename">src/flameB/14.png</key>
+            <key type="filename">src/flameB/15.png</key>
+            <key type="filename">src/flameB/16.png</key>
+            <key type="filename">src/flameB/17.png</key>
+            <key type="filename">src/flameB/18.png</key>
+            <key type="filename">src/flameB/19.png</key>
+            <key type="filename">src/flameB/20.png</key>
+            <key type="filename">src/flameB/21.png</key>
+            <key type="filename">src/flameB/22.png</key>
+            <key type="filename">src/flameB/23.png</key>
+            <key type="filename">src/flameB/24.png</key>
+            <key type="filename">src/flameB/25.png</key>
+            <key type="filename">src/flameB/26.png</key>
+            <key type="filename">src/flameB/27.png</key>
+            <key type="filename">src/flameB/28.png</key>
+            <key type="filename">src/flameB/29.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.498866,0.591522</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9Paddings</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">src/flameN/1.png</key>
+            <key type="filename">src/flameN/2.png</key>
+            <key type="filename">src/flameN/3.png</key>
+            <key type="filename">src/flameN/4.png</key>
+            <key type="filename">src/flameN/5.png</key>
+            <key type="filename">src/flameN/6.png</key>
+            <key type="filename">src/flameN/7.png</key>
+            <key type="filename">src/flameN/8.png</key>
+            <key type="filename">src/flameN/9.png</key>
+            <key type="filename">src/flameN/10.png</key>
+            <key type="filename">src/flameN/11.png</key>
+            <key type="filename">src/flameN/12.png</key>
+            <key type="filename">src/flameN/13.png</key>
+            <key type="filename">src/flameN/14.png</key>
+            <key type="filename">src/flameN/15.png</key>
+            <key type="filename">src/flameN/16.png</key>
+            <key type="filename">src/flameN/17.png</key>
+            <key type="filename">src/flameN/18.png</key>
+            <key type="filename">src/flameN/19.png</key>
+            <key type="filename">src/flameN/20.png</key>
+            <key type="filename">src/flameN/21.png</key>
+            <key type="filename">src/flameN/22.png</key>
+            <key type="filename">src/flameN/23.png</key>
+            <key type="filename">src/flameN/24.png</key>
+            <key type="filename">src/flameN/25.png</key>
+            <key type="filename">src/flameN/26.png</key>
+            <key type="filename">src/flameN/27.png</key>
+            <key type="filename">src/flameN/28.png</key>
+            <key type="filename">src/flameN/29.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.498866,0.591522</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9Paddings</key>
+                <rect>110,130,220,260</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">src/flameS/1.png</key>
+            <key type="filename">src/flameS/2.png</key>
+            <key type="filename">src/flameS/3.png</key>
+            <key type="filename">src/flameS/4.png</key>
+            <key type="filename">src/flameS/5.png</key>
+            <key type="filename">src/flameS/6.png</key>
+            <key type="filename">src/flameS/7.png</key>
+            <key type="filename">src/flameS/8.png</key>
+            <key type="filename">src/flameS/9.png</key>
+            <key type="filename">src/flameS/10.png</key>
+            <key type="filename">src/flameS/11.png</key>
+            <key type="filename">src/flameS/12.png</key>
+            <key type="filename">src/flameS/13.png</key>
+            <key type="filename">src/flameS/14.png</key>
+            <key type="filename">src/flameS/15.png</key>
+            <key type="filename">src/flameS/16.png</key>
+            <key type="filename">src/flameS/17.png</key>
+            <key type="filename">src/flameS/18.png</key>
+            <key type="filename">src/flameS/19.png</key>
+            <key type="filename">src/flameS/20.png</key>
+            <key type="filename">src/flameS/21.png</key>
+            <key type="filename">src/flameS/22.png</key>
+            <key type="filename">src/flameS/23.png</key>
+            <key type="filename">src/flameS/24.png</key>
+            <key type="filename">src/flameS/25.png</key>
+            <key type="filename">src/flameS/26.png</key>
+            <key type="filename">src/flameS/27.png</key>
+            <key type="filename">src/flameS/28.png</key>
+            <key type="filename">src/flameS/29.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.498866,0.591522</point_f>

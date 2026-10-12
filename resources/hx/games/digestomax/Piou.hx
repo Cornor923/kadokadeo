@@ -149,8 +149,11 @@ class Piou extends Ball {
 					var id = fruit.color - 10;
 					Game.me.fxFlash(Cs.FRUIT_COLOR[id]);
 					Game.me.explodeAll(id);
-					// (shown, not added: explodeAll leaves scoreSpawn empty, the score of these fruits is never given)
+					// (fix: the original only showed this score, explodeAll leaves scoreSpawn empty and it was never given; no
+					// fruit of that colour left: -300 shown, nothing taken)
 					var sc = Cs.getScore(Game.me.work.length);
+					if (KKApi.val(sc) > 0)
+						Game.me.addScore(sc);
 					var p = Game.me.newScore(fruit.root._x, fruit.root._y, KKApi.val(sc), Cs.FRUIT_COLOR[id]);
 				} else {
 					if (stomach.length < stomachSize) {

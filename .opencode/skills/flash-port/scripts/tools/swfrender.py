@@ -80,6 +80,11 @@ class SWF:
         # True: blur filters are drawn (Flash: `passes` boxes on the colour and the alpha); off: skipped, as the renders
         # made before this option
         self.blur_filters = False
+        # True: the colour transform of the parents of a filtered object is applied to its filtered picture (Flash: a
+        # colour matrix or a glow of the object is tinted by the colour of its container, Kanji Gaiden's shurikens on
+        # the coloured planes); its own colour transform stays before its filters. Off: the colour of the parents goes
+        # under the filters too, as the renders made before this option
+        self.parent_cx_after_filters = False
         raw = open(path, 'rb').read()
         data = raw[:8] + (zlib.decompress(raw[8:]) if raw[:3] == b'CWS' else raw[8:])
         b = S.Bits(data, 8)
@@ -416,6 +421,20 @@ def apply_filter(layer, f, Z, inner=False, blur=False):
     return layer
 
 
+def cx_key(cx):
+    return (tuple(cx['mult']), tuple(cx['add']))
+
+
+def apply_cx(layer, c):
+    """a colour transform on a premultiplied layer"""
+    a = layer[..., 3:4]
+    rgb = np.where(a > 0, layer[..., :3] / np.maximum(a, 1e-6), 0)
+    rgb = np.clip(rgb * np.array(c['mult'][:3], dtype=np.float32) + np.array(c['add'][:3], dtype=np.float32) / 255.0, 0, 1)
+    a2 = np.clip(a * c['mult'][3] + c['add'][3] / 255.0, 0, 1)
+    a2 = np.where(a > 0, a2, 0)
+    return np.concatenate([rgb * a2, a2], axis=-1).astype(layer.dtype)
+
+
 def blend_into(canvas, layer, blend):
     la = layer[..., 3:4]
     if blend in ('add',):
@@ -497,6 +516,11 @@ class Renderer:
                 continue
             if e.get('filters') or e.get('blend') not in (None, 'normal', 'layer'):
                 sub = []
+                if e.get('filters') and getattr(self.swf, 'parent_cx_after_filters', False) and cx_key(cx) != cx_key(NOCX):
+                    self._emit(e, m, e['cx'], hide, sub)
+                    if sub:
+                        target.append(('layer', sub, e.get('filters') or [], e.get('blend'), cx))
+                    continue
                 self._emit(e, m, c, hide, sub)
                 if sub:
                     target.append(('layer', sub, e.get('filters') or [], e.get('blend')))
@@ -571,6 +595,8 @@ class Renderer:
                         layer = blur_layer(layer, f, Z)
                     else:
                         layer = apply_filter(layer, f, Z)
+                if len(cmd) > 4:
+                    layer = apply_cx(layer, cmd[4])
                 if cmd[3] == 'lighten' and getattr(self.swf, 'lighten', False):
                     blend_lighten(canvas, layer)
                 elif cmd[3] == 'overlay' and getattr(self.swf, 'overlay', False):

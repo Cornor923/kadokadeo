@@ -37,6 +37,8 @@ class MC {
 	public var tint:Int = 0xFFFFFF;
 	// pictures stored at 1 / texSx of their horizontal resolution (the blurred variants of nextLevel)
 	public var texSx:Float = 1;
+	// texSx of the picture of the last display
+	var shownSx:Float = 1;
 	// a clip under filters: Flash draws it composed, then applies its alpha to the composed picture (an AlphaFilter on
 	// the container; otherwise PIXI multiplies the alpha into every picture, and the lower ones show through)
 	public var alphaFilter:AlphaFilter;
@@ -246,6 +248,12 @@ class MC {
 		s._rotation = pr + (_rotation - pr) * f;
 		if (s.tint != tint)
 			s.tint = tint;
+		// the picture changes at once while the renderer interpolates the scale from the previous step: that scale
+		// is converted to the resolution of the new picture (blurred variants of nextLevel: texSx 1 to 62), or the
+		// banner and the plate stretch between the steps
+		if (texSx != shownSx && s._prevState != null)
+			s._prevState.xscale *= texSx / shownSx;
+		shownSx = texSx;
 		if (snap && s._prevState != null)
 			s._prevState.copyFrom(s._curState);
 		snap = hide;

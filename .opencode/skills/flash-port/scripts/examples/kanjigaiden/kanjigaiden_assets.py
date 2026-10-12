@@ -44,6 +44,9 @@ for X in (G, Gb):
     X.flash_replace = True
     X.inner_filters = True
     X.blur_filters = True
+    # the colour of the planes 1 and 2 on the filtered pictures (the shurikens the monkeys carry: colour matrices of
+    # one picture) after their filters, like Flash
+    X.parent_cx_after_filters = True
 K = C.K
 
 

@@ -148,10 +148,12 @@ class Perso {
 		adx = -dx;
 		ady = -dy;
 		anim_delta = Cs.SIZE;
-		if (hero)
-			mc.gotoAndStop(dir + (att ? 10 : 6));
-		else
-			mc.gotoAndStop(dir + 7);
+		if (mc != null) {
+			if (hero)
+				mc.gotoAndStop(dir + (att ? 10 : 6));
+			else
+				mc.gotoAndStop(dir + 7);
+		}
 		update();
 	}
 

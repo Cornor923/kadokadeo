@@ -537,8 +537,7 @@ class Game implements kado.GameInterface {
 		stats.bombs++;
 		#end
 
-		mcBomb = dm.attach("flame", DP_PARTS);
-		mcBomb.removeAt = 30;
+		mcBomb = dm.add(new Flame(), DP_PARTS);
 		var pos = Cs.getPos(p, true);
 		mcBomb._x = pos.x;
 		mcBomb._y = pos.y;

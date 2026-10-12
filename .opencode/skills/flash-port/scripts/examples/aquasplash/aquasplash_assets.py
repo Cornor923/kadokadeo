@@ -113,12 +113,26 @@ def render(items, pad=0.5):
     imgs = []
     for cmds, post in items:
         canvas = np.zeros((Hz, Wz, 4), dtype=np.float32)
-        rd.draw(cmds, canvas, (ox, oy))
-        if post:
+        if post == 'add':
+            canvas = add_layers(rd, cmds, canvas, (ox, oy))
+        else:
+            rd.draw(cmds, canvas, (ox, oy))
+        if post and post != 'add':
             canvas = post(canvas)
         im = Image.fromarray(np.clip(canvas * 255 + 0.5, 0, 255).astype(np.uint8), 'RGBa')
         imgs.append(im.resize((w, h), Image.LANCZOS).convert('RGBA'))
     return imgs, (-ox * K, -oy * K)
+
+
+def add_layers(rd, cmds, canvas, O):
+    """a picture drawn "add" by the game: the sum of the layers (each one drawn alone), its colours premultiplied by an
+    alpha that is their largest channel (PIXI's ADD only adds the premultiplied colours to the board, like Flash's)"""
+    for cmd in cmds:
+        layer = np.zeros_like(canvas)
+        rd.draw([cmd], layer, O)
+        canvas += layer
+    rgb = np.clip(canvas[..., :3], 0, 1)
+    return np.concatenate([rgb, rgb.max(axis=-1, keepdims=True)], axis=-1)
 
 
 def play(sid, n, ctrl=None):
@@ -233,7 +247,29 @@ def anim(name, sid, n, ctrl=None):
 anim('splash', S_SPLASH, 4)
 anim('explode', S_EXPLODE, 6)
 anim('burn', S_BURN, 15)
-anim('flame', S_FLAME, 29)
+# flame: its children are drawn "add" (the disc 79, the rings 82 and 89, the sparks 85 / 87 on frames 1-3) except the
+# flames in the middle, and the disc fades "screen" (frames 25-27); drawn in isolation they would be an opaque red disc
+# over the board. One picture per run of depths of a blend (each frame: screen?, add, normal, add), stacked by the
+# game with the blend (Flame)
+import copy
+FLAME = [('flameS', 'screen'), ('flameA', 'add'), ('flameN', None), ('flameB', 'add')]
+flame = {k: [] for k, _ in FLAME}
+for s in R.timeline(G, S_FLAME, 29):
+    groups = {k: {} for k, _ in FLAME}
+    slot = 0
+    for d in sorted(s.display):
+        blend = s.display[d].get('blend')
+        blend = blend if blend in ('add', 'screen') else None
+        while FLAME[slot][1] != blend:
+            slot += 1
+        groups[FLAME[slot][0]][d] = s.display[d]
+    for k, disp in groups.items():
+        part = copy.copy(s)
+        part.display = disp
+        flame[k].append(cmds_inst(part))
+imgs, reg = render([(c, 'add' if b == 'add' else None) for k, b in FLAME for c in flame[k]])
+for i, (k, _) in enumerate(FLAME):
+    save_anim(k, imgs[i * 29:(i + 1) * 29], reg)
 # powerup: smc.gotoAndStop(1) (+1 play, a chain) or 2 (a bonus)
 smc = [e['inst'].sid for e in instance(S_POWERUP).display.values() if e['name'] == 'smc'][0]
 anim('powerup1', S_POWERUP, 24, {smc: 1})

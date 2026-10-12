@@ -20,6 +20,7 @@ enum Step {
 }
 
 // Game.hx of the original (Haxe for Flash 8), line by line; the port's own parts are at the end
+
 @:expose('GameRazor')
 class Game implements kado.GameInterface {
 	// left / right move the razor around the board, up slices the fruit in front of it. The board turns the razor's side
@@ -31,8 +32,8 @@ class Game implements kado.GameInterface {
 				id: "left",
 				label: "◀",
 				leftPx: 8,
-				bottomPx: 44,
-				size: 76,
+				bottomPx: 25,
+				size: 50,
 				keyCode: KeyboardManager.LEFT,
 				shape: TouchButtonShape.SQUARE,
 			},
@@ -40,8 +41,8 @@ class Game implements kado.GameInterface {
 				id: "right",
 				label: "▶",
 				rightPx: 8,
-				bottomPx: 44,
-				size: 76,
+				bottomPx: 25,
+				size: 50,
 				keyCode: KeyboardManager.RIGHT,
 				shape: TouchButtonShape.SQUARE,
 			},
@@ -49,8 +50,8 @@ class Game implements kado.GameInterface {
 				id: "slice",
 				label: "▲",
 				rightPx: 8,
-				bottomPx: 132,
-				size: 76,
+				topPx: 8,
+				size: 50,
 				keyCode: KeyboardManager.UP,
 				shape: TouchButtonShape.CIRCLE,
 			},
@@ -128,6 +129,7 @@ class Game implements kado.GameInterface {
 	// the score of KKApi (addScore), nothing after the game over
 	var score:Int = 0;
 	var over:Bool = false;
+
 	#if debug
 	// test harness: events of the game (coverage)
 	public var stats = {
@@ -803,10 +805,14 @@ class Game implements kado.GameInterface {
 
 	// test bot: the grid (colours, -1 empty), the razor, the side it is on, whether the game waits for a key
 	public function debugBot():Dynamic {
-		var g = [for (x in 0...Cs.SIDE) [for (y in 0...Cs.SIDE) {
-			var b = cell(x, y);
-			b == null ? -1 : b.col;
-		}]];
+		var g = [
+			for (x in 0...Cs.SIDE) [
+				for (y in 0...Cs.SIDE) {
+					var b = cell(x, y);
+					b == null ? -1 : b.col;
+				}
+			]
+		];
 		return {
 			grid: g,
 			rx: rx,

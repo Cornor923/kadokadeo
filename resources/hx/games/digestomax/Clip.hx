@@ -395,7 +395,7 @@ class Clip extends ASprite {
 		isPlaying = play && def.still == null;
 		if (f == frame)
 			return;
-		display(f);
+		display(f, f != frame + 1);
 		runActions(f, 0, deferring);
 	}
 
@@ -424,7 +424,7 @@ class Clip extends ASprite {
 					if (t != frame) {
 						var sg = scriptGoto;
 						scriptGoto = true;
-						display(t);
+						display(t, t != frame + 1);
 						scriptGoto = sg;
 						runActions(t, depth + 1, false);
 					}
@@ -504,7 +504,10 @@ class Clip extends ASprite {
 	}
 
 	// ---------------------------------------------------------------- display
-	function display(f:Int) {
+	// jump: a goto to another frame than the next one. Flash shows the new frame at once: the instances its timeline
+	// keeps (and the pictures shown again after hidden frames) are not interpolated from their old place (the mask of the
+	// beak, from the end of a swallow back to its start, when the hero chains two fruits)
+	function display(f:Int, jump:Bool = false) {
 		frame = f;
 		untyped this._currentframe = f;
 		if (def.simple) {
@@ -549,6 +552,7 @@ class Clip extends ASprite {
 				deadPid[i] = 0;
 				fresh = true;
 			}
+			var shownAgain = !fresh && !o.visible;
 			if (L.k != 2) {
 				var g:Gfx = cast o;
 				g.show(p);
@@ -560,6 +564,8 @@ class Clip extends ASprite {
 				(cast o : Clip).start();
 			if (fresh)
 				o.updateState();
+			else if ((jump || shownAgain) && o._prevState != null)
+				o._prevState.copyFrom(o._curState);
 		}
 	}
 
