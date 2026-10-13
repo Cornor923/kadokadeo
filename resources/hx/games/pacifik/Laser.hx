@@ -102,10 +102,24 @@ class Laser {
 		var r = b.mc != null ? b.mc.bounds() : null;
 		var bx = b.mc != null ? b.mc.x : Math.NaN;
 		var by = b.mc != null ? b.mc.y : Math.NaN;
+		// (port fix) the original only tests the ball's new x against the laser's sweep (inter) and its new x: a ball
+		// coming towards the laser by more than its width minus the laser's move (a fast ball: cyan, bonus, the speed
+		// grows all game long) jumped over it, and the ball skipped by moveBalls after a removed one (its loop) was not
+		// tested in that frame. The laser and the ball crossed since the ball's last test: their order changed
+		var crossed = false;
+		if (b.mc != null) {
+			var d0 = b.lastX - b.lastLaserX;
+			var d1 = bx - mc.x;
+			crossed = (d0 < 0 && d1 > 0) || (d0 > 0 && d1 < 0);
+			b.lastX = bx;
+			b.lastLaserX = mc.x;
+		}
 		if (b.bonus) {
 			if (curtype > 0) {
 				return false;
 			}
+			if (crossed)
+				return true;
 			if (bx > inter.x1 && bx < inter.x2) {
 				return true;
 			}
@@ -118,6 +132,9 @@ class Laser {
 		if (b.type + 1 != curtype) {
 			return false;
 		}
+
+		if (crossed)
+			return true;
 
 		if (bx > inter.x1 && bx < inter.x2) {
 			return true;

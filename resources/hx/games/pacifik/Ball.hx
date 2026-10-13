@@ -16,6 +16,9 @@ class Ball {
 	// null once cleaned: the ball stays in Game.balls and every test on it fails, like Flash's undefined
 	public var mc:BallMC;
 	public var type:Int;
+	// (port fix) the ball's x and the laser's at its last laser test (Laser.hit): NaN before the first one
+	public var lastX:Float = Math.NaN;
+	public var lastLaserX:Float = Math.NaN;
 
 	public function new(g:Game, x:Float, y:Float, target:Canon) {
 		game = g;

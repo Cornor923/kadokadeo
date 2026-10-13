@@ -555,9 +555,12 @@ class Game implements kado.GameInterface {
 		if (invert) {
 			if (canon2 >= 0) {
 				var old = l[canon2];
+				// (port fix) the original freed l[canon2] after canon2 = -1 (a property "-1" of the array): the old
+				// canon, cleaned, kept its slot. Once the side had 11 canons and such a slot, getFreeIndex found no slot,
+				// the next canon went to l[null] (out of the array: never shown, never touched) and was counted: the
+				// side lost its canons but not the game
+				l[canon2] = null;
 				canon2 = -1;
-				// (l[canon2] = null: canon2 is already -1, the slot of the old canon is not freed (a property "-1" of
-				// the array): the old canon, cleaned, keeps its slot)
 				idx = getFreeIndex(l);
 				var c = new Canon(this, idx * Const.CANON_SPACE + Const.CANON_STARTPOS, invert, idx, old.shield);
 				old.clean();
@@ -566,12 +569,15 @@ class Game implements kado.GameInterface {
 			}
 
 			idx = getFreeIndex(l);
+			// (port fix) no free slot: no new canon (see above)
+			if (idx == null)
+				return;
 			canons2Count++;
 		} else {
 			if (canon1 >= 0) {
 				var old = l[canon1];
+				l[canon1] = null;
 				canon1 = -1;
-				// (l[canon1] = null: see above)
 				idx = getFreeIndex(l);
 				var c = new Canon(this, idx * Const.CANON_SPACE + Const.CANON_STARTPOS, invert, idx, old.shield);
 				old.clean();
@@ -580,6 +586,9 @@ class Game implements kado.GameInterface {
 			}
 
 			idx = getFreeIndex(l);
+			// (port fix) no free slot: no new canon (see above)
+			if (idx == null)
+				return;
 			canons1Count++;
 		}
 
