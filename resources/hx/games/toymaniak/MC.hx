@@ -56,6 +56,8 @@ class MC {
 	// state of the previous Flash frame (display)
 	var fresh:Bool = true;
 	var snap:Bool = false;
+	// jump(): the next display is not interpolated by the renderer either (from the state of the previous step)
+	var cut:Bool = false;
 	var px:Float = 0;
 	var py:Float = 0;
 	var pxs:Float = 100;
@@ -214,8 +216,15 @@ class MC {
 	}
 
 	// ---------------------------------------------------------------- Flash frames and display
-	// a change that is not a move (another picture placed elsewhere): shown at once, not interpolated
+	// a change that is not a move (another picture placed elsewhere): shown at once, not interpolated (neither
+	// between the Flash frames nor between the steps: another picture at another resolution would be drawn at the
+	// scale of the previous one)
 	public function jump():Void {
+		keep();
+		cut = true;
+	}
+
+	function keep():Void {
 		px = _x;
 		py = _y;
 		pxs = _xscale;
@@ -233,7 +242,7 @@ class MC {
 				continue;
 			}
 			m.fresh = false;
-			m.jump();
+			m.keep();
 			i++;
 		}
 	}
@@ -271,9 +280,16 @@ class MC {
 		s._yscale = (pys + (_yscale - pys) * f) / res;
 		var a = pa + (_alpha - pa) * f;
 		s._alpha = a < 0 ? 0 : a > 100 ? 100 : a;
-		if (snap && s._prevState != null)
+		if (wrapX > 0 && s._prevState != null) {
+			// the renderer too: from the nearest copy of the position shown at the previous step
+			var p = wrapX * posK;
+			var d = s._curState.x - s._prevState.x;
+			s._prevState.x += Math.round(d / p) * p;
+		}
+		if ((snap || cut) && s._prevState != null)
 			s._prevState.copyFrom(s._curState);
 		snap = hide;
+		cut = false;
 		s.visible = _visible && !hide;
 		s.tint = tint;
 		if (frames != null) {
