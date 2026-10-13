@@ -231,6 +231,10 @@ class Game implements kado.GameInterface {
 
 		// ATTAQUE
 		// chronoMax *= Math.pow(0.999,mt.Timer.tmod);
+		// (port fix) the next turn waits for the end of a shake (Stamp.updateBurst): the chrono too, the original
+		// reset it (nextTurn) before the shake
+		if (stamp.isShaking())
+			return;
 		chrono -= Timer.tmod;
 		if (chrono < 0) {
 			chronoMax *= 0.3;

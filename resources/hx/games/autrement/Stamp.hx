@@ -34,6 +34,8 @@ class Stamp {
 	var cols:Array<Bloc>;
 	var burstList:Array<Bloc>;
 	var optWait:Array<Array<Int>>;
+	// options of a burst with a shaker: the next turn and the stars wait for the end of the shake
+	var pendingOpts:Array<Array<Int>>;
 
 	public var root:ASprite;
 
@@ -314,19 +316,31 @@ class Stamp {
 			for (b in list)
 				b.fall();
 			//
-			Game.me.nextTurn();
 			step = Play;
 			cols = [];
 			dir = [0, 0];
 			//
-			for (a in optWait) {
-				switch (a[0]) {
-					case 0:
-						Game.me.activeStar(a[1]);
-					case 1:
-						Game.me.activeShaker();
-				}
+			// (port fix) the original played the next turn (new blocs, death check) before the options: the shaker
+			// emptied the stamp only after the blocs it would have dropped had blocked it, and the game could end.
+			// With a shaker the next turn waits for the end of the shake (updateShaker), the stars still after it
+			var flShaker = false;
+			for (a in optWait)
+				if (a[0] == 1)
+					flShaker = true;
+			if (flShaker) {
+				pendingOpts = optWait;
+				Game.me.activeShaker();
+			} else {
+				Game.me.nextTurn();
+				applyStars(optWait);
 			}
+		}
+	}
+
+	function applyStars(opts:Array<Array<Int>>) {
+		for (a in opts) {
+			if (a[0] == 0)
+				Game.me.activeStar(a[1]);
 		}
 	}
 
@@ -335,9 +349,19 @@ class Stamp {
 		step = Shaker;
 	}
 
+	public function isShaking() {
+		return step == Shaker;
+	}
+
 	function updateShaker() {
 		if (bm.list.length == 9) {
 			step = Play;
+			if (pendingOpts != null) {
+				var opts = pendingOpts;
+				pendingOpts = null;
+				Game.me.nextTurn();
+				applyStars(opts);
+			}
 			return;
 		}
 
