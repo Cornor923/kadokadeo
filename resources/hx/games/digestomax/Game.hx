@@ -611,8 +611,8 @@ class Game implements kado.GameInterface {
 		// TIMER
 		mcTimer = new TimerMC();
 		mdm.get(DP_INTER).addChild(mcTimer.clip);
-		// (fix: 24 px more to the left than the original, whose "x10" and above covered the end of the gauge)
-		mcTimer._x = Cs.mcw - (7 + 32) - 24;
+		// (fix: 20 px more to the left than the original, whose "x10" and above covered the end of the gauge)
+		mcTimer._x = Cs.mcw - (7 + 32) - 20;
 		mcTimer._y = Cs.mch - 16;
 		mcTimer._xscale *= -1;
 
