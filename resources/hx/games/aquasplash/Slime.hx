@@ -92,6 +92,8 @@ class Slime {
 
 			var mcExplode = Game.me.dm.attach("burn", Game.DP_ANIM);
 			mcExplode.removeAt = 16;
+			// the slime picture goes at once: the burn shows in the same step
+			mcExplode.showNow = true;
 			mcExplode._x = mc._x;
 			mcExplode._y = mc._y;
 			// (SCALE_SLIME[-2] of a bonus that forceReduce brought to -1: undefined, a scale Flash ignores)
@@ -177,6 +179,8 @@ class Slime {
 
 			var mcExplode = Game.me.dm.attach("explode", Game.DP_ANIM);
 			mcExplode.removeAt = 7;
+			// the slime picture goes at once: the explosion shows in the same step
+			mcExplode.showNow = true;
 			mcExplode._x = mc._x;
 			mcExplode._y = mc._y;
 		}

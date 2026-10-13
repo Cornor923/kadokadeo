@@ -48,7 +48,7 @@ class MC {
 	// frame scripts: stop() on frame stopAt, removeMovieClip() on frame removeAt (0: none)
 	public var stopAt:Int = 0;
 	public var removeAt:Int = 0;
-	// placed by a timeline (soldiers of the bases): shown from the step it appears in, see display
+	// shown from the step it appears in (pictures change at once: a clip replacing another one), see display
 	public var showNow:Bool = false;
 
 	var frames:Array<Texture>;
