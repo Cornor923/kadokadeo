@@ -42,7 +42,7 @@ private typedef KeyCap = {
 // still, and come back when it moves (a thin progress line stays). A click on the game plays / pauses (a tap shows /
 // hides the controls on a touch screen). Nothing is drawn again unless it changed.
 class ReplayHud extends Container {
-	public static var SPEEDS:Array<Float> = [0.25, 0.5, 1, 1.5, 2, 4, 8];
+	public static var SPEEDS:Array<Float> = [0.1, 0.25, 0.5, 1, 1.5, 2, 4, 8];
 
 	static inline var W = 600;
 	// bottom of the game area, above the score / contract bar
@@ -223,7 +223,13 @@ class ReplayHud extends Container {
 		lastMs = t;
 
 		// shown while paused, used or pointed at, hidden a moment after the pointer stopped
-		var want = paused || ended || menuOpen || helpOpen || dragging || seekTarget != null || t - lastActivity < HIDE_DELAY_MS
+		var want = paused
+			|| ended
+			|| menuOpen
+			|| helpOpen
+			|| dragging
+			|| seekTarget != null
+			|| t - lastActivity < HIDE_DELAY_MS
 			|| (pointerIn && pointerY >= BOTTOM - PANEL_H && pointerY < BOTTOM);
 		shown = approach(shown, want ? 1 : 0, dt / 160);
 		controls.alpha = shown;
@@ -344,7 +350,12 @@ class ReplayHud extends Container {
 			gfx.x = b.x;
 			gfx.y = ROW_Y;
 			controls.addChild(gfx);
-			buttons.push({id: b.id, x: b.x, w: b.w, gfx: gfx});
+			buttons.push({
+				id: b.id,
+				x: b.x,
+				w: b.w,
+				gfx: gfx
+			});
 		}
 		var q = text("?", 13, 0xFFFFFF);
 		q.anchor.set(0.5, 0.5);
@@ -359,7 +370,12 @@ class ReplayHud extends Container {
 	}
 
 	function drawButtons():Void {
-		var key = (ended ? "e" : paused ? "p" : "r") + (keysOn ? "k" : "") + (menuOpen ? "m" : "") + (helpOpen ? "h" : "") + hoverButton + speed;
+		var key = (ended ? "e" : paused ? "p" : "r")
+			+ (keysOn ? "k" : "")
+			+ (menuOpen ? "m" : "")
+			+ (helpOpen ? "h" : "")
+			+ hoverButton
+			+ speed;
 		if (key == drawnButtons)
 			return;
 		drawnButtons = key;
@@ -759,7 +775,14 @@ class ReplayHud extends Container {
 			label.y = y + CAP * 0.5;
 			keysPanel.addChild(label);
 		}
-		caps.push({code: code, x: x, y: y, w: w, label: label, arrow: arrow});
+		caps.push({
+			code: code,
+			x: x,
+			y: y,
+			w: w,
+			label: label,
+			arrow: arrow
+		});
 	}
 
 	function hasKeys():Bool {
@@ -867,7 +890,9 @@ class ReplayHud extends Container {
 		}
 		g.lineStyle(1.5, 0x000000, 0.9);
 		g.beginFill(down ? ORANGE : 0xFFFFFF, 0.95);
-		g.drawPolygon([x, y, x, y + 17, x + 4.5, y + 13, x + 7.5, y + 19.5, x + 10.5, y + 18, x + 7.5, y + 11.5, x + 12.5, y + 11.5]);
+		g.drawPolygon([
+			x, y, x, y + 17, x + 4.5, y + 13, x + 7.5, y + 19.5, x + 10.5, y + 18, x + 7.5, y + 11.5, x + 12.5, y + 11.5
+		]);
 		g.endFill();
 		g.lineStyle(0);
 	}
@@ -891,14 +916,8 @@ class ReplayHud extends Container {
 			case 8: "Retour";
 			case 46: "Suppr";
 			default:
-				if ((code >= 65 && code <= 90) || (code >= 48 && code <= 57))
-					String.fromCharCode(code);
-				else if (code >= 96 && code <= 105)
-					"Pavé " + (code - 96);
-				else if (code >= 112 && code <= 123)
-					"F" + (code - 111);
-				else
-					"#" + code;
+				if ((code >= 65 && code <= 90) || (code >= 48 && code <= 57)) String.fromCharCode(code); else if (code >= 96 && code <= 105) "Pavé "
+					+ (code - 96); else if (code >= 112 && code <= 123) "F" + (code - 111); else "#" + code;
 		}
 	}
 

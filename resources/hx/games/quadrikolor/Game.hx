@@ -8,29 +8,37 @@ import quadrikolor.MC.Plans;
 // Game.mt of the original (MTypes, taupebille.swf), line by line; the port's own parts are at the end
 @:expose('GameQuadriKolor')
 class Game implements kado.GameInterface {
-	// the mouse aims and clicks; on a touch screen a finger drags the aim and acts when it is lifted (see touchMode).
-	// The button gives Space: back from the choice of the power to the choice of the direction (at the bottom middle of
-	// the table: the corners are holes the finger aims at, the bar of KadoKadeo shows the score)
+	// the mouse aims and clicks; on a touch screen a finger only aims (it drags the aim, a touch during the choice of
+	// the power goes back to the choice of the direction) and the button acts: it chooses the direction, then the power
+	// (see touchMode). The button gives FIRE_KEY, at the bottom middle of the canvas, half on the bar of KadoKadeo (the
+	// corners of the table are holes; the offsets are CSS pixels of the canvas, whatever its size on the screen)
 	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
 		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
-				id: "back",
-				label: "↺",
-				leftPx: 272,
-				bottomPx: 46,
-				size: 56,
-				keyCode: KeyboardManager.SPACE,
+				id: "fire",
+				label: "▶",
+				bottomPx: 4,
+				size: 64,
+				keyCode: FIRE_KEY,
 				shape: TouchButtonShape.CIRCLE,
 			},
 		],
 	};
 
+	// the key of the touch button (recorded by the replay; only read in touch mode TOUCH_BUTTON)
+	static inline var FIRE_KEY = KeyboardManager.ENTER;
+
 	// Flash played Quadrikolor at 40 frames/s (the rate of the SWF and of the KadoKado loader) with Timer.wantedFPS = 32
 	public static inline var FLASH_FPS = 40;
 
-	// replay event: the player uses a touch screen (from that frame on, a finger acts when it is lifted)
-	static inline var EV_TOUCH = 1;
+	// replay events: the player uses a touch screen (from that frame on, touchMode). EV_TOUCH_LIFT: the replays recorded
+	// before the button (a finger acted when it was lifted); EV_TOUCH_BUTTON: the ones recorded since
+	static inline var EV_TOUCH_LIFT = 1;
+	static inline var EV_TOUCH_BUTTON = 2;
+	static inline var TOUCH_NONE = 0;
+	static inline var TOUCH_LIFT = 1;
+	static inline var TOUCH_BUTTON = 2;
 
 	public static inline var CHOOSE_WAY = 0;
 	public static inline var CHOOSE_SPEED = 1;
@@ -80,8 +88,9 @@ class Game implements kado.GameInterface {
 	var slots:Array<MC> = [];
 	// the text pictures of the fields written by the code (fieldMulti of the bar, pts / mult of a score line)
 	var multiTxt:pixi.core.sprites.Sprite;
-	// touch screen: a finger acts when it is lifted, not when it touches (it has to drag the aim first)
-	var touchMode:Bool = false;
+	// touch screen: TOUCH_LIFT, a finger acts when it is lifted, not when it touches (it has to drag the aim first);
+	// TOUCH_BUTTON, a finger only aims and the touch button acts
+	var touchMode:Int = TOUCH_NONE;
 	var touchPending:Bool = false;
 	var onPointerDown:Dynamic;
 	var onAnyPointerDown:Dynamic;
@@ -93,8 +102,9 @@ class Game implements kado.GameInterface {
 
 	public function new(mc:ASprite, ?isReplay:Bool = false) {
 		this.isReplay = isReplay;
-		var keys = new UInt16Array(1);
+		var keys = new UInt16Array(2);
 		keys[0] = KeyboardManager.SPACE;
+		keys[1] = FIRE_KEY;
 		var buttons = new UInt16Array(1);
 		buttons[0] = MouseManager.BUTTON_LEFT;
 		KadoKadeoManager.kkm.replay.init({
@@ -120,9 +130,9 @@ class Game implements kado.GameInterface {
 			canvas.addEventListener("pointerdown", onPointerDown);
 			// (on the window: with the touch controls, the fingers land on their overlay)
 			onAnyPointerDown = function(e:Dynamic) {
-				if (e.pointerType == "touch" && !touchMode && !touchPending) {
+				if (e.pointerType == "touch" && touchMode == TOUCH_NONE && !touchPending) {
 					touchPending = true;
-					KadoKadeoManager.kkm.replay.recordEvent({k: EV_TOUCH});
+					KadoKadeoManager.kkm.replay.recordEvent({k: EV_TOUCH_BUTTON});
 				}
 			};
 			js.Browser.window.addEventListener("pointerdown", onAnyPointerDown, true);
@@ -298,6 +308,21 @@ class Game implements kado.GameInterface {
 				mc._rotation = ship.mc._rotation;
 			case FICHE:
 				speed_time = -1;
+			case _:
+		}
+	}
+
+	// port: a finger put on the table (TOUCH_BUTTON) aims again during the choice of the power (like Space) and closes
+	// the sheet (like a click); the touch button does the rest
+	function onTap() {
+		if (start_time >= 0)
+			return;
+		switch (state) {
+			case CHOOSE_SPEED:
+				updateCarbu();
+				state = CHOOSE_WAY;
+			case FICHE:
+				onClick();
 			case _:
 		}
 	}
@@ -518,22 +543,35 @@ class Game implements kado.GameInterface {
 	// ---------------------------------------------------------------- KadoKadeo step: 5 Flash frames every 4 steps
 	public function update(delta:Float) {
 		for (e in KadoKadeoManager.kkm.replay.consumeEvents())
-			if (e != null && e.k == EV_TOUCH)
-				touchMode = true;
+			if (e != null && e.k == EV_TOUCH_LIFT)
+				touchMode = TOUCH_LIFT;
+			else if (e != null && e.k == EV_TOUCH_BUTTON)
+				touchMode = TOUCH_BUTTON;
 		// (live: the event recorded when the finger touched is in this frame of the replay)
 		if (touchPending) {
 			touchPending = false;
-			touchMode = true;
+			touchMode = TOUCH_BUTTON;
 		}
+		// presses: clicks (the mouse, the touch button); taps: fingers put on the table (TOUCH_BUTTON)
 		var presses = 0;
+		var taps = 0;
 		for (c in MouseManager.getFrameButtonChanges())
-			if (c.button == MouseManager.BUTTON_LEFT && c.isDown != touchMode && inGame())
-				presses++;
+			if (c.button == MouseManager.BUTTON_LEFT && inGame()) {
+				if (touchMode == TOUCH_BUTTON) {
+					if (c.isDown)
+						taps++;
+				} else if (c.isDown == (touchMode == TOUCH_NONE))
+					presses++;
+			}
+		if (touchMode == TOUCH_BUTTON)
+			for (c in KeyboardManager.getFrameKeyChanges())
+				if (c.keyCode == FIRE_KEY && c.isDown)
+					presses++;
 		frameAcc += 5;
 		var first = true;
 		while (frameAcc >= 4) {
 			frameAcc -= 4;
-			flashFrame(first ? presses : 0);
+			flashFrame(first ? presses : 0, first ? taps : 0);
 			first = false;
 		}
 		MC.displayAll(frameAcc / 4);
@@ -551,12 +589,14 @@ class Game implements kado.GameInterface {
 
 	// one Flash frame: the timelines advance, the presses on bg (bg.onPress) then Manager.main (Timer settles on tmod
 	// 32 / 40, deltaT 1 / 40), then the frame scripts the code triggered
-	function flashFrame(presses:Int) {
+	function flashFrame(presses:Int, taps:Int) {
 		Timer.tmod = 32 / FLASH_FPS;
 		Timer.deltaT = 1 / FLASH_FPS;
 		prevLinesOn = linesOn;
 		MC.frameStart();
 		Clip.deferring = true;
+		for (i in 0...taps)
+			onTap();
 		for (i in 0...presses)
 			onClick();
 		main();
@@ -610,7 +650,7 @@ class Game implements kado.GameInterface {
 			].join(" "),
 			stats: haxe.Json.stringify(stats),
 			ghash: ghash,
-			touch: touchMode,
+			touch: touchMode != TOUCH_NONE,
 			over: over,
 		};
 	}

@@ -6,7 +6,7 @@ import { HOST } from '../../harness/paths.mjs'
 import { readFileSync } from 'node:fs'
 const [data, liveOver] = readFileSync(process.argv[2], 'utf8').split('\n')
 const PORT = +(process.env.PORT || 9976)
-const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor'
+const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor'
 const result = { file: process.argv[2].split('/').pop(), live: JSON.parse(liveOver).score }
 let b
 const FP = `(() => {

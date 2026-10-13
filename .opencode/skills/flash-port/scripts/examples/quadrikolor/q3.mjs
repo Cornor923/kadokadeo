@@ -11,7 +11,7 @@ import { writeFileSync } from 'node:fs'
 let rs = +(process.argv[2] || 1)
 const speed = +(process.argv[3] || 8)
 const rnd = (n) => { rs = (rs * 1103515245 + 12345) & 0x7fffffff; return (rs >> 16) % n }
-const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor&seed=123' + (process.env.EXTRA || '')
+const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor&seed=123' + (process.env.EXTRA || '')
 const PORT = +(process.env.PORT || 9962)
 let b = await launch(PORT)
 // game pixel -> page pixel (canvas at (8, 8), drawn x2)

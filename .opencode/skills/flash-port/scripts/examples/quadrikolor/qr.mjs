@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 const [data, liveOver] = readFileSync(process.argv[2], 'utf8').split('\n')
 const b = await launch(+(process.env.PORT || 9966))
 try {
-  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor&seed=123&replay=' + encodeURIComponent(data))
+  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor&seed=123&replay=' + encodeURIComponent(data))
   await b.waitFor('!!(window.kk && kk.game && window.__state)', 60000)
   await b.eval(`kk.setReplaySpeed(${+(process.argv[3] || 8)})`)
   await b.waitFor('!!window.__over', 900000)

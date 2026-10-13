@@ -4,7 +4,7 @@ import { launch } from '../../harness/cdp.mjs'
 import { HOST, gameDir } from '../../harness/paths.mjs'
 const PORT = +(process.env.PORT || 9861)
 const b = await launch(PORT)
-await b.goto(HOST + '/game.html?game=logico&cls=GameLogico&seed=123' + (process.env.EXTRA || ''))
+await b.goto(HOST + '/game.html?game=logico&cls=GameLogicO&seed=123' + (process.env.EXTRA || ''))
 await b.waitFor('!!(window.kk && kk.game && kk.game.balls)', 60000)
 const dir = gameDir('logico', 'shots')
 const ms = +(process.argv[2] || 3000)

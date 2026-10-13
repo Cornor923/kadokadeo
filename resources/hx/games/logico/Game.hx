@@ -684,11 +684,13 @@ class Game implements kado.GameInterface {
 		select(ball);
 	}
 
-	// replay: the presses of the step, where the live game took them (the balls have their handlers in Play only)
+	// replay: the presses of the step, where the live game took them. Not in Play only: the balls keep their handlers
+	// when the timer empties the pool (emptyPool does not deactivate them, like the original), a press during the Fill
+	// (or the GameOver that follows it) selects a ball and stops the fill
 	function playSelects() {
 		for (id in replaySelects) {
 			var ball = balls[id];
-			if (step == Play && ball != null && ball.root.onPress != null)
+			if (ball != null && ball.root.onPress != null)
 				select(ball);
 		}
 		replaySelects = [];

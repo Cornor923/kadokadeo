@@ -8,7 +8,7 @@ const shot = (n) => b.screenshot(gameDir('quadrikolor', 'shots') + `/${pre}${n}.
 // game pixel -> page pixel (canvas at (8, 8), drawn x2)
 const P = (v) => 8 + v * 2
 try {
-  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor&seed=123' + (process.env.EXTRA || ''))
+  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor&seed=123' + (process.env.EXTRA || ''))
   await b.waitFor('!!(window.kk && kk.game && window.__state)', 60000)
   await b.sleep(500)
   const st = await b.eval('JSON.stringify(window.__state)')

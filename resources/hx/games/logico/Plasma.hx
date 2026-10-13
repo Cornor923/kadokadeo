@@ -49,6 +49,7 @@ class Plasma {
 	var pass:Dynamic;
 	var uniforms:Dynamic;
 	var batch = new Container();
+	var empty = new Container();
 	var sprites:Array<PixiSprite> = [];
 	var used = 0;
 	var queue:Array<PlasmaOp> = [];
@@ -170,15 +171,19 @@ class Plasma {
 		showViews();
 	}
 
+	// (blank: the four textures were cleared by clearAll, the copy would draw nothing)
 	function snapshot():Void {
+		if (blank)
+			return;
 		snapCur = 1 - snapCur;
 		copy.texture = tex[cur];
 		render(copy, snaps[snapCur], true);
 	}
 
+	// (blank: nothing to add over the screen, the full screen pictures are not drawn)
 	function showViews():Void {
-		views[snapCur].visible = !showPrev;
-		views[1 - snapCur].visible = showPrev;
+		views[snapCur].visible = !blank && !showPrev;
+		views[1 - snapCur].visible = !blank && showPrev;
 	}
 
 	function drawBalls(draws:Array<PlasmaOp>):Void {
@@ -213,7 +218,6 @@ class Plasma {
 	}
 
 	function clearAll():Void {
-		var empty = new Container();
 		render(empty, tex[0], true);
 		render(empty, tex[1], true);
 		render(empty, snaps[0], true);
@@ -229,6 +233,7 @@ class Plasma {
 		sprites = [];
 		pass.destroy();
 		copy.destroy();
+		empty.destroy();
 		for (v in views)
 			v.destroy();
 		for (t in tex.concat(snaps))

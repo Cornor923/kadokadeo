@@ -11,7 +11,7 @@ const dir = gameDir('quadrikolor', 'shots')
 const b = await launch(+(process.env.PORT || 9969))
 let k = 0
 try {
-  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor&seed=123&replay=' + encodeURIComponent(data))
+  await b.goto(HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor&seed=123&replay=' + encodeURIComponent(data))
   await b.waitFor('!!(window.kk && kk.game && window.__state)', 60000)
   while (!(await b.eval('!!window.__over'))) {
     if (await b.eval(cond)) await b.screenshot(`${dir}/${pre}${String(k++).padStart(3, '0')}.png`, { x: 8, y: 8, width: 600, height: 600 })

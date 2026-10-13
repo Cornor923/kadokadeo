@@ -1,13 +1,14 @@
-// Quadrikolor on a touch screen: a finger drags the aim (nothing happens while it is down), lifting it chooses the
-// direction, the back button (Space) returns to the aim, a tap chooses the power; a whole game is then played with
-// the finger (ghost ball shots, like q3.mjs) and its replay, watched on a desktop browser, must give the same end state.
+// Quadrikolor on a touch screen: a finger only aims (dragged then lifted, nothing is chosen), the fire button chooses
+// the direction, a finger on the table during the choice of the power aims again, the fire button chooses the power;
+// a whole game is then played like this (ghost ball shots, like q3.mjs) and its replay, watched on a desktop browser,
+// must give the same end state.
 // usage: node qtouch.mjs [bot seed]      env: PORT (default 9984; the replay uses PORT + 1), HPORT
 import { launch } from '../../harness/cdp.mjs'
 import { HOST, gameDir } from '../../harness/paths.mjs'
 import { writeFileSync } from 'node:fs'
 let rs = +(process.argv[2] || 1)
 const rnd = (n) => { rs = (rs * 1103515245 + 12345) & 0x7fffffff; return (rs >> 16) % n }
-const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadrikolor&seed=123'
+const URL0 = HOST + '/game.html?game=quadrikolor&cls=GameQuadriKolor&seed=123'
 const PORT = +(process.env.PORT || 9984)
 const out = gameDir('quadrikolor', 'check', 'touch')
 let b = await launch(PORT)
@@ -28,10 +29,10 @@ async function tap(x, y) {
   await b.sleep(60 + rnd(60))
   await touch('touchEnd', [])
 }
-async function backButton() {
-  // TOUCH_CONTROLS: size 56, leftPx 272, bottomPx 46 of the 600 x 640 canvas
-  await b.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 8 + 272 + 28, y: 8 + 640 - 46 - 28, id: 2 }] })
-  await b.sleep(120)
+async function fireButton() {
+  // TOUCH_CONTROLS: size 64, centered, bottomPx 4 of the 600 x 640 canvas
+  await b.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 8 + 300, y: 8 + 640 - 4 - 32, id: 2 }] })
+  await b.sleep(60 + rnd(60))
   await b.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
 }
 let data, liveOver
@@ -49,14 +50,17 @@ try {
   check('touch mode', await b.eval('window.__state.touch'))
   await b.screenshot(out + '/t_aim.png', { x: 8, y: 8, width: 600, height: 640 })
   await touch('touchEnd', [])
+  await b.sleep(500)
+  check('finger lifted: still aiming (state ' + await b.eval(ST) + ')', await b.eval(ST) === 0)
+  await fireButton()
   await b.waitFor(`${ST} != 0`, 3000).catch(() => {})
-  check('finger lifted: power (state ' + await b.eval(ST) + ')', await b.eval(ST) === 1)
+  check('fire button: power (state ' + await b.eval(ST) + ')', await b.eval(ST) === 1)
   const ang = await b.eval('kk.game.angle'), want = Math.atan2(ay - ship[1], ax - ship[0])
   check('direction towards the finger: ' + ang.toFixed(3) + ' / ' + want.toFixed(3), Math.abs(ang - want) < 0.02)
   await b.screenshot(out + '/t_power.png', { x: 8, y: 8, width: 600, height: 640 })
-  await backButton()
+  await tap(150, 150)
   await b.waitFor(`${ST} != 1`, 3000).catch(() => {})
-  check('back button: aiming again (state ' + await b.eval(ST) + ')', await b.eval(ST) === 0)
+  check('finger on the table: aiming again (state ' + await b.eval(ST) + ')', await b.eval(ST) === 0)
   // a whole game with the finger
   const stats = { shots: 0, backs: 1 }
   for (let t = 0; ; t++) {
@@ -76,10 +80,11 @@ try {
       const x = Math.max(1, Math.min(299, best.x)), y = Math.max(15, Math.min(299, best.y))
       await drag(sh[1] + (rnd(40) - 20), sh[2] + (rnd(40) - 20), x, y)
       await touch('touchEnd', [])
+      await fireButton()
       await b.waitFor(`${ST} != 0 || !!window.__over`, 3000).catch(() => {})
     } else if (s.state == 1) {
       if (Math.abs(s.speed - 26) < 2.5) {
-        await tap(40 + rnd(220), 40 + rnd(220))
+        await fireButton()
         stats.shots++
         await b.waitFor(`${ST} != 1 || !!window.__over`, 3000).catch(() => {})
       }

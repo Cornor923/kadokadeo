@@ -27,6 +27,8 @@ class Coin {
 		var c = new Coin(id);
 		c.mc = dm.attach("coin", d);
 		c.mc.gotoAndStop(id + 1);
+		// (it replaces this coin, killed by the code)
+		c.mc.showAtOnce();
 		return c;
 	}
 

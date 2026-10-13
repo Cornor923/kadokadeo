@@ -680,9 +680,12 @@ class Game implements kado.GameInterface {
 
 			if (c.coin != null) {
 				var mc = mdm.empty(DP_PARTS);
+				// (it replaces the coin of the case, killed below)
+				mc.showAtOnce();
 				// (cmc.filters = [new DropShadowFilter(2, -90, 0x171B24, 5, 1, 1, 0.6)]: its silhouette under it)
 				var sil = newSilhouette("coinW", mc.clip);
 				var cmc = mc.attach("coin");
+				cmc.showAtOnce();
 
 				cmc.gotoAndStop(c.coin.id + 1);
 
@@ -1568,8 +1571,8 @@ class Game implements kado.GameInterface {
 			}
 			var f = pt.mc.clip.frame;
 			var sy = pt.p._yscale / 100;
-			if (f >= 1 && f <= Data.P_SHADOW.length && Math.abs(sy) > 0.001)
-				pt.t.shadowDy = Data.P_SHADOW[f - 1] / sy;
+			if (f >= 1 && f <= Data.P_SHADOW.length)
+				pt.t.setShadow(Data.P_SHADOW[f - 1], sy);
 			i++;
 		}
 		for (l in roll) {

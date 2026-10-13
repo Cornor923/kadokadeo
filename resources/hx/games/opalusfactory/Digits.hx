@@ -10,7 +10,7 @@ import pixi.core.textures.Texture;
 // baseline), tinted, placed like Flash lays out a centred field (2 px gutter, first baseline at the ascent): no browser
 // font, the same on every computer. The filters of the field are layers of pictures under the digits (Flash draws a
 // glow under what it surrounds; every glyph's glow, then the glyphs), the drop shadow of the clip holding the field
-// (points._p) a layer moved down by `shadowDy`. A child of the picture or clip that holds the field, `k` of its pixels
+// (points._p) a layer moved down (setShadow). A child of the picture or clip that holds the field, `k` of its pixels
 // per Flash pixel. (The holes' fields use the player's device font in the SWF: the outlines embedded for the points'
 // field are the same font.)
 class Digits extends ASprite {
@@ -21,8 +21,13 @@ class Digits extends ASprite {
 	var layers:Array<Container> = [];
 	var glyphs:Array<Array<Texture>> = [];
 
-	// the drop shadow layer, moved down (Flash pixels of the clip holding the field)
-	public var shadowDy(default, set):Float = 0;
+	// the drop shadow layer, moved down by `dist` stage pixels; `sy`: the _yscale / 100 of the clip holding the field
+	// (setShadow). Both are interpolated like the clip from the state of the last step, the layer placed at each render
+	var shadowOn:Bool = false;
+	var dist:Float = 0;
+	var sy:Float = 1;
+	var pdist:Null<Float> = null;
+	var psy:Float = 1;
 
 	public function new(field:FieldDef, adv:Array<Float>, k:Float) {
 		super();
@@ -37,12 +42,34 @@ class Digits extends ASprite {
 		}
 	}
 
-	function set_shadowDy(v:Float):Float {
-		shadowDy = v;
+	public function setShadow(dist:Float, sy:Float) {
+		if (!shadowOn) {
+			pdist = dist;
+			psy = sy;
+		}
+		shadowOn = true;
+		this.dist = dist;
+		this.sy = sy;
+	}
+
+	override public function update() {
+		super.update();
+		pdist = dist;
+		psy = sy;
+	}
+
+	// (after the clip holding the field: its scale shown is already interpolated)
+	override public function updateGraphics(a:Float) {
+		super.updateGraphics(a);
+		if (!shadowOn)
+			return;
+		var s = psy + (sy - psy) * a;
+		if (Math.abs(s) <= 0.001)
+			return;
+		var v = (pdist + (dist - pdist) * a) / s;
 		for (i in 0...layers.length)
 			if (field.layers[i].shadow)
 				layers[i].y = v * k;
-		return v;
 	}
 
 	// field.text = s

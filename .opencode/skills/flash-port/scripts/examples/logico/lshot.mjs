@@ -12,7 +12,7 @@ let n = 0, x = 150, y = 150, down = false
 const ev = (type) => b.send('Input.dispatchMouseEvent', { type, x: 8 + x * 2, y: 8 + y * 2, button: type === 'mouseMoved' && !down ? 'none' : 'left', buttons: down ? 1 : 0, clickCount: 1, pointerType: 'mouse' })
 try {
   if (which === 'port') {
-    await b.goto(HOST + '/game.html?game=logico&cls=GameLogico&seed=123' + (process.env.EXTRA || ''))
+    await b.goto(HOST + '/game.html?game=logico&cls=GameLogicO&seed=123' + (process.env.EXTRA || ''))
     await b.waitFor('!!(window.kk && kk.game && kk.game.balls)', 60000)
   } else {
     await b.goto('http://127.0.0.1:' + (process.env.RPORT || 8796) + '/ref.html?swf=' + (process.env.SWF || 'ref.swf'))

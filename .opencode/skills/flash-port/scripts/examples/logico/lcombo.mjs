@@ -63,7 +63,7 @@ function moved(cols, id) {
 }
 try {
   if (which === 'port') {
-    await b.goto(HOST + '/game.html?game=logico&cls=GameLogico&seed=' + (process.env.SEED || 123) + (process.env.EXTRA || ''))
+    await b.goto(HOST + '/game.html?game=logico&cls=GameLogicO&seed=' + (process.env.SEED || 123) + (process.env.EXTRA || ''))
     await b.waitFor('!!(window.kk && kk.game && kk.game.balls)', 60000)
   } else {
     await b.goto('http://127.0.0.1:' + (process.env.RPORT || 8796) + '/ref.html?swf=ref.swf')

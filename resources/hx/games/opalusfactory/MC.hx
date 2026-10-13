@@ -62,6 +62,8 @@ class MC {
 
 	// state of the previous Flash frame (display)
 	var fresh:Bool = true;
+	// shown from the step it is attached in (showAtOnce)
+	var atOnce:Bool = false;
 	var snap:Bool = false;
 	var px:Float = 0;
 	var py:Float = 0;
@@ -164,6 +166,12 @@ class MC {
 		px = x;
 		py = y;
 		snap = true;
+	}
+
+	// a clip that takes the place of one the code just removed (the coins of a play flying to their hole, the coins
+	// falling off the roll): shown at once where it is, or nothing is shown there for a step
+	public function showAtOnce():Void {
+		atOnce = true;
 	}
 
 	public static inline function twips(v:Float):Float {
@@ -305,7 +313,7 @@ class MC {
 		var s = clip;
 		// attached during the last Flash frame: the picture shown is still before it (f = 1: the start of the game);
 		// shown from the next step, not interpolated from where it was created
-		var hide = fresh && f < 1;
+		var hide = fresh && f < 1 && !atOnce;
 		if (fresh)
 			f = 1;
 		s._x = (px + (x - px) * f) * posK;

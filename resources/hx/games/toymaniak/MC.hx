@@ -55,7 +55,6 @@ class MC {
 
 	// state of the previous Flash frame (display)
 	var fresh:Bool = true;
-	var snap:Bool = false;
 	// jump(): the next display is not interpolated by the renderer either (from the state of the previous step)
 	var cut:Bool = false;
 	var px:Float = 0;
@@ -262,9 +261,9 @@ class MC {
 
 	function display(f:Float):Void {
 		var s = spr;
-		// created during the last Flash frame: the picture shown is still before it (f = 1: the start of the game);
-		// shown from the next step, not interpolated from where it was created
-		var hide = fresh && f < 1;
+		// created during the last Flash frame: shown at once where it is, not interpolated. (Hidden until the next
+		// step, it left a step without the toy: the pictures change and the clips go at once, the toy taken left
+		// the rail and the toy put down left the hand before the toy in hand / in the slot showed)
 		if (fresh)
 			f = 1;
 		var x0 = px;
@@ -286,11 +285,10 @@ class MC {
 			var d = s._curState.x - s._prevState.x;
 			s._prevState.x += Math.round(d / p) * p;
 		}
-		if ((snap || cut) && s._prevState != null)
+		if ((fresh || cut) && s._prevState != null)
 			s._prevState.copyFrom(s._curState);
-		snap = hide;
 		cut = false;
-		s.visible = _visible && !hide;
+		s.visible = _visible;
 		s.tint = tint;
 		if (frames != null) {
 			var t = frames[_currentframe - 1];

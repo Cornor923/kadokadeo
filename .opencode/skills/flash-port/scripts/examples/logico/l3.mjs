@@ -5,7 +5,9 @@
 //        SEED (game seed, debug builds play 123), SHOTS (dir: a screenshot every 10 moves), DUMB (1 in DUMB moves is
 //        random, default 6), TOUCH=1 (taps of a finger instead of the mouse), PERF=1 (with GPU=1: shaders compiled,
 //        textures uploaded and long frames during the game), FREEZE=1 (the prototypes frozen by kac.Integrity like in
-//        a bundled live game: the names the game assigns, read in the build as resources/js/games/builds/bundle.mjs does)
+//        a bundled live game: the names the game assigns, read in the build as resources/js/games/builds/bundle.mjs does),
+//        FILL=1 (also presses at once during a Fill started by the timer: the balls keep their handlers, the press stops the
+//        fill; the replay must play these presses too)
 import { launch } from '../../harness/cdp.mjs'
 import { HOST, gameDir } from '../../harness/paths.mjs'
 import { writeFileSync, readFileSync } from 'node:fs'
@@ -13,11 +15,12 @@ import { WORK } from '../../harness/paths.mjs'
 let rs = +(process.argv[2] || 1)
 const speed = +(process.argv[3] || 8)
 const rnd = (n) => { rs = (rs * 1103515245 + 12345) & 0x7fffffff; return (rs >> 16) % n }
-const URL0 = HOST + '/game.html?game=logico&cls=GameLogico&seed=' + (process.env.SEED || '123') + (process.env.EXTRA || '')
+const URL0 = HOST + '/game.html?game=logico&cls=GameLogicO&seed=' + (process.env.SEED || '123') + (process.env.EXTRA || '')
 const PORT = +(process.env.PORT || 9862)
 const SHOTS = process.env.SHOTS
 const DUMB = +(process.env.DUMB || 6)
 const TOUCH = !!process.env.TOUCH
+const FILL = !!process.env.FILL
 let b = await launch(PORT)
 const mouse = (type, x, y, buttons = 0) => b.send('Input.dispatchMouseEvent', { type, x: 8 + x, y: 8 + y, button: type === 'mouseMoved' ? 'none' : 'left', buttons, clickCount: 1 })
 const touch = (type, x, y) => b.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: 8 + x, y: 8 + y }] })
@@ -83,8 +86,8 @@ async function moveTo(tx, ty) {
     await mouse('mouseMoved', pos[0], pos[1]); await b.sleep(12)
   }
 }
-const stats = { moves: 0, combos: 0, random: 0, waits: 0 }
-let data, liveOver, t = 0, idle = 0
+const stats = { fillMoves: 0, moves: 0, combos: 0, random: 0, waits: 0 }
+let data, liveOver, t = 0, idle = 0, waitFill = false
 // assignedNames of resources/js/games/builds/bundle.mjs (its module imports esbuild)
 function assignedNames(code) {
   const STATIC_DEFINITION = /^[\w$]+\.[\w$]+ = /, names = new Set()
@@ -111,6 +114,17 @@ try {
     const s = await b.eval(STATE)
     if (!s || s.over) break
     if (SHOTS && t % 10 === 0 && shot < 40) await b.screenshot(SHOTS + '/l' + String(shot++).padStart(2, '0') + '.png', { x: 8, y: 8, width: 600, height: 640 })
+    const fillBall = FILL && s.step === 'Fill' ? s.balls.findIndex(b => b.on) : -1
+    if (fillBall >= 0) {
+      // a press at once on a ball that kept its handlers (the fill lasts a few frames)
+      const bl = s.balls[fillBall]
+      pos = [2 * bl.x, 2 * bl.y]
+      await mouse('mouseMoved', pos[0], pos[1]); await b.sleep(10)
+      await mouse('mousePressed', pos[0], pos[1], 1); await b.sleep(20); await mouse('mouseReleased', pos[0], pos[1])
+      stats.fillMoves++
+      waitFill = false
+      continue
+    }
     if (s.step !== 'Play' || !s.balls.length || !s.balls[0].on) {
       if (++idle > 3000) { console.log('STUCK', s.step); break }
       // wandering while the balls move (no handlers: no glow)
@@ -120,6 +134,12 @@ try {
       continue
     }
     idle = 0
+    // FILL: one move in 3, the bot waits in Play until the timer empties the pool
+    if (FILL && s.step === 'Play' && (waitFill || rnd(3) === 0)) {
+      waitFill = true
+      await b.sleep(30)
+      continue
+    }
     let c = rnd(DUMB) === 0 ? null : choose(s.balls)
     if (!c) { c = { i: rnd(s.balls.length), big: 0 }; stats.random++ }
     if (c.big) stats.combos++
