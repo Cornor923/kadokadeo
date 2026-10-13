@@ -280,6 +280,9 @@ class DisplayObject {
 	var prev:Array<Float> = null;
 	var seenFrame:Int = -1;
 	var bornFrame:Int = -1;
+	// hidden (visible false) at the last snapshot, and the parent then
+	var hiddenSnap:Bool = false;
+	var parentSnap:Sprite = null;
 	// removed during the last Flash frame: still shown, at its last state, until the next one
 	public var ghostOf:Sprite = null;
 
@@ -307,8 +310,14 @@ class DisplayObject {
 				skew += Math.PI * 2;
 		}
 		cur = [mtx / 20, mty / 20, sx, sy, rot, alpha8, skew];
-		// (an object added again later starts from where it is now)
-		prev = fresh || old == null ? cur : old;
+		// (an object added again later, shown again or moved to another parent starts from where it is now: the war
+		// zone, moved to the tank while hidden, slid across the screen from the last zone; a dead XBall, moved from
+		// the turret to fxLayer, went from its place in the turret's space)
+		var wasHidden = hiddenSnap;
+		hiddenSnap = !visible;
+		var moved = parentSnap != parent;
+		parentSnap = parent;
+		prev = fresh || old == null || wasHidden || moved ? cur : old;
 	}
 
 	// the colour of a picture (Leaf / TextField): multipliers m and offsets a of its parents' colour transforms
@@ -719,9 +728,15 @@ class Sprite extends DisplayObject {
 	function rebuildViews(mode:Int) {
 		var v = view(mode);
 		var list:Array<DisplayObject> = children.copy();
-		if (ghosts != null)
-			for (k in 0...ghosts.length)
+		if (ghosts != null) {
+			// (in the reverse order of the removals: each index was taken once the children removed before were gone;
+			// in the order of the removals, the burger's three pictures removed at index 0 came back upside down)
+			var k = ghosts.length - 1;
+			while (k >= 0) {
 				list.insert(Std.int(Math.min(ghostIdx[k], list.length)), ghosts[k]);
+				k--;
+			}
+		}
 		// (the sprite's own pictures first: its graphics)
 		var wanted:Array<pixi.core.display.DisplayObject> = ownViews != null ? ownViews.copy() : [];
 		var group:ASprite = null;

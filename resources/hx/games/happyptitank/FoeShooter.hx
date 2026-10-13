@@ -29,7 +29,11 @@ class FoeShooter extends Foe {
 			angle = Geom.fixRadianAngle(angle + 0.01);
 		}
 		Geom.moveAngle(this, angle, speed * Timer.tmod);
-		if (Game.instance.warZone.isOutOfZone(this))
+		if (Game.instance.warZone.isOutOfZone(this)) {
 			angle = Geom.fixRadianAngle(angle + Math.PI);
+			// (port fix) the original only turned back once out: the leader, then the burgers on its trail, went up
+			// to a step (6 px) past the border, over the tape. Brought back to the border like the tank (Tank.update)
+			Game.instance.warZone.recall(this);
+		}
 	}
 }

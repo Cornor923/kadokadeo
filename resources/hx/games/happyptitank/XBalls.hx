@@ -64,6 +64,10 @@ class XBalls extends Enemy {
 					Game.instance.fxLayer.addChild(b);
 					b.x = x + origin.x;
 					b.y = y + origin.y;
+					// (port fix) the original kept the ball's rotation in the XBalls (0, 90, 180 or 270): out of the
+					// turning XBalls, the dead ball flashed white turned away from where it was, detached from the
+					// turret. Turned like it was shown (the picture only: nothing reads it)
+					b.rotation = rotation + b.rotation;
 					var f = new EnemyDeathAnim(b);
 					if (balls.length == 0)
 						life = 0;
