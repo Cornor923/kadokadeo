@@ -22,14 +22,9 @@ return [
     // the queue of the suspicious runs of the admin (App\Services\SuspicionService): nothing is sanctioned, an admin decides
     'suspicion' => [
         'enabled' => (bool) env('KADO_SUSPICION', true),
-        // a score more than history_factor times the median of the last history_runs runs of the player on the game (at
-        // least history_min_runs of them), and in the best quarter of the game
-        'history_runs' => 20,
-        'history_min_runs' => 5,
-        'history_factor' => 3.0,
-        // a new best score of the player in the best (1 - game_percentile) of the runs of the game (once it has
-        // game_min_runs finished runs)
-        'game_percentile' => 0.995,
+        // a score above the record of the game (all the periods), once it has game_min_runs finished runs. A high score
+        // alone is not looked at: too many legit runs in the queue
+        'world_record' => (bool) env('KADO_SUSPICION_WORLD_RECORD', true),
         'game_min_runs' => 200,
         // the frames of the replay (32 by second) can't be more than the time of the run on the server
         'wall_clock_tolerance' => 0.02,

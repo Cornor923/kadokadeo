@@ -44,29 +44,32 @@ class SuspicionServiceTest extends TestCase
         $this->assertSame([], $this->evaluate($late));
     }
 
-    public function test_a_score_far_above_the_runs_of_the_player_is_flagged(): void
+    public function test_only_a_new_record_of_the_game_is_flagged(): void
     {
-        $user = User::factory()->create();
-        $game = Game::factory()->create();
-        foreach ([100, 120, 90, 110, 100] as $score) {
-            Run::factory()->for($user)->for($game)->create(['score' => $score, 'completed_at' => now()->subHour()]);
-        }
-
-        $this->assertSame([], $this->evaluate(Run::factory()->for($user)->for($game)->create(['score' => 250])));
-        $this->assertSame(['score_above_history'], $this->evaluate(Run::factory()->for($user)->for($game)->create(['score' => 400])));
-    }
-
-    public function test_a_new_best_score_at_the_top_of_the_game_is_flagged(): void
-    {
-        config(['kado.suspicion.game_min_runs' => 100, 'kado.suspicion.game_percentile' => 0.99]);
+        config(['kado.suspicion.game_min_runs' => 100]);
         $game = Game::factory()->create();
         Run::factory()->count(100)->for($game)->sequence(fn ($s) => ['score' => $s->index * 10])->create();
         $player = User::factory()->create();
-        Run::factory()->for($player)->for($game)->create(['score' => 995]);
+        foreach ([100, 120, 90, 110, 100] as $score) {
+            Run::factory()->for($player)->for($game)->create(['score' => $score, 'completed_at' => now()->subHour()]);
+        }
 
-        // not a new best of the player
+        // far above the runs of the player, in the top of the game, but not the record (990)
+        $this->assertSame([], $this->evaluate(Run::factory()->for($player)->for($game)->create(['score' => 985])));
         $this->assertSame([], $this->evaluate(Run::factory()->for($player)->for($game)->create(['score' => 990])));
-        $this->assertSame(['score_top_percentile'], $this->evaluate(Run::factory()->for($player)->for($game)->create(['score' => 2000])));
+        $record = Run::factory()->for($player)->for($game)->create(['score' => 2000]);
+        $this->assertSame(['world_record'], $this->evaluate($record));
+        $flag = RunFlag::where('run_id', $record->id)->first();
+        $this->assertSame('Ancien record : 990', $flag->rule->describe($flag->details));
+    }
+
+    public function test_the_records_of_a_game_with_few_runs_are_not_flagged(): void
+    {
+        config(['kado.suspicion.game_min_runs' => 100]);
+        $game = Game::factory()->create();
+        Run::factory()->count(10)->for($game)->create(['score' => 10]);
+
+        $this->assertSame([], $this->evaluate(Run::factory()->for($game)->create(['score' => 2000])));
     }
 
     public function test_a_flag_evaluated_again_keeps_its_review(): void

@@ -8,9 +8,11 @@ use Illuminate\Support\Number;
 // why a run is in the queue of the suspicious runs (App\Services\SuspicionService)
 enum RunFlagRule: string implements HasLabel
 {
-    // a score far above the other runs of the player on this game
+    // a score above the record of the game
+    case WORLD_RECORD = 'world_record';
+    // (no longer evaluated, 2026-10: kept for the flags already in the queue) a score far above the other runs of the
+    // player on this game / a new best score of the player among the best scores of the game
     case SCORE_ABOVE_HISTORY = 'score_above_history';
-    // a new best score of the player among the best scores of the game
     case SCORE_TOP_PERCENTILE = 'score_top_percentile';
     // more frames in the replay than the time between the beginning and the end of the run: a clock sped up
     case FASTER_THAN_REAL_TIME = 'faster_than_real_time';
@@ -24,6 +26,7 @@ enum RunFlagRule: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
+            self::WORLD_RECORD => 'Record du jeu battu',
             self::SCORE_ABOVE_HISTORY => 'Score très au-dessus de ses parties',
             self::SCORE_TOP_PERCENTILE => 'Record dans le haut du classement',
             self::FASTER_THAN_REAL_TIME => 'Partie plus longue que le temps réel',
@@ -40,6 +43,7 @@ enum RunFlagRule: string implements HasLabel
         $n = fn ($v) => Number::format((float) ($v ?? 0), maxPrecision: 1, locale: 'fr');
 
         return match ($this) {
+            self::WORLD_RECORD => sprintf('Ancien record : %s', $n($details['previous_record'] ?? null)),
             self::SCORE_ABOVE_HISTORY => sprintf('Médiane de ses %s dernières parties : %s', $details['runs'] ?? '?', $n($details['median'] ?? null)),
             self::SCORE_TOP_PERCENTILE => sprintf('Seuil du top %s %% : %s (meilleur score précédent : %s)', $n((1 - ($details['percentile'] ?? 1)) * 100), $n($details['threshold'] ?? null), $n($details['previous_best'] ?? null)),
             self::FASTER_THAN_REAL_TIME, self::SLOW_MOTION => sprintf('Durée du replay : %s s, temps réel : %s s', $n($details['game_seconds'] ?? null), $n($details['real_seconds'] ?? null)),

@@ -27,7 +27,7 @@ class SuspicionService
 
         $this->checkClientDetections($run);
         $this->checkRealTime($run);
-        $this->checkScore($run);
+        $this->checkWorldRecord($run);
     }
 
     // the result of the analyzer of the game (App\Jobs\VerifyRunReplay)
@@ -76,70 +76,31 @@ class SuspicionService
         }
     }
 
-    private function checkScore(Run $run): void
+    // a high score alone is legit most of the time: only a new record of the game is looked at
+    private function checkWorldRecord(Run $run): void
     {
-        $history = Run::query()
-            ->where('user_id', $run->user_id)
+        if (!config('kado.suspicion.world_record') || !$this->hasEnoughRuns($run->game_id)) {
+            return;
+        }
+        $record = Run::query()
             ->where('game_id', $run->game_id)
             ->whereKeyNot($run->getKey())
             ->whereNotNull('completed_at')
             ->where('is_cheat', false)
-            ->latest('completed_at')
-            ->limit((int) config('kado.suspicion.history_runs'))
-            ->pluck('score')
-            ->all();
-        $gameThreshold = $this->gameScoreThreshold($run->game_id, 0.75);
-
-        $aboveHistory = false;
-        if (count($history) >= config('kado.suspicion.history_min_runs')) {
-            $median = $this->median($history);
-            $aboveHistory = $run->score > config('kado.suspicion.history_factor') * max($median, 1)
-                && ($gameThreshold === null || $run->score >= $gameThreshold);
-            if ($aboveHistory) {
-                $this->flag($run, RunFlagRule::SCORE_ABOVE_HISTORY, 2, ['median' => $median, 'runs' => count($history), 'score' => $run->score]);
-            }
-        }
-
-        // a new best score of the player among the very best of the game (not each run of the best players)
-        $percentile = (float) config('kado.suspicion.game_percentile');
-        $topThreshold = $this->gameScoreThreshold($run->game_id, $percentile);
-        $previousBest = (int) Run::query()
-            ->where('user_id', $run->user_id)
-            ->where('game_id', $run->game_id)
-            ->whereKeyNot($run->getKey())
-            ->where('is_cheat', false)
             ->max('score');
-        if ($topThreshold !== null && $run->score >= $topThreshold && $run->score > $previousBest) {
-            $this->flag($run, RunFlagRule::SCORE_TOP_PERCENTILE, $aboveHistory ? 3 : 1, [
-                'percentile' => $percentile,
-                'threshold' => $topThreshold,
-                'previous_best' => $previousBest,
-                'score' => $run->score,
-            ]);
+        if ($record !== null && $run->score > $record) {
+            $this->flag($run, RunFlagRule::WORLD_RECORD, 2, ['previous_record' => (int) $record, 'score' => $run->score]);
         }
     }
 
-    // the score at a percentile of the finished runs of a game (null: not enough runs), kept an hour
-    private function gameScoreThreshold(int $gameId, float $percentile): ?int
+    // the game has game_min_runs finished runs (its first records mean nothing), kept an hour
+    private function hasEnoughRuns(int $gameId): bool
     {
-        return Cache::remember("suspicion:game-threshold:{$gameId}:{$percentile}", 3600, function () use ($gameId, $percentile) {
-            $runs = Run::query()->where('game_id', $gameId)->whereNotNull('completed_at')->where('is_cheat', false);
-            $count = (clone $runs)->count();
-            if ($count < config('kado.suspicion.game_min_runs')) {
-                return null;
-            }
-
-            return (int) $runs->orderByDesc('score')->skip((int) floor($count * (1 - $percentile)))->value('score');
-        });
-    }
-
-    private function median(array $values): float
-    {
-        sort($values);
-        $count = count($values);
-        $middle = intdiv($count, 2);
-
-        return $count % 2 ? (float) $values[$middle] : ($values[$middle - 1] + $values[$middle]) / 2;
+        return Cache::remember("suspicion:game-enough-runs:{$gameId}", 3600, fn () => Run::query()
+            ->where('game_id', $gameId)
+            ->whereNotNull('completed_at')
+            ->where('is_cheat', false)
+            ->count() >= config('kado.suspicion.game_min_runs'));
     }
 
     // one flag by run and rule: evaluated again, it is updated (its review is kept)

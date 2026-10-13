@@ -79,7 +79,7 @@ export function create({ kk, config = {} }) {
       }
       const reasons = []
       if (stats.decisions >= minDecisions && metrics.optimalRate >= optimalRateLimit) {
-        reasons.push(`best move ${Math.round(metrics.optimalRate * 100)} % of the time (${stats.decisions} moves, limit ${Math.round(optimalRateLimit * 100)} %)`)
+        reasons.push(`meilleur coup ${Math.round(metrics.optimalRate * 100)} % du temps (${stats.decisions} coups, limite ${Math.round(optimalRateLimit * 100)} %)`)
       }
       return { metrics, suspicious: reasons.length > 0, reasons }
     },

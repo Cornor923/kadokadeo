@@ -41,6 +41,7 @@ Here are the configuration variables specific to the project (the standard Larav
 | `KADO_REQUIRE_INPUT_PHASES` | Same, for the time of the inputs in their frame (replay v4)                         | `false`                           |
 | `KADO_ANTICHEAT_SOFT_BITS`  | Bits of the client anti-cheat mask (`App\Enums\AntiCheatBit`) that only send the run to the suspicious runs queue instead of marking it as cheated (`0`: every bit marks it as cheated) | `0x3F0` |
 | `KADO_SUSPICION`            | Evaluation of every finished run for the admin queue « Runs suspectes » (`App\Services\SuspicionService`, nothing is sanctioned automatically) | `true` |
+| `KADO_SUSPICION_WORLD_RECORD` | A run above the record of the game goes to that queue (a high score alone does not) | `true` |
 
 ### Replay verifier
 

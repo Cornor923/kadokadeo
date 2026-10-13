@@ -26,5 +26,6 @@ Rules:
   (nor `Seed`): the replay must play exactly as without the analyzer. Copy the arrays of the game before working on them.
 - An error (thrown by `create`, `beforeFrame` or `finish`) ends the analysis (`{ analyzer, error }`), never the
   verification. A version of the game whose fields differ (archived builds): throw `unsupported build`.
+- `reasons` are in French: the admin shows them as they are.
 - The thresholds come from the config (`config/kado.php`, `replay_analysis.games`), calibrated with
   `php artisan kado:replays:analyze <game>` before `KADO_REPLAY_ANALYSIS_FLAG` is turned on.
