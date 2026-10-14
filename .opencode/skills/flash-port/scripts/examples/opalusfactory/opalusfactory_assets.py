@@ -155,6 +155,14 @@ base = None
 for ys in RIM_SCALES:
     im, rg = E.render([cmds_of(76, 1, M=dict(R.IDENT, d=ys))], K, margin=3)
     a = np.asarray(im[0], dtype=np.float32)[..., 3] / 255.0
+    # the seams between the fills of the hexagon (anti-aliased one by one here, not in Flash: alpha 0.92..0.96 along
+    # the inner hexagon) would glow at strength 10: the hexagon is convex, each row is opaque between its first and
+    # last opaque pixels
+    a = a.copy()
+    for y in range(a.shape[0]):
+        xs = np.nonzero(a[y] >= 0.99)[0]
+        if len(xs):
+            a[y, xs[0]:xs[-1] + 1] = 1.0
     b = R.box_blur(a, 2 * K, 2 * K, 1)
     g = np.clip((1 - b) * 10.0, 0, 1) * a
     rgba = np.zeros(a.shape + (4,), dtype=np.uint8)
