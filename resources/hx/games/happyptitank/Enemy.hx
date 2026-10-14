@@ -17,6 +17,8 @@ class Enemy extends MovieClip {
 	public var value:KKConst;
 	public var speed:Float;
 	public var spawner:Spawner;
+	// (port) the last HurtAnim of the enemy
+	public var hurt:HurtAnim = null;
 
 	private function new(?sym:Int = -1) {
 		super(sym);

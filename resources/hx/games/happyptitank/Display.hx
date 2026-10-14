@@ -283,6 +283,9 @@ class DisplayObject {
 	// hidden (visible false) at the last snapshot, and the parent then
 	var hiddenSnap:Bool = false;
 	var parentSnap:Sprite = null;
+	// set by the code: the object jumped during this Flash frame, shown at its new state without a slide (an arrow of
+	// Game.incomingArrows now pointing at another foe)
+	public var jumped:Bool = false;
 	// removed during the last Flash frame: still shown, at its last state, until the next one
 	public var ghostOf:Sprite = null;
 
@@ -317,7 +320,8 @@ class DisplayObject {
 		hiddenSnap = !visible;
 		var moved = parentSnap != parent;
 		parentSnap = parent;
-		prev = fresh || old == null || wasHidden || moved ? cur : old;
+		prev = fresh || old == null || wasHidden || moved || jumped ? cur : old;
+		jumped = false;
 	}
 
 	// the colour of a picture (Leaf / TextField): multipliers m and offsets a of its parents' colour transforms

@@ -150,6 +150,7 @@ class Game extends Sprite implements kado.GameInterface {
 	public var fxLayer:Sprite; // play explosions and stuff there
 	public var anims:List<Anim>; // things to update each frame
 	public var incomingArrows:Array<IncomingArrow>; // small ui arrows pointing at enemies
+	var arrowFoes:Array<Enemy>; // (port) the foe each arrow pointed at during the last frame
 	public var optTimes:KKConst; // number of time options used during this game
 
 	var quake:{timer:Float, power:Float}; // quake fx time and intensity
@@ -332,6 +333,7 @@ class Game extends Sprite implements kado.GameInterface {
 		lastShot = 0;
 		shotRate = 333;
 		incomingArrows = [];
+		arrowFoes = [null, null, null];
 		shots = new List();
 		options = new List();
 		foes = new List();
@@ -590,6 +592,13 @@ class Game extends Sprite implements kado.GameInterface {
 				arrow.y = tank.y;
 				arrow.rotation = Geom.rad2deg(angle) - 180;
 				Geom.moveAngle(arrow, angle, 100);
+				// (port) the arrows are given to the far foes in the order of the list: when a foe comes near (or dies),
+				// the arrows after it go to other foes, and back when it goes away. Flash showed the jump; the
+				// interpolated display slid the arrow around the tank from one foe to the other, and back
+				if (arrowFoes[done] != foe) {
+					arrowFoes[done] = foe;
+					arrow.jumped = true;
+				}
 				done++;
 				if (done == incomingArrows.length)
 					break;

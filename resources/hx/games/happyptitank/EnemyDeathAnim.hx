@@ -37,6 +37,9 @@ class EnemyDeathAnim extends Sprite implements Anim {
 		this.x = enemy.x;
 		this.y = enemy.y;
 		this.hurt = new HurtAnim(enemy, 200);
+		// (port fix) no flash puts the colours back: the enemy stays white until it bursts (removed during that Flash
+		// frame, it is still shown until the next one, Display.hx: with its colours back, it blinked)
+		enemy.hurt = null;
 		this.time = 0.0;
 		Game.instance.fxLayer.addChild(this);
 		Game.instance.addAnimation(this);
