@@ -24,12 +24,14 @@ class RunVerificationTable
                 ->label('Triche')
                 ->boolean()
                 ->trueColor('danger')
-                ->falseIcon(null),
+                ->falseIcon(null)
+                ->toggleable(),
             TextColumn::make('verification')
                 ->label('Vérification')
                 ->badge()
                 ->placeholder('—')
-                ->tooltip(fn (Run $record) => $record->verified_at ? 'Le '.$record->verified_at->format('d/m/Y H:i') : null),
+                ->tooltip(fn (Run $record) => $record->verified_at ? 'Le '.$record->verified_at->format('d/m/Y H:i') : null)
+                ->toggleable(),
         ];
     }
 

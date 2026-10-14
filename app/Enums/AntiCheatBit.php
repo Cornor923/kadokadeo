@@ -4,7 +4,7 @@ namespace App\Enums;
 
 // what the game detected during a run (the `ac` mask it sends, resources/hx/lib/common_haxe_avm1/kac/AntiCheat.hx):
 // the hard bits mark the run as cheated, the soft ones (config kado.anticheat.soft_bits) put it in the queue of the
-// suspicious runs (App\Services\SuspicionService)
+// suspicious runs (App\Services\SuspicionService), the ignored ones (kado.anticheat.ignored_bits) are only kept on the run
 enum AntiCheatBit: int
 {
     case PROTECTED_INT_CORRUPTED = 0x1;
@@ -37,33 +37,49 @@ enum AntiCheatBit: int
         return (int) config('kado.anticheat.soft_bits');
     }
 
+    public static function ignoredMask(): int
+    {
+        return (int) config('kado.anticheat.ignored_bits');
+    }
+
     public function isSoft(): bool
     {
-        return ($this->value & self::softMask()) !== 0;
+        return self::softBits($this->value) !== 0;
+    }
+
+    public function isIgnored(): bool
+    {
+        return ($this->value & self::ignoredMask()) !== 0;
     }
 
     // the bits of a mask that mark a run as cheated
     public static function hardBits(int $mask): int
     {
-        return $mask & ~self::softMask();
+        return $mask & ~self::softMask() & ~self::ignoredMask();
     }
 
     public static function softBits(int $mask): int
     {
-        return $mask & self::softMask();
+        return $mask & self::softMask() & ~self::ignoredMask();
     }
 
     // the detections that mark a run as cheated / that put it in the queue of the suspicious runs (kado.anticheat.soft_bits)
     /** @return list<self> */
     public static function hardCases(): array
     {
-        return array_values(array_filter(self::cases(), fn (self $bit) => !$bit->isSoft()));
+        return array_values(array_filter(self::cases(), fn (self $bit) => !$bit->isSoft() && !$bit->isIgnored()));
     }
 
     /** @return list<self> */
     public static function softCases(): array
     {
         return array_values(array_filter(self::cases(), fn (self $bit) => $bit->isSoft()));
+    }
+
+    /** @return list<self> */
+    public static function ignoredCases(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $bit) => $bit->isIgnored()));
     }
 
     /** @return list<self> */

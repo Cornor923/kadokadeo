@@ -102,7 +102,16 @@ class RunEndTest extends TestCase
         $this->assertSame(0x10, $run->anticheat_flags);
         $this->assertSame(421, $run->replay_frames);
 
-        // no soft bit: any bit marks the run
+        // the functions of the browser replaced, the inputs made by a script: ignored, but kept on the run
+        $run = $this->finishWithReplay($pending(), ReplayHeaderTest::BINARY_V4, 0x40 | 0x80);
+        $this->assertFalse($run->is_cheat);
+        $this->assertSame(0xC0, $run->anticheat_flags);
+
+        // ignored bits win over a strict setting
+        config(['kado.anticheat.soft_bits' => 0]);
+        $this->assertFalse($this->finishWithReplay($pending(), ReplayHeaderTest::BINARY_V4, 0x80)->is_cheat);
+
+        // no soft bit: any other bit marks the run
         config(['kado.anticheat.soft_bits' => 0]);
         $this->assertTrue($this->finishWithReplay($pending(), ReplayHeaderTest::BINARY_V4, 0x10)->is_cheat);
     }

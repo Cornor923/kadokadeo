@@ -25,12 +25,25 @@ class SuspicionServiceTest extends TestCase
 
     public function test_the_soft_detections_of_the_game_are_flagged(): void
     {
-        $run = Run::factory()->create(['anticheat_flags' => 0x10 | 0x80]);
+        $run = Run::factory()->create(['anticheat_flags' => 0x10 | 0x20]);
 
         $this->assertSame(['client_detection'], $this->evaluate($run));
         $flag = RunFlag::first();
         $this->assertSame(RunFlagStatus::OPEN, $flag->status);
-        $this->assertSame('Affichage ajouté par un script, Actions générées par un script', $flag->rule->describe($flag->details));
+        $this->assertSame('Affichage ajouté par un script, PIXI modifié', $flag->rule->describe($flag->details));
+    }
+
+    public function test_the_ignored_detections_of_the_game_are_not_flagged(): void
+    {
+        // the functions of the browser replaced, the inputs made by a script: most of the mobile browsers
+        $this->assertSame([], $this->evaluate(Run::factory()->create(['anticheat_flags' => 0x40 | 0x80])));
+
+        // with a soft bit, only the soft bit goes to the queue
+        $this->evaluate(Run::factory()->create(['anticheat_flags' => 0x10 | 0x80]));
+        $this->assertSame(['bits' => 0x10], RunFlag::first()->details);
+
+        config(['kado.anticheat.ignored_bits' => 0]);
+        $this->assertSame(['client_detection'], $this->evaluate(Run::factory()->create(['anticheat_flags' => 0x80])));
     }
 
     public function test_a_replay_longer_than_the_real_time_of_the_run_is_flagged(): void

@@ -1,4 +1,4 @@
-{{-- what the detections of the game do to a run (KADO_ANTICHEAT_SOFT_BITS), in the modal of the queue of the suspicious runs --}}
+{{-- what the detections of the game do to a run (KADO_ANTICHEAT_SOFT_BITS, KADO_ANTICHEAT_IGNORED_BITS), in the modal of the queue of the suspicious runs --}}
 <div style="display: grid; gap: 1rem">
     <div>
         <p style="font-weight: 600">Marquées triche automatiquement</p>
@@ -16,6 +16,17 @@
         <p style="font-size: .875rem; opacity: .75">KADO_ANTICHEAT_SOFT_BITS = 0x{{ strtoupper(dechex($mask)) }} : des extensions du navigateur peuvent aussi les déclencher.</p>
         <ul style="list-style: disc; padding-inline-start: 1.25rem">
             @forelse ($soft as $bit)
+                <li>{{ $bit->getLabel() }} <span style="opacity: .6">(0x{{ strtoupper(dechex($bit->value)) }})</span></li>
+            @empty
+                <li>Aucune</li>
+            @endforelse
+        </ul>
+    </div>
+    <div>
+        <p style="font-weight: 600">Ignorées</p>
+        <p style="font-size: .875rem; opacity: .75">KADO_ANTICHEAT_IGNORED_BITS = 0x{{ strtoupper(dechex($ignoredMask)) }} : trop fréquentes sur les navigateurs mobiles. Elles restent visibles dans le détail de la partie.</p>
+        <ul style="list-style: disc; padding-inline-start: 1.25rem">
+            @forelse ($ignored as $bit)
                 <li>{{ $bit->getLabel() }} <span style="opacity: .6">(0x{{ strtoupper(dechex($bit->value)) }})</span></li>
             @empty
                 <li>Aucune</li>

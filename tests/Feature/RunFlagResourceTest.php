@@ -53,9 +53,9 @@ class RunFlagResourceTest extends TestCase
         Livewire::test(ListRunFlags::class)
             ->assertActionExists('detectionRules')
             ->mountAction('detectionRules')
-            ->assertMountedActionModalSee(['Marquées triche automatiquement', 'Code du jeu remplacé', 'KADO_ANTICHEAT_SOFT_BITS = 0x3F0']);
+            ->assertMountedActionModalSee(['Marquées triche automatiquement', 'Code du jeu remplacé', 'KADO_ANTICHEAT_SOFT_BITS = 0x3F0', 'Ignorées', 'KADO_ANTICHEAT_IGNORED_BITS = 0xC0']);
         $this->assertStringContainsString(
-            'Envoyées ici pour examen (KADO_ANTICHEAT_SOFT_BITS = 0x3F0) : Affichage ajouté par un script',
+            'Envoyées ici pour examen (KADO_ANTICHEAT_SOFT_BITS = 0x3F0) : Affichage ajouté par un script, PIXI modifié, Faux événements, Vérification impossible. Ignorées (KADO_ANTICHEAT_IGNORED_BITS = 0xC0) : Fonctions du navigateur modifiées, Actions générées par un script.',
             \App\Filament\AntiCheatNotices::detectionRules(),
         );
     }

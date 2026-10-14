@@ -17,6 +17,10 @@ return [
         // it in the queue of the suspicious runs (extensions can do it too: other display objects, functions of the
         // browser...). Default: 0x10 to 0x200. 0: any bit marks the run as cheated.
         'soft_bits' => (int) env('KADO_ANTICHEAT_SOFT_BITS', 0x3F0),
+        // the bits that neither mark the run as cheated nor put it in the queue (they win over soft_bits): kept on the run
+        // only. Default: 0xC0, the functions of the browser replaced and the inputs made by a script, raised by most of the
+        // mobile browsers. 0: none.
+        'ignored_bits' => (int) env('KADO_ANTICHEAT_IGNORED_BITS', 0xC0),
     ],
 
     // the queue of the suspicious runs of the admin (App\Services\SuspicionService): nothing is sanctioned, an admin decides

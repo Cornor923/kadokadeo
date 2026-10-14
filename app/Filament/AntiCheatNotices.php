@@ -22,16 +22,19 @@ class AntiCheatNotices
         return $notices;
     }
 
-    // which detections of the game mark a run as cheated and which ones put it in the queue (KADO_ANTICHEAT_SOFT_BITS)
+    // which detections of the game mark a run as cheated, which ones put it in the queue (KADO_ANTICHEAT_SOFT_BITS) and
+    // which ones are ignored (KADO_ANTICHEAT_IGNORED_BITS)
     public static function detectionRules(): string
     {
         $labels = fn (array $bits) => $bits ? implode(', ', array_map(fn (AntiCheatBit $bit) => $bit->getLabel(), $bits)) : 'aucune';
 
         return sprintf(
-            'Marquées triche automatiquement : %s. Envoyées ici pour examen (KADO_ANTICHEAT_SOFT_BITS = 0x%X) : %s. Les autres règles (score, temps réel, analyse des coups) ne sanctionnent jamais.',
+            'Marquées triche automatiquement : %s. Envoyées ici pour examen (KADO_ANTICHEAT_SOFT_BITS = 0x%X) : %s. Ignorées (KADO_ANTICHEAT_IGNORED_BITS = 0x%X) : %s. Les autres règles (score, temps réel, analyse des coups) ne sanctionnent jamais.',
             $labels(AntiCheatBit::hardCases()),
             AntiCheatBit::softMask(),
             $labels(AntiCheatBit::softCases()),
+            AntiCheatBit::ignoredMask(),
+            $labels(AntiCheatBit::ignoredCases()),
         );
     }
 }
