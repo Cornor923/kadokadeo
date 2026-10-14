@@ -208,7 +208,7 @@ class Game implements kado.GameInterface {
 				if (currentHover != null)
 					rOutTube(currentHover[0], currentHover[1]);
 				rOverTube(hover.gridx, hover.gridy);
-				KadoKadeoManager.kkm.replay.recordEvent({k: 0, x: hover.gridx, y: hover.gridy});
+				KadoKadeoManager.kkm.replay.recordEvent({k: 0, x: hover.gridx, y: hover.gridy}, KadoKadeoManager.kkm.replay.getCurrentFrame());
 				currentHover = [hover.gridx, hover.gridy];
 			}
 
@@ -222,7 +222,7 @@ class Game implements kado.GameInterface {
 				if (MouseManager.isButtonJustReleased(MouseManager.BUTTON_LEFT)) {
 					bg.replay.image.gotoAndStop(1);
 					resetLevel();
-					KadoKadeoManager.kkm.replay.recordEvent({k: 3});
+					KadoKadeoManager.kkm.replay.recordEvent({k: 3}, KadoKadeoManager.kkm.replay.getCurrentFrame());
 				}
 			} else {
 				bg.replay.image.gotoAndStop(1);
@@ -387,7 +387,7 @@ class Game implements kado.GameInterface {
 	}
 
 	function clickTube(x, y) {
-		KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: x, y: y});
+		KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: x, y: y}, KadoKadeoManager.kkm.replay.getCurrentFrame());
 		moveNum++;
 
 		var now = Date.now().getTime();
