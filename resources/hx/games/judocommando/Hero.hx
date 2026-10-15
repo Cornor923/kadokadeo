@@ -653,6 +653,12 @@ class Hero extends Human {
 	}
 
 	public function releaseBody(?vvx:Null<Float>, ?vvy:Null<Float>, ?dam:Null<Int>, ?fr:Null<Int>) {
+		// (a release left in the script after the body was already dropped, e.g. a chandelle whose body shield is
+		// dropped by a hit before the throw: Flash reads null.root / null.knockOut() as nothing)
+		if (hold == null) {
+			holdStyle = null;
+			return;
+		}
 		hold.root._rotation = 0;
 		if (vvx != null) {
 			hold.knockOut(vvx, vvy, dam, fr);

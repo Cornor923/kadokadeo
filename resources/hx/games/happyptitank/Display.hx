@@ -286,8 +286,16 @@ class DisplayObject {
 	// set by the code: the object jumped during this Flash frame, shown at its new state without a slide (an arrow of
 	// Game.incomingArrows now pointing at another foe)
 	public var jumped:Bool = false;
-	// removed during the last Flash frame: still shown, at its last state, until the next one
+	// removed during the last Flash frame: still shown, at its last state, until the next one (in this sprite)
 	public var ghostOf:Sprite = null;
+	// the sprite it was last removed from; reparented: its views snap to the new place on the next display (the
+	// ASprites interpolate between two steps: the option taken slid from the ground to the interface, the dead XBall
+	// from its place in the turret's space)
+	var leftParent:Sprite = null;
+	var resnap:Bool = false;
+	// shown during the Flash frame it was created in (it and its children): the tiles of the ground, made when the
+	// screen comes near them (GroundScroll.redraw), hidden one frame left an empty strip on the edge of the screen
+	public var showFresh:Bool = false;
 
 	// end of a Flash frame: keeps the state of the frame before
 	public function snapshot() {
@@ -329,6 +337,19 @@ class DisplayObject {
 
 	public inline function isFresh():Bool {
 		return bornFrame == flashFrame;
+	}
+
+	// created during the last Flash frame and not shown yet (see showFresh)
+	public function hiddenFresh():Bool {
+		if (!isFresh())
+			return false;
+		var o = this;
+		while (o != null) {
+			if (o.showFresh)
+				return false;
+			o = o.parent;
+		}
+		return true;
 	}
 
 	// the filters of the timeline (FlashFilters): set when they change
@@ -564,13 +585,21 @@ class Sprite extends DisplayObject {
 	function attached(c:DisplayObject) {
 		untyped c.parent = this;
 		dirty();
-		if (ghosts != null) {
-			var gi = ghosts.indexOf(c);
+		// (no longer a ghost, here or in the sprite it was removed from: a ghost elsewhere drew the same views, at
+		// the place of its new parent, and the two parents took the views in turn)
+		var g = c.ghostOf;
+		if (g != null) {
+			c.ghostOf = null;
+			var gi = g.ghosts != null ? g.ghosts.indexOf(c) : -1;
 			if (gi >= 0) {
-				ghosts.splice(gi, 1);
-				ghostIdx.splice(gi, 1);
+				g.ghosts.splice(gi, 1);
+				g.ghostIdx.splice(gi, 1);
+				g.dirty();
 			}
 		}
+		if (c.leftParent != null && c.leftParent != this)
+			c.resnap = true;
+		c.leftParent = null;
 	}
 
 	public function removeChild(c:DisplayObject):DisplayObject {
@@ -579,6 +608,7 @@ class Sprite extends DisplayObject {
 			throw new FlashError("ArgumentError: Error #2025: The supplied DisplayObject must be a child of the caller.");
 		children.splice(i, 1);
 		untyped c.parent = null;
+		c.leftParent = this;
 		if (c.cur != null && c.seenFrame >= DisplayObject.flashFrame - 1) {
 			// shown (at its last state) until the next Flash frame
 			if (ghosts == null) {
@@ -588,6 +618,7 @@ class Sprite extends DisplayObject {
 			}
 			ghosts.push(c);
 			ghostIdx.push(i);
+			c.ghostOf = this;
 		} else
 			c.detachViews();
 		dirty();
@@ -637,9 +668,11 @@ class Sprite extends DisplayObject {
 		for (s in withGhosts) {
 			if (s.ghosts == null)
 				continue;
-			for (g in s.ghosts)
+			for (g in s.ghosts) {
+				g.ghostOf = null;
 				if (g.parent == null)
 					g.detachViews();
+			}
 			s.ghosts = null;
 			s.ghostIdx = null;
 			s.dirty();
@@ -687,11 +720,14 @@ class Sprite extends DisplayObject {
 			m = [c.cxm[0] * pm[0], c.cxm[1] * pm[1], c.cxm[2] * pm[2]];
 			a = [c.cxa[0] * pm[0] + pa[0], c.cxa[1] * pm[1] + pa[1], c.cxa[2] * pm[2] + pa[2], 0];
 		}
-		var hide = !c.visible || (c.isFresh() && !ghost);
+		var hide = !c.visible || (!ghost && c.hiddenFresh());
+		var resnap = c.resnap;
+		if (mode == 0)
+			c.resnap = false;
 		if (c.shadow && mode == 0) {
 			// the drop shadow: 1 pixel down-right of the stage (the filter is in stage pixels)
 			var sv = c.view(1);
-			var sn = snap || !sv.visible;
+			var sn = snap || resnap || !sv.visible;
 			sv.visible = !hide;
 			if (!hide) {
 				var o = shadowOffset();
@@ -704,7 +740,7 @@ class Sprite extends DisplayObject {
 			}
 		}
 		var v = c.view(mode);
-		var sn = snap || !v.visible;
+		var sn = snap || resnap || !v.visible;
 		if (c.isOverlay())
 			hide = true;
 		v.visible = !hide;

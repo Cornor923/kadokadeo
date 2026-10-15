@@ -311,6 +311,9 @@ class GroundScroll extends Sprite {
 
 		var result = new GfxSprite();
 		result.area = {x: cx - w / 2, y: cy - h / 2, w: w, h: h};
+		// (port) shown at once: a tile made when the scroll crosses a square, hidden during its first Flash frame
+		// like the other new objects (Display.hx), left an empty strip on the edge of the screen it came in by
+		result.showFresh = true;
 		for (c in crossedCircles) {
 			result.graphics.lineStyle(0, 0x000000, 0);
 			var colidingLinesMin = Lambda.filter(lines, function(l) return l.min <= c.min && l.max >= c.min);
