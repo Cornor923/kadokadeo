@@ -39,9 +39,14 @@ const palliers = computed(() => {
   if (bestScore && bestScore.user?.etwin_id !== authStore.user?.etwin_id && league.value?.level === leagueStore.paradiseLeagueId) {
     s.push({ score: bestScore.score + 1, points: null, img: '/gfx/iconFeather.gif', alt: 'Plume de Piou' })
   }
-  const leagueScore = leaguesScores.value[league.value?.level]
-  if (leagueScore && leagueScore.required_score > personalBestForPeriod.value?.score) {
-    s.push({ score: leagueScore.required_score + 1, points: null, img: `/gfx/leagues/${league.value.level + 1}s.svg`, alt: 'Ligue supérieure', className: 'w-[18px] h-auto' })
+  // keyed by league id; shown before the first run of the period too
+  const leagueScore = league.value ? leaguesScores.value[league.value.id] : null
+  // required_score null: nobody played in the league yet, only the stars count
+  if (leagueScore && (!personalBestForPeriod.value || leagueScore.required_score === null || leagueScore.required_score > personalBestForPeriod.value.score)) {
+    // the promotion also asks for a minimum star
+    const minStarScore = props.game.stars?.[league.value.promotion_min_stars] ?? 0
+    const score = Math.max((leagueScore.required_score ?? -1) + 1, minStarScore)
+    s.push({ score, points: null, img: `/gfx/leagues/${league.value.level + 1}s.svg`, alt: 'Ligue supérieure', className: 'w-[18px] h-auto' })
   }
   s.push({ score: 0, points: 0, img: '/gfx/iconContract.png', alt: 'Contrat' })
   s.sort((a, b) => b.score - a.score)

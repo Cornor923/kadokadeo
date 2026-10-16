@@ -67,6 +67,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
             'best_stars' => $stars->pluck('best_star', 'id'),
             'best_period_runs' => RunResource::collection($bestRuns),
             'current_leagues' => $currentLeagues,
+            'promotion_game_ids' => $periodId ? $leagueService->getPromotionGameIds($user, $periodId) : [],
             'max_stars' => $maxStars,
             'achievements' => config('kado.achievements.enabled')
                 ? $user->achievementProgress->map(function ($progress) {

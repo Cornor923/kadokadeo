@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DailyGame;
 use App\Models\Game;
+use App\Models\League;
 use App\Models\LeagueMembership;
 use App\Models\Run;
 use App\Models\User;
@@ -281,44 +282,46 @@ class ScoreService
                 ->selectRaw('ROW_NUMBER() OVER (PARTITION BY best_runs.league_id ORDER BY best_runs.score DESC, best_runs.play_time_seconds ASC, best_runs.completed_at ASC, best_runs.id ASC) AS league_rank')
                 ->selectRaw('COUNT(*) OVER (PARTITION BY best_runs.league_id) AS active_players_count');
 
-            $rows = DB::query()
-                ->fromSub($rankedRuns, 'ranked_runs')
-                ->join('leagues', 'leagues.id', '=', 'ranked_runs.league_id')
-                ->join('leagues as next_leagues', 'next_leagues.level', '=', DB::raw('leagues.level + 1'))
-                ->select([
-                    'ranked_runs.league_id',
-                    'ranked_runs.active_players_count',
-                    'ranked_runs.league_rank',
-                    'ranked_runs.score as required_score',
-                ])
-                ->selectRaw('CASE
-                    WHEN leagues.promotion_ratio_divisor IS NOT NULL
-                        AND leagues.promotion_max_slots IS NOT NULL
-                        THEN LEAST(
-                            CAST((ranked_runs.active_players_count + leagues.promotion_ratio_divisor - 1) / leagues.promotion_ratio_divisor AS INTEGER),
-                            leagues.promotion_max_slots,
-                            ranked_runs.active_players_count
-                        )
-                    WHEN leagues.promotion_ratio_divisor IS NOT NULL
-                        THEN LEAST(
-                            CAST((ranked_runs.active_players_count + leagues.promotion_ratio_divisor - 1) / leagues.promotion_ratio_divisor AS INTEGER),
-                            ranked_runs.active_players_count
-                        )
-                    WHEN leagues.promotion_max_slots IS NOT NULL
-                        THEN LEAST(leagues.promotion_max_slots, ranked_runs.active_players_count)
-                    ELSE 0
-                END AS promotion_slots')
-                ->get()
-                ->filter(fn ($row) => (int) $row->league_rank === (int) $row->promotion_slots)
-                ->values();
+            $leagues = League::query()->get();
+            $leaguesByLevel = $leagues->keyBy('level');
+            $leagues = $leagues->keyBy('id');
 
-            return $rows->mapWithKeys(function ($row) {
-                return [$row->league_id => [
-                    'required_score' => $row->required_score,
-                    'active_players_count' => $row->active_players_count,
-                    'promotion_slots' => $row->promotion_slots,
-                ]];
-            });
+            return DB::query()
+                ->fromSub($rankedRuns, 'ranked_runs')
+                ->select(['ranked_runs.league_id', 'ranked_runs.user_id', 'ranked_runs.score', 'ranked_runs.league_rank', 'ranked_runs.active_players_count'])
+                ->get()
+                ->groupBy('league_id')
+                ->map(function (Collection $rows, int $leagueId) use ($game, $periodId, $leagues, $leaguesByLevel) {
+                    $league = $leagues->get($leagueId);
+                    $nextLeague = $league ? $leaguesByLevel->get($league->level + 1) : null;
+                    if (!$nextLeague) {
+                        return null;
+                    }
+
+                    $activePlayersCount = (int) $rows->first()->active_players_count;
+                    $promotionSlots = $league->getPromotionSlots($activePlayersCount);
+                    if ($promotionSlots <= 0) {
+                        return null;
+                    }
+
+                    // the players promoted if the period ended now (same rules as LeagueService::promoteEligiblePlayers)
+                    $promotedRows = $rows->filter(fn ($row) => (int) $row->league_rank <= $promotionSlots);
+                    $isAloneWithEmptyNextLeague = $activePlayersCount === 1
+                        && !LeagueMembership::query()->where('game_id', $game->id)->where('period_id', $periodId)->where('league_id', $nextLeague->id)->exists();
+                    $promotedUserIds = $isAloneWithEmptyNextLeague ? [] : $promotedRows
+                        ->filter(fn ($row) => is_null($league->promotion_min_stars) || $game->getStarFromScore((int) $row->score) >= $league->promotion_min_stars)
+                        ->map(fn ($row) => (int) $row->user_id)
+                        ->values()
+                        ->all();
+
+                    return [
+                        'required_score' => (int) $promotedRows->firstWhere('league_rank', $promotionSlots)->score,
+                        'active_players_count' => $activePlayersCount,
+                        'promotion_slots' => $promotionSlots,
+                        'promoted_user_ids' => $promotedUserIds,
+                    ];
+                })
+                ->filter();
         });
     }
 }

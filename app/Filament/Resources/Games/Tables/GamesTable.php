@@ -2,14 +2,19 @@
 
 namespace App\Filament\Resources\Games\Tables;
 
+use App\Models\Game;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class GamesTable
 {
@@ -53,8 +58,26 @@ class GamesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::setAttributeBulkAction('activate', 'Activer', Heroicon::OutlinedCheckCircle, 'is_active', true, 'Jeux activés.'),
+                    self::setAttributeBulkAction('deactivate', 'Désactiver', Heroicon::OutlinedXCircle, 'is_active', false, 'Jeux désactivés.'),
+                    self::setAttributeBulkAction('markArkadeo', 'Jeu Arkadéo', Heroicon::OutlinedStar, 'is_arkadeo', true, 'Jeux marqués Arkadéo.'),
+                    self::setAttributeBulkAction('unmarkArkadeo', 'Jeu non Arkadéo', Heroicon::OutlinedMinusCircle, 'is_arkadeo', false, 'Jeux marqués non Arkadéo.'),
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    private static function setAttributeBulkAction(string $name, string $label, Heroicon $icon, string $attribute, bool $value, string $notification): BulkAction
+    {
+        return BulkAction::make($name)
+            ->label($label)
+            ->icon($icon)
+            ->requiresConfirmation()
+            ->deselectRecordsAfterCompletion()
+            ->action(function (Collection $records) use ($attribute, $value, $notification): void {
+                $records->each(fn (Game $game) => $game->update([$attribute => $value]));
+
+                Notification::make()->title($notification)->success()->send();
+            });
     }
 }

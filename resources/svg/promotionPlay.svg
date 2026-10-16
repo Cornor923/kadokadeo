@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- the bar and the play triangle of the round button of gameBox.png (same pixel coordinates), in green -->
+<svg viewBox="12 8 14 15" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="promotionPlayFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dffca5" />
+      <stop offset="0.5" stop-color="#b8ec5c" />
+      <stop offset="1" stop-color="#8ec129" />
+    </linearGradient>
+  </defs>
+  <g fill="url(#promotionPlayFill)" stroke="#5f9a17" stroke-width="0.8" stroke-linejoin="round">
+    <rect x="13.4" y="10.4" width="2.2" height="10.2" rx="0.6" />
+    <path d="M17.5,10.2 L24,15.5 L17.5,20.8 Z" />
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="0.5" stroke-linecap="round">
+    <path d="M14,11.2 L14,19.6" />
+    <path d="M18.2,11.8 L18.2,18.8" />
+  </g>
+</svg>

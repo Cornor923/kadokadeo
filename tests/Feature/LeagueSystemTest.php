@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Game;
 use App\Models\League;
 use App\Models\LeagueMembership;
+use App\Models\LeaguePromotion;
 use App\Models\Period;
 use App\Models\PoidsPlumeResult;
 use App\Models\Run;
@@ -175,6 +176,68 @@ class LeagueSystemTest extends TestCase
             'game_id' => $game->id,
             'league_id' => $confirmed->id,
         ]);
+    }
+
+    public function test_lone_promotion_depends_on_next_league_members(): void
+    {
+        $leagueService = app(LeagueService::class);
+        $beginner = $leagueService->getBeginnerLeague();
+        $confirmed = League::query()->where('level', 2)->firstOrFail();
+        $period = Period::factory()->create();
+        $game = Game::factory()->create(['name' => 'Lone Promotion']);
+
+        $this->assertFalse($leagueService->canBePromotedAlone($game, $period, $beginner));
+        $this->assertFalse($leagueService->canBePromotedAlone($game, $period, $leagueService->getParadiseLeague()));
+
+        LeagueMembership::factory()->for(User::factory()->create())->for($period)->for($game)->for($confirmed, 'league')->create();
+
+        $this->assertTrue($leagueService->canBePromotedAlone($game, $period, $beginner));
+    }
+
+    public function test_promotion_game_ids_match_the_period_close(): void
+    {
+        $leagueService = app(LeagueService::class);
+        $beginner = $leagueService->getBeginnerLeague();
+        $period = Period::factory()->create();
+        $nextPeriod = Period::factory()->create();
+        $game = Game::factory()->create(['name' => 'Promotion Arrows']);
+
+        // 6 players: 2 promotion slots, the second one without the star (10)
+        $users = collect([100, 8, 7, 6, 5, 4])->map(function (int $score) use ($period, $game, $beginner) {
+            $user = User::factory()->create();
+            LeagueMembership::factory()->for($user)->for($period)->for($game)->for($beginner, 'league')->create();
+            Run::factory()->for($period)->for($game)->for($user)->for($beginner, 'league')->create(['score' => $score, 'play_time_seconds' => 20]);
+
+            return $user;
+        });
+
+        $this->assertSame([$game->id], $leagueService->getPromotionGameIds($users[0], $period->id));
+        $this->assertSame([], $leagueService->getPromotionGameIds($users[1], $period->id));
+        $this->assertSame([], $leagueService->getPromotionGameIds($users[2], $period->id));
+
+        $leagueService->closePeriod($period, $nextPeriod);
+
+        $this->assertSame([$users[0]->id], LeaguePromotion::query()->pluck('user_id')->all());
+    }
+
+    public function test_promotion_game_ids_of_a_lone_player_depend_on_next_league_members(): void
+    {
+        $leagueService = app(LeagueService::class);
+        $beginner = $leagueService->getBeginnerLeague();
+        $confirmed = League::query()->where('level', 2)->firstOrFail();
+        $period = Period::factory()->create();
+        $game = Game::factory()->create(['name' => 'Lone Arrow']);
+        $user = User::factory()->create();
+
+        LeagueMembership::factory()->for($user)->for($period)->for($game)->for($beginner, 'league')->create();
+        Run::factory()->for($period)->for($game)->for($user)->for($beginner, 'league')->create(['score' => 100, 'play_time_seconds' => 20]);
+
+        $this->assertSame([], $leagueService->getPromotionGameIds($user, $period->id));
+
+        LeagueMembership::factory()->for(User::factory()->create())->for($period)->for($game)->for($confirmed, 'league')->create();
+        cache()->flush();
+
+        $this->assertSame([$game->id], $leagueService->getPromotionGameIds($user, $period->id));
     }
 
     public function test_period_close_does_not_promote_without_required_star(): void

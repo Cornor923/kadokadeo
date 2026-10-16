@@ -26,6 +26,31 @@ class League extends Model
         'promotion_reward' => 'integer',
     ];
 
+    /**
+     * Number of players promoted to the next league at the end of the period.
+     */
+    public function getPromotionSlots(int $activePlayersCount): int
+    {
+        if ($activePlayersCount === 0) {
+            return 0;
+        }
+
+        $ratioSlots = $this->promotion_ratio_divisor
+            ? intdiv($activePlayersCount + $this->promotion_ratio_divisor - 1, $this->promotion_ratio_divisor)
+            : null;
+
+        $maxSlots = $this->promotion_max_slots;
+
+        $slots = match (true) {
+            $ratioSlots !== null && $maxSlots !== null => min($ratioSlots, $maxSlots),
+            $ratioSlots !== null => $ratioSlots,
+            $maxSlots !== null => $maxSlots,
+            default => 0,
+        };
+
+        return min($slots, $activePlayersCount);
+    }
+
     public function scopeOrdered($query)
     {
         return $query->orderBy('level');

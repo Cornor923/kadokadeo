@@ -7,6 +7,7 @@ use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\UserFavoriteGame;
 use App\Services\GameService;
+use App\Services\LeagueService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -25,7 +26,7 @@ class GameController extends Controller implements HasMiddleware
     /**
      * Display a listing of the games.
      */
-    public function index(Request $request)
+    public function index(Request $request, LeagueService $leagueService)
     {
         $data = $request->validate([
             'category' => 'sometimes|required|string|max:255|exists:categories,name',
@@ -55,6 +56,7 @@ class GameController extends Controller implements HasMiddleware
 
         return GameResource::collection($games)->additional([
             'categories' => $categories,
+            'promotion_game_ids' => $periodId ? $leagueService->getPromotionGameIds($request->user(), $periodId, $games) : [],
         ]);
     }
 

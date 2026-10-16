@@ -1,12 +1,17 @@
 <script setup>
+import PromotionPlay from '@svg/promotionPlay.svg'
+
 const { isLoading, fetchGames } = useGames()
 const route = useRoute()
 const games = ref([])
 const categories = ref([])
+// games where the player is in the promotion slots of their league
+const promotionGameIds = ref([])
 
 fetchGames().then((data) => {
   games.value = data.data
   categories.value = data.categories
+  promotionGameIds.value = data.promotion_game_ids ?? []
 })
 
 const gamesFiltered = computed(() => {
@@ -62,7 +67,18 @@ function getStarImage(game) {
           :title="`Jouer à ${game.name}`"
         >
           <div class="relative z-[2] w-full h-full bg-[url('/gfx/gameBox.png')] bg-no-repeat bg-[length:100%_100%] sm:bg-auto"></div>
-          <div class="absolute left-[15.93%] top-[5.63%] w-[77.88%] sm:left-9 sm:top-2 sm:w-[176px]">
+          <PromotionPlay
+            v-if="promotionGameIds.includes(game.id)"
+            class="absolute z-[3] left-[5.4%] top-[5.8%] w-[6.19%] h-[10.56%] sm:left-3 sm:top-2 sm:w-[14px] sm:h-[15px]"
+            aria-label="Qualifié pour la ligue supérieure"
+          />
+          <img
+            v-if="game.is_favorite"
+            src="/gfx/iconGameLiked.gif"
+            alt="Jeu favori"
+            class="absolute z-[3] left-[3.54%] top-[39.4%] w-[7.96%] h-auto sm:left-2 sm:top-14 sm:w-[18px]"
+          />
+          <div class="absolute left-[15.93%] top-[5.63%] w-[78.4%] sm:left-9 sm:top-2 sm:w-[178px]">
             <img class="w-full h-auto" :src="game.image_path" :alt="game.name" />
           </div>
           <div class="size-8 absolute z-[2] left-[3%] bottom-[14%] w-[14%] h-[14%]">

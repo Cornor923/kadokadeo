@@ -213,7 +213,13 @@ const gameAchievements = computed(() => {
                 <tbody>
                   <tr v-for="run in sortedRankingRuns" :key="run.id">
                     <td>
-                      <img v-if="run.league_id" :src="`/gfx/leagues/${run.league_id}s.svg`" class="w-6 h-auto" />
+                      <div class="flex items-center gap-1">
+                        <img v-if="run.league_id" :src="`/gfx/leagues/${run.league_id}s.svg`" class="w-6 h-auto" />
+                        <img v-if="profile.promotion_game_ids?.includes(run.game.id)"
+                             src="/gfx/greenArrowUp.png"
+                             alt="Qualifié pour la promotion"
+                             title="Qualifié pour la ligue supérieure" />
+                      </div>
                     </td>
                     <td class="text-right">
                       <Number color="orange" :value="run.league_rank" />

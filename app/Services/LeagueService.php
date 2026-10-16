@@ -10,6 +10,7 @@ use App\Models\LeaguePromotion;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class LeagueService
@@ -77,24 +78,47 @@ class LeagueService
 
     public function getPromotionSlots(League $league, int $activePlayersCount): int
     {
-        if ($activePlayersCount === 0) {
-            return 0;
+        return $league->getPromotionSlots($activePlayersCount);
+    }
+
+    /**
+     * Nobody played in the league during the period: the first player is promoted alone (with the stars),
+     * unless the next league is empty too (see promoteEligiblePlayers).
+     */
+    public function canBePromotedAlone(Game $game, Period $period, League $league): bool
+    {
+        $nextLeague = League::query()->where('level', $league->level + 1)->first();
+        if (!$nextLeague || $this->getPromotionSlots($league, 1) <= 0) {
+            return false;
         }
 
-        $ratioSlots = $league->promotion_ratio_divisor
-            ? intdiv($activePlayersCount + $league->promotion_ratio_divisor - 1, $league->promotion_ratio_divisor)
-            : null;
+        return LeagueMembership::query()->where('game_id', $game->id)->where('period_id', $period->id)->where('league_id', $nextLeague->id)->exists();
+    }
 
-        $maxSlots = $league->promotion_max_slots;
+    /**
+     * Games where the user would be promoted if the period ended now. Read from the promotion cache of each game
+     * the user played during the period (ScoreService::getLeagueScoresForPromotion).
+     *
+     * @param  Collection<int, Game>|null  $games  games already loaded (the others are ignored)
+     * @return int[]
+     */
+    public function getPromotionGameIds(User $user, int $periodId, ?Collection $games = null): array
+    {
+        $playedGameIds = LeagueMembership::query()->where('user_id', $user->id)->where('period_id', $periodId)->pluck('game_id');
+        if ($playedGameIds->isEmpty()) {
+            return [];
+        }
 
-        $slots = match (true) {
-            $ratioSlots !== null && $maxSlots !== null => min($ratioSlots, $maxSlots),
-            $ratioSlots !== null => $ratioSlots,
-            $maxSlots !== null => $maxSlots,
-            default => 0,
-        };
+        $games = $games
+            ? $games->whereIn('id', $playedGameIds)
+            : Game::query()->whereIn('id', $playedGameIds)->get();
 
-        return min($slots, $activePlayersCount);
+        return $games
+            ->filter(fn (Game $game) => $this->scoreService->getLeagueScoresForPromotion($game, $periodId)
+                ->contains(fn (array $leagueScore) => in_array($user->id, $leagueScore['promoted_user_ids'] ?? [], true)))
+            ->pluck('id')
+            ->values()
+            ->all();
     }
 
     public function closePeriod(Period $period, Period $nextPeriod): void

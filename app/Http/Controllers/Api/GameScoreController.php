@@ -14,6 +14,7 @@ use App\Services\ScoreService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -34,7 +35,14 @@ class GameScoreController extends Controller implements HasMiddleware
         $personalBest = $scoreService->getUserBestScore($game, Auth::id());
         $personalBestForPeriod = $scoreService->getUserBestScore($game, Auth::id(), $currentPeriod?->id);
         $worldsBest = $scoreService->getUserBestScore($game, null);
-        $leaguesScores = $currentPeriod ? $scoreService->getLeagueScoresForPromotion($game, $currentPeriod?->id) : [];
+        // without the promoted players (the arrows of the game list and of the profiles)
+        $leaguesScores = $currentPeriod
+            ? $scoreService->getLeagueScoresForPromotion($game, $currentPeriod->id)->map(fn (array $leagueScore) => Arr::except($leagueScore, 'promoted_user_ids'))
+            : collect();
+        // nobody played in the league yet: any score with the stars is enough
+        if ($league && !$leaguesScores->has($league->id) && $leagueService->canBePromotedAlone($game, $currentPeriod, $league)) {
+            $leaguesScores = $leaguesScores->put($league->id, ['required_score' => null, 'active_players_count' => 0, 'promotion_slots' => 1]);
+        }
 
         return response()->json([
             'scores' => RunResource::collection($scores),
