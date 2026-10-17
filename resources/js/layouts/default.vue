@@ -1,5 +1,6 @@
 <script setup>
 import Announcement from '@/components/message/Announcement.vue'
+import PendingRuns from '@/components/message/PendingRuns.vue'
 import Kalendrier from '@/components/nav/Kalendrier.vue'
 import Navbar from '@/components/nav/Navbar.vue'
 import Starbar from '@/components/nav/Starbar.vue'
