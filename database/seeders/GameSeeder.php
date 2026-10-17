@@ -67,7 +67,7 @@ class GameSeeder extends Seeder
             ['name' => "Charlotte's Quest", 'image_path' => "/assets/img/games/Charlotte's_Quest.png", 'is_active' => false],
             ['name' => 'Capman', 'image_path' => '/assets/img/games/Capman.png', 'is_active' => false],
             ['name' => 'Pulsar', 'image_path' => '/assets/img/games/Pulsar.png', 'is_active' => false],
-            ['name' => 'Mel', 'image_path' => '/assets/img/games/Mel.png', 'is_active' => true, 'is_arkadeo' => true, 'stars' => [4000, 12000, 20000], 'description' => "Mel, coursière de la résistance, doit grimper la ville de Black\$ter le plus haut possible : sauts, doubles sauts, accroches et sauts chargés. Mais attention, les Pulpz montent derrière elle !"],
+            ['name' => 'Mel', 'image_path' => '/assets/img/games/Mel.png', 'is_active' => true, 'is_arkadeo' => true, 'stars' => [4000, 12000, 20000], 'description' => 'Mel, coursière de la résistance, doit grimper la ville de Black$ter le plus haut possible : sauts, doubles sauts, accroches et sauts chargés. Mais attention, les Pulpz montent derrière elle !'],
             ['name' => 'Overdrive', 'image_path' => '/assets/img/games/Overdrive.png', 'is_active' => false],
             ['name' => 'Green Witch', 'image_path' => '/assets/img/games/Green_Witch.png', 'is_active' => false],
         ]);
