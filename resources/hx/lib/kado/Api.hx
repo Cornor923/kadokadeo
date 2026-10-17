@@ -15,7 +15,8 @@ class Api {
 		return http;
 	}
 
-	public static function askContract(runParams:Dto.BeginRunParamsDTO, onData:Dto.ApiResponse<Dto.RunDTO>->Void, onError:Dynamic->Void) {
+	// rejected with a Dto.ApiError (the message of the server: no games left, the daily game already played...)
+	public static function askContract(runParams:Dto.BeginRunParamsDTO):Promise<Dto.ApiResponse<Dto.RunDTO>> {
 		var req:Dynamic = {};
 		var http = buildClient("/api/runs/games/" + runParams.gameId);
 		if (runParams.daily) {
@@ -25,18 +26,7 @@ class Api {
 			req.build = runParams.build;
 		}
 		http.setPostData(haxe.Json.stringify(req));
-
-		http.onData = function(data:String) {
-			var result = haxe.Json.parse(data);
-
-			onData(result);
-		}
-
-		http.onError = function(error) {
-			onError(error);
-		}
-
-		http.request(true);
+		return send(http, true);
 	}
 
 	public static function endRun(runId:String, request:Dto.EndRunRequestDTO):Promise<Dto.ApiResponse<Dynamic>> {

@@ -15,7 +15,7 @@ class RunPolicy
     public function create(User $user)
     {
         if (config('kado.games_per_day') > 0 && $user->kado_games <= 0) {
-            return $this->deny('No games left');
+            return $this->deny('Vous n\'avez plus de parties aujourd\'hui : revenez demain !');
         }
 
         return $this->allow();

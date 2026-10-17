@@ -28,6 +28,18 @@ class UserForm
                     ->label('Jeux kado')
                     ->required()
                     ->numeric(),
+                TextInput::make('clan_attack_games')
+                    ->label('Parties d\'attaque de clan du jour')
+                    ->required()
+                    ->integer()
+                    ->minValue(0)
+                    ->default(0),
+                TextInput::make('clan_games')
+                    ->label('Parties de clan achetées')
+                    ->required()
+                    ->integer()
+                    ->minValue(0)
+                    ->default(0),
                 TextInput::make('email')
                     ->label('Adresse e-mail')
                     ->email(),

@@ -8,12 +8,13 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import wasm from 'vite-plugin-wasm'
 import svgLoader from 'vite-svg-loader'
 
 export default defineConfig({
   plugins: [
     laravel({
-      input: ['resources/css/app.css', 'resources/js/main.js', 'resources/js/replay-player.js'],
+      input: ['resources/css/app.css', 'resources/js/main.js', 'resources/js/replay-player.js', 'resources/js/admin/marktwin.js'],
       refresh: true,
     }),
     tailwindcss(),
@@ -22,6 +23,8 @@ export default defineConfig({
     svgLoader({
       svgo: false,
     }),
+    // the WebAssembly of @eternaltwin/marktwin (the messages of the forums), imported as an ES module
+    wasm(),
     AutoImport({
       include: [
         /\.[tj]s$/, // .ts, .js
@@ -70,6 +73,10 @@ export default defineConfig({
       '@svg': fileURLToPath(new URL('./resources/svg', import.meta.url)),
       public: resolve('./public'),
     },
+  },
+  // (esbuild can't pre-bundle its .wasm import: vite-plugin-wasm loads it)
+  optimizeDeps: {
+    exclude: ['@eternaltwin/marktwin'],
   },
   publicDir: 'public',
   server: {

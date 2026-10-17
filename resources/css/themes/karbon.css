@@ -1,0 +1,86 @@
+/*
+ * Karbon: the second theme of KadoKado, bought with Kado points (App\Http\Controllers\Api\ThemeController).
+ * Its images come from dat.kadokado.com/gfx/gui/karbon (the archives kept 17 of them): the carbon pattern, the grey
+ * header, the frame of the content, the tabs, the titles and the inputs. The rest of the site keeps the images of the
+ * base theme, as on KadoKado where only these images changed. Applied by App.vue (<html data-theme="karbon">).
+ */
+
+html[data-theme='karbon'] body {
+  background:
+    url('/gfx/themes/karbon/bg_header.jpg') top repeat-x,
+    url('/gfx/themes/karbon/patternBG.jpg') repeat;
+  background-color: #3b4f54;
+}
+
+/* the content: the light panel of the frame of Karbon (its dark top band and sides are outside the section) */
+html[data-theme='karbon'] #bodySection {
+  border-color: #466167;
+  background:
+    url('/gfx/themes/karbon/content_top.jpg') center -30px no-repeat,
+    url('/gfx/themes/karbon/background.jpg') center top repeat-y;
+  background-color: #eef3f4;
+  box-shadow:
+    0 0 0 2px #d9e2e4,
+    0 0 30px 1px rgba(0, 0, 0, 0.7);
+}
+
+/* the titles: grey instead of blue */
+html[data-theme='karbon'] h2 {
+  background: url('/gfx/themes/karbon/greyh2_bg.jpg') no-repeat;
+  color: #466167;
+}
+
+/* the tabs */
+html[data-theme='karbon'] .kTabFrame {
+  background-color: #466167;
+}
+
+html[data-theme='karbon'] .kTab {
+  color: #466167;
+  background-image: url('/gfx/themes/karbon/folder_up.jpg');
+  border-color: #b9c8cb;
+}
+
+html[data-theme='karbon'] .kTab.kTabActive {
+  color: #738e93;
+  background-image: url('/gfx/themes/karbon/folder_active.jpg');
+  background-color: #466167;
+}
+
+html[data-theme='karbon'] .kTab:not(.kTabActive):hover {
+  color: #2d3f43;
+  background-image: url('/gfx/themes/karbon/folder_active.jpg');
+}
+
+/* the boxes of the sidebar */
+html[data-theme='karbon'] #containerSide .sideBoxGreen,
+html[data-theme='karbon'] #containerSide .sideBoxBlue,
+html[data-theme='karbon'] #containerSide .sideBoxPink,
+html[data-theme='karbon'] #containerSide .sideBoxViolet {
+  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme='karbon'] #containerSide .sideBoxGreen h2 {
+  background: url('/gfx/themes/karbon/greenh2_bg.jpg') -15px -5px no-repeat;
+}
+
+html[data-theme='karbon'] #containerSide .sideBoxBlue {
+  background: #eef3f4 url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -40px no-repeat;
+  border-color: #738e93;
+}
+
+html[data-theme='karbon'] #containerSide .sideBoxBlue h2 {
+  background: url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -5px no-repeat;
+  color: #466167;
+  border-bottom-color: #738e93;
+}
+
+html[data-theme='karbon'] #containerSide .sideBoxPink h2 {
+  background: url('/gfx/themes/karbon/pinkh2_bg.jpg') -15px -5px no-repeat;
+}
+
+/* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css) */
+html[data-theme='karbon'] form div input {
+  color: #466167;
+  background: #fff url('/gfx/themes/karbon/inputBg.jpg') repeat-x;
+}

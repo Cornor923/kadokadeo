@@ -20,6 +20,11 @@ watch(() => authStore.banMessage, (message) => {
   }
 })
 
+// the theme of the site bought by the player (resources/css/themes)
+watch(() => authStore.user?.theme, (theme) => {
+  document.documentElement.dataset.theme = theme ?? 'base'
+}, { immediate: true })
+
 const layout = computed(() => {
   return layouts[route.meta?.layout || 'DefaultLayout']
 })

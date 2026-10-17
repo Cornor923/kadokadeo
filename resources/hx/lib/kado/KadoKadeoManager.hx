@@ -365,9 +365,14 @@ class KadoKadeoManager extends Application {
 				startScene.interactive = true;
 			}
 			runFlow.transition(ReadyToStart, "contract-received");
-		}, (message) -> {
+		}, (error) -> {
 			runFlow.transition(Intro, "contract-failed");
-			trace('Contract failed: ' + message);
+			trace('Contract failed: ' + error.status + ' ' + error.message);
+			// (a click asks again)
+			if (startScene != null) {
+				startScene.showError(error);
+				startScene.interactive = true;
+			}
 		});
 	}
 

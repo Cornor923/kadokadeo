@@ -40,6 +40,11 @@ return [
         'eternaltwinUrl' => env('ETERNALTWIN_URL', 'https://eternaltwin.com/'),
         'oauthId' => env('ETERNALTWIN_CLIENT_ID', ''),
         'oauthSecret' => env('ETERNALTWIN_CLIENT_SECRET', ''),
+        // the scope asked at the login: "forum:write" to post in the forum of Eternaltwin as the player (the app must be
+        // allowed it on Eternaltwin, or the login is refused), "base" otherwise
+        'scope' => env('ETERNALTWIN_SCOPE', 'base'),
+        // the category of the forum of Eternaltwin shown in the "Forum" of the site (its sections)
+        'forumCategory' => env('ETERNALTWIN_FORUM_CATEGORY', 'kadokadeo'),
     ],
 
 ];

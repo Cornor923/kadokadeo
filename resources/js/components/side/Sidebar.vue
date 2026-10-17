@@ -1,4 +1,5 @@
 <script setup>
+const clanStore = useClanStore()
 const otherGames = [
   { name: 'Eternalfest', url: 'https://eternalfest.net' },
   { name: 'eMush', url: 'https://emush.eternaltwin.org' },
@@ -27,8 +28,8 @@ const otherGames = [
         <li class="worldrecords">
           <RouterLink :to="{ name: 'site-records' }" title="Records du site">Records du site</RouterLink>
         </li>
-        <li class="account grayscale">
-          <RouterLink to="/" title="Mon compte">Mon compte</RouterLink>
+        <li class="account">
+          <RouterLink :to="{ name: 'account' }" title="Mon compte">Mon compte</RouterLink>
         </li>
         <li class="forum">
           <a href="https://discord.gg/cqasFsD"
@@ -41,10 +42,30 @@ const otherGames = [
         </li>
       </ul>
     </nav>
-    <aside class="sideBoxBlue grayscale">
-      <h2>Top 3 clans</h2>
+    <aside class="sideBoxBlue">
+      <h2>Top 3 clans de guerre</h2>
       <ul>
-        <li class="text-center italic">Non disponible...</li>
+        <li v-for="clan in clanStore.top" :key="clan.id" class="flex justify-between gap-1">
+          <RouterLink :to="{ name: 'clans.show', params: { id: clan.id } }" class="truncate">{{ clan.rank }}. {{ clan.name }}</RouterLink>
+          <Number :value="clan.war_score" color="orange" />
+        </li>
+        <li v-if="!clanStore.top.length" class="text-center italic">Aucun clan</li>
+        <li class="text-center mt-1">
+          <RouterLink :to="{ name: 'clans.index', query: { tab: 'war' } }">Classement des attaques</RouterLink>
+        </li>
+      </ul>
+    </aside>
+    <aside class="sideBoxViolet">
+      <h2>Top 3 clans de mission</h2>
+      <ul>
+        <li v-for="clan in clanStore.topMissions" :key="clan.id" class="flex justify-between gap-1">
+          <RouterLink :to="{ name: 'clans.show', params: { id: clan.id } }" class="truncate">{{ clan.rank }}. {{ clan.name }}</RouterLink>
+          <Number :value="clan.mission_score" color="violet" />
+        </li>
+        <li v-if="!clanStore.topMissions.length" class="text-center italic">Aucun clan</li>
+        <li class="text-center mt-1">
+          <RouterLink :to="{ name: 'clans.index', query: { tab: 'missions' } }">Classement des missions</RouterLink>
+        </li>
       </ul>
     </aside>
     <aside class="sideBoxPink">
