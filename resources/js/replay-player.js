@@ -19,7 +19,7 @@ async function play() {
     await mount(document.getElementById('game'), {
       ...args,
       canvasWidth: 600,
-      canvasHeight: game.is_arkadeo ? 460 : 640,
+      canvasHeight: game.is_arkadeo ? 500 : 640,
     })
   } catch(e) {
     message.hidden = false

@@ -66,7 +66,7 @@ async function page(input) {
     contractPoints: 0,
     // the size of the canvas of the site (resources/js/components/games/GameScript.vue)
     canvasWidth: 600,
-    canvasHeight: 640,
+    canvasHeight: input.arkadeo ? 500 : 640,
     ...(input.assetBase ? { assetBase: input.assetBase } : {}),
   }
   const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c')

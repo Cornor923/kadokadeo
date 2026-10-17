@@ -66,7 +66,8 @@ async function mountGame() {
   await mount(canvas.value, {
     ...props.args,
     canvasWidth: props.game.is_arkadeo ? 600 : 600,
-    canvasHeight: props.game.is_arkadeo ? 460 : 640,
+    // an Arkadeo game: its 600 x 460 area and the bar of KadoKadeo under it (40)
+    canvasHeight: props.game.is_arkadeo ? 500 : 640,
     // seed:'123',
     // replayData: '',
   })
@@ -125,7 +126,7 @@ onBeforeUnmount(() => {
     <canvas
       ref="canvas"
       :width="game.is_arkadeo ? 600 : 900"
-      :height="game.is_arkadeo ? 460 : 960"
+      :height="game.is_arkadeo ? 500 : 960"
       class="w-full"
       :style="{
         touchAction: 'none',

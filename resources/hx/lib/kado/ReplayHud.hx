@@ -45,13 +45,14 @@ class ReplayHud extends Container {
 	public static var SPEEDS:Array<Float> = [0.1, 0.25, 0.5, 1, 1.5, 2, 4, 8];
 
 	static inline var W = 600;
-	// bottom of the game area, above the score / contract bar
-	static final BOTTOM = KadoKadeoManager.I(300);
+	// bottom of the game area, above the score / contract bar (KadoKadeoManager.gameAreaHeight: 600, or 460 for an
+	// Arkadeo game; set by the constructor)
+	static var BOTTOM = KadoKadeoManager.I(300);
 	static inline var PANEL_H = 108;
 	static inline var BAR_X0 = 14;
 	static inline var BAR_X1 = 586;
-	static final BAR_Y = BOTTOM - 42;
-	static final ROW_Y = BOTTOM - 18;
+	static var BAR_Y = BOTTOM - 42;
+	static var ROW_Y = BOTTOM - 18;
 	static inline var BUTTON_H = 32;
 	// colours of the site (resources/css/app.css), and a dark teal for the backgrounds
 	static inline var CYAN = 0x44CCE7;
@@ -142,6 +143,11 @@ class ReplayHud extends Container {
 
 	public function new(canvas:CanvasElement, replay:ReplayManager, frameMs:Float, host:ReplayHudHost) {
 		super();
+		if (KadoKadeoManager.kkm != null) {
+			BOTTOM = Std.int(KadoKadeoManager.kkm.gameAreaHeight());
+			BAR_Y = BOTTOM - 42;
+			ROW_Y = BOTTOM - 18;
+		}
 		this.canvas = canvas;
 		this.replay = replay;
 		this.frameMs = frameMs;

@@ -157,9 +157,15 @@ class EndScene extends Container {
 		var back = this.addChild(Sprite.from("gameover_back.png"));
 		back.width = kkm.screen.width;
 		back.height = kkm.screen.height;
-		this.addChild(makePanScore());
-		this.addChild(makePiouTrack());
-		this.addChild(clickToReplay());
+		// laid out for the 600 x 640 canvas of a KadoKado game: smaller in a lower canvas (an Arkadeo game: 600 x 500)
+		var content = new Container();
+		var k = Math.min(1, kkm.screen.height / KadoKadeoManager.I(320));
+		content.scale.set(k);
+		content.x = (kkm.screen.width - kkm.screen.width * k) / 2;
+		this.addChild(content);
+		content.addChild(makePanScore());
+		content.addChild(makePiouTrack());
+		content.addChild(clickToReplay());
 	}
 
 	public function handleReplayClick():Void {

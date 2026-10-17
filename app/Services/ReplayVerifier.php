@@ -81,6 +81,8 @@ class ReplayVerifier
                 'bundle' => "{$dir}/bundle.js",
                 'gameClass' => $game->pascal_name,
                 'gameName' => $key,
+                // the size of its canvas (resources/js/components/games/GameScript.vue)
+                'arkadeo' => (bool) $game->is_arkadeo,
                 'seed' => $run->seed,
                 'replay' => $run->replay,
                 'assetBase' => $gamedata['asset_base'] ?? null,

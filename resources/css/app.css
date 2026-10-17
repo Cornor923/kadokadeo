@@ -6,7 +6,6 @@
 @source '../** /*.js';
 
 @layer base {
-
   html,
   :host {
     line-height: unset;
@@ -109,7 +108,7 @@
   --font-kozuka-gothic-pro-h: 'Kozuka Gothic Pro H', sans-serif;
 
   --aspect-kadokado: 0.9375;
-  --aspect-arkadeo: 1.3043;
+  --aspect-arkadeo: 1.2;
 
   --text-2xs: 0.625rem;
 
@@ -281,7 +280,6 @@
   }
 
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-
     /* For compatible browsers */
     h1 {
       -webkit-text-stroke: 1px #1f6776;
@@ -623,19 +621,22 @@
   }
 
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-
     /* For compatible browsers */
     .btnHomepagePlay a {
-      background: -webkit-linear-gradient(to bottom,
-          var(--color-kado-play-400) 0%,
-          var(--color-kado-play-500) 40%,
-          var(--color-kado-play-900) 41%,
-          var(--color-kado-play-700) 100%);
-      background: linear-gradient(to bottom,
-          var(--color-kado-play-400) 0%,
-          var(--color-kado-play-500) 40%,
-          var(--color-kado-play-900) 41%,
-          var(--color-kado-play-700) 100%);
+      background: -webkit-linear-gradient(
+        to bottom,
+        var(--color-kado-play-400) 0%,
+        var(--color-kado-play-500) 40%,
+        var(--color-kado-play-900) 41%,
+        var(--color-kado-play-700) 100%
+      );
+      background: linear-gradient(
+        to bottom,
+        var(--color-kado-play-400) 0%,
+        var(--color-kado-play-500) 40%,
+        var(--color-kado-play-900) 41%,
+        var(--color-kado-play-700) 100%
+      );
       background-color: var(--color-kado-play-700);
       background-clip: text;
       -webkit-background-clip: text;

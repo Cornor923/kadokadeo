@@ -95,6 +95,12 @@ class KadoKadeoManager extends Application {
 		return n * NEW_GEN_SCALE;
 	}
 
+	// height of the game area, above the score / contract bar (600 for a KadoKado game, 460 for an Arkadeo one: its
+	// canvas is 600 x 500)
+	public function gameAreaHeight():Float {
+		return screen.height - S(20);
+	}
+
 	public function new(canvas:CanvasElement, gameClass:Class<GameInterface>, params:GameParams) {
 		super({
 			view: canvas,
@@ -656,7 +662,7 @@ class KadoKadeoManager extends Application {
 	function freezeSeek():Void {
 		if (seekFreeze == null && root != null) {
 			var r:Dynamic = untyped this.renderer;
-			var tex:pixi.core.textures.Texture = r.generateTexture(root, 1, 1, new pixi.core.math.shapes.Rectangle(0, 0, 600, 600));
+			var tex:pixi.core.textures.Texture = r.generateTexture(root, 1, 1, new pixi.core.math.shapes.Rectangle(0, 0, screen.width, gameAreaHeight()));
 			seekFreeze = new pixi.core.sprites.Sprite(tex);
 			stage.addChildAt(seekFreeze, stage.getChildIndex(root) + 1);
 			seekStartMs = Browser.window.performance.now();
@@ -702,16 +708,19 @@ class KadoKadeoManager extends Application {
 		var span = Math.max(1, target - seekFrom);
 		var p = Math.max(0, Math.min(1, (replay.getCurrentFrame() - seekFrom) / span));
 		var g = seekRing;
+		// (the middle of the game area)
+		var cx = screen.width / 2;
+		var cy = gameAreaHeight() / 2;
 		g.clear();
 		g.beginFill(0x000000, 0.55);
-		g.drawCircle(300, 300, 21);
+		g.drawCircle(cx, cy, 21);
 		g.endFill();
 		g.lineStyle(4, 0xFFFFFF, 0.3);
-		g.drawCircle(300, 300, 13);
+		g.drawCircle(cx, cy, 13);
 		if (p > 0) {
 			g.lineStyle(4, 0xFFFFFF, 1);
-			g.moveTo(300, 287);
-			g.arc(300, 300, 13, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2);
+			g.moveTo(cx, cy - 13);
+			g.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2);
 		}
 	}
 

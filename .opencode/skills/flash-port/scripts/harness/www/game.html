@@ -25,10 +25,13 @@
 <canvas id="c" width="600" height="640"></canvas>
 <div>score: <span id="score">0</span></div>
 <script>
-  // usage: game.html?game=<package>&cls=<exposed class>&seed=123[&replay=...][&test=...]
+  // usage: game.html?game=<package>&cls=<exposed class>&seed=123[&replay=...][&test=...][&h=500]
+  //   h: height of the canvas (640, 500 for an Arkadeo game: its 600 x 460 area and the bar)
   // The debug build always plays the seed 123 live (createDebugContext): give seed=123 to the replays too.
   const q = new URLSearchParams(location.search);
   const game = q.get('game'), cls = q.get('cls');
+  const H = +(q.get('h') || 640);
+  document.getElementById('c').height = H;
   // test modes of the game: modes/<game>.js (optional) fills window.TEST_MODES[name] = (proto, query) => {...}
   window.TEST_MODES = {
     // any game: game over after N frames (identical in live and replay)
@@ -58,7 +61,7 @@
     }
     window.kk = new KadoKadeo(document.getElementById('c'), window[cls], {
       name: game, gameId: 1, replayData: q.get('replay'), seed: q.get('seed') || '123',
-      contractScore: 0, contractPoints: 0, isDaily: false, canvasWidth: 600, canvasHeight: 640 });
+      contractScore: 0, contractPoints: 0, isDaily: false, canvasWidth: 600, canvasHeight: H });
   }));
 </script>
 </body>
