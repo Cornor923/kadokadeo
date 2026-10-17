@@ -33,5 +33,6 @@
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="KADO_REPLAY_VERIFIER" value="false"/>
         <env name="KADO_REQUIRE_RNG_STIR" value="false"/>
+        <env name="KADO_REQUIRE_INPUT_PHASES" value="false"/>
     </php>
 </phpunit>
