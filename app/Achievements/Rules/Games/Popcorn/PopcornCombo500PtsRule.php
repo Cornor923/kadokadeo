@@ -20,8 +20,9 @@ class PopcornCombo500PtsRule extends PopcornRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $comboIndex = min($this->maxEventsBetween($event, 0, 3), count(self::COMBO_SCORES));
-        $comboScore = $comboIndex >= 0 ? self::COMBO_SCORES[$comboIndex] : 0;
+        // The n-th bubble of a combo scores COMBO_SCORES[n - 1], capped at the last value (Hero.hx).
+        $comboLength = $this->maxEventsBetween($event, 0, 3);
+        $comboScore = $comboLength > 0 ? self::COMBO_SCORES[min($comboLength, count(self::COMBO_SCORES)) - 1] : 0;
 
         return $this->bestProgress($progress->current_value, $comboScore);
     }

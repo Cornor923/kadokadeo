@@ -72,22 +72,21 @@ abstract class PopcornRule implements AchievementRule
 
     protected function maxEventsBetween(GameRunCompleted $event, int $eventType, int $boundaryType): int
     {
+        // The start and the end of the run bound the first and the last sequences too
+        // (the hero starts in the air, the run can end while it is flying).
         $max = 0;
-        $current = null;
+        $current = 0;
 
-        foreach ($this->events($event) as $event) {
-            if ($event === $boundaryType) {
-                if ($current !== null) {
-                    $max = max($max, $current);
-                }
-
+        foreach ($this->events($event) as $type) {
+            if ($type === $boundaryType) {
+                $max = max($max, $current);
                 $current = 0;
-            } elseif ($event === $eventType && $current !== null) {
+            } elseif ($type === $eventType) {
                 $current++;
             }
         }
 
-        return $max;
+        return max($max, $current);
     }
 
     protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
