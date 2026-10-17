@@ -1,6 +1,6 @@
 package mt.deepnight;
 
-import flash.display.Sprite;
+import common_haxe_avm2.display.Sprite;
 
 class Mode {
 	static var ALL:Array<Mode> = [];
@@ -36,7 +36,8 @@ class Mode {
 		if (!destroyed) {
 			destroyed = true;
 			pause();
-			root.parent.removeChild(root);
+			if (root.parent != null)
+				root.parent.removeChild(root);
 			KILL_LIST.push(this);
 		}
 	}

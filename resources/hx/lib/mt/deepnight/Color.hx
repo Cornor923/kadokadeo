@@ -506,6 +506,22 @@ class Color {
 		];
 		return new flash.filters.ColorMatrixFilter(matrix);
 	}
+	#else
+	// the same matrix in a PixiJS ColorMatrixFilter
+	public static function getColorizeMatrixFilter(col:Int, ?ratioNewColor = 1.0, ?ratioOldColor = 1.0) {
+		var rgb = intToRgb(col);
+		var r = ratioNewColor * rgb.r / 255;
+		var g = ratioNewColor * rgb.g / 255;
+		var b = ratioNewColor * rgb.b / 255;
+		var f = new pixi.filters.colormatrix.ColorMatrixFilter();
+		f.matrix = [
+			ratioOldColor + r,                 r,                 r,   0, 0,
+			                g, ratioOldColor + g,                 g,   0, 0,
+			                b,                 b, ratioOldColor + b,   0, 0,
+			                0,                 0,                 0, 1.0, 0,
+		];
+		return f;
+	}
 	#end
 
 	// Renvoie une matrice pour utiliser avec un ColorMatrixFilter

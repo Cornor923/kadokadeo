@@ -89,12 +89,12 @@ class Tweenie {
 	// function create<T>( o : T, getSet : { function get(o:T) : Float; function set(o:T,v:Float) : Void } )
 
 	public inline function create(parent:Dynamic, varName:String, to:Float, ?tp:TType, ?duration_ms:Float) {
-		#if (nme || openfl)
-		return create_(parent, varName, to, tp, duration_ms);
-		#else
+		#if (flash && !(nme || openfl))
 		return if (Reflect.hasField(parent,
 			varName)) create_(parent, varName, to, tp,
 				duration_ms); else create_(parent, untyped __unprotect__(varName), to, tp, duration_ms); // champ obfuscqué
+		#else
+		return create_(parent, varName, to, tp, duration_ms);
 		#end
 	}
 

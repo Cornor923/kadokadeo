@@ -1,0 +1,43 @@
+package mt.deepnight.slb;
+
+import mt.deepnight.slb.BLib;
+
+// slb.SpriteInterface. The `scale(v)` method of the original is removed:
+// it would collide with the PIXI field `Container.scale : Point`. Use scaleX /
+// scaleY.
+interface SpriteInterface {
+	public var destroyed			: Bool;
+	public var lib					: BLib;
+	public var group				: Null<LibGroup>;
+	public var groupName			: Null<String>;
+	public var frame				: Int;
+	private var slbPivot			: SpritePivot; // renamed: `pivot` is DisplayObject.pivot in PixiJS
+	public var a					: AnimManager;
+	private var frameData			: FrameData;
+
+	public var beforeRender			: Null<Void->Void>;
+	public var onFrameChange		: Null<Void->Void>;
+
+	public function clone<T>(?t:T) : T;
+	public function toString() : String;
+	public function dispose() : Void;
+	public function isReady() : Bool;
+
+	public function set(?l:BLib, ?g:String, ?frame:Int, ?stopAllAnims:Bool) : Void;
+	public function setFrame(f:Int) : Void;
+	public function setRandom(?l:BLib, g:String, rndFunc:Int->Int) : Void;
+	public function setRandomFrame(?rndFunc:Int->Int) : Void;
+
+	public function isGroup(k:String) : Bool;
+	public function is(k:String, f:Int) : Bool;
+
+	public function setScale(v:Float) : Void;
+	public function setPos(x:Float, y:Float) : Void;
+	public function setSize(w:Float, h:Float) : Void;
+	public function setPivotCoord(x:Float, y:Float) : Void;
+	public function setCenterRatio(xr:Float, yr:Float) : Void;
+	public function constraintSize(w:Float, ?h:Null<Float>, ?useFrameDataRealSize:Bool=false) : Void;
+
+	public function getAnimDuration() : Int;
+	public function totalFrames() : Int;
+}

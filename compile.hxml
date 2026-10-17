@@ -235,3 +235,6 @@ mel.Game
 --next
 -js ./resources/js/games/hammerfest.js
 hammerfest.Game
+--next
+-js ./resources/js/games/brutalteenagecrisis.js
+brutalteenagecrisis.Game

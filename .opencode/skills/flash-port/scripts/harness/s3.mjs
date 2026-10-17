@@ -8,7 +8,7 @@ const PORT = +(process.argv[4] || 9333)
 const FRAMES = +(process.argv[5] || 900)
 let rs = +(process.argv[6] || 7)
 const rnd = (n) => { rs = (rs * 1103515245 + 12345) & 0x7fffffff; return (rs >> 16) % n }
-const URL0 = `http://127.0.0.1:${process.env.HPORT || 8765}/game.html?game=${pkg}&cls=${cls}&test=generic&frames=${FRAMES}`
+const URL0 = `http://127.0.0.1:${process.env.HPORT || 8765}/game.html?game=${pkg}&cls=${cls}&test=generic&frames=${FRAMES}${process.env.EXTRA || ''}`
 const KEYS = [[37, 'ArrowLeft'], [38, 'ArrowUp'], [39, 'ArrowRight'], [40, 'ArrowDown'], [32, 'Space'], [13, 'Enter'], [17, 'ControlLeft'],
   [87, 'KeyW'], [65, 'KeyA'], [83, 'KeyS'], [68, 'KeyD'], [16, 'ShiftLeft']]
 const result = { game: pkg }
