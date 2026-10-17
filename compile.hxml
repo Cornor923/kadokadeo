@@ -232,3 +232,6 @@ memopsy.Game
 --next
 -js ./resources/js/games/mel.js
 mel.Game
+--next
+-js ./resources/js/games/hammerfest.js
+hammerfest.Game
