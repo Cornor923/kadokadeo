@@ -190,7 +190,7 @@ class Monster {
 			return;
 		}
 
-		game.doCombo();
+		game.doCombo(type);
 
 		game.stats.k[type]++;
 		mc.removeMovieClip();

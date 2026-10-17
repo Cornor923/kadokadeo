@@ -49,13 +49,18 @@ class Game implements kado.GameInterface {
 	public var hero:Hero;
 	public var level:Int;
 	public var game_over:Bool;
-	public var stats:{g:Array<Int>, k:Array<Int>, b:Array<Int>, c:Array<Int>};
+	// seq, dual (not in the original, for the achievements): bomb, flower then turret killed in a row in one combo chain;
+	// a special bonus picked up while the other one is active
+	public var stats:{g:Array<Int>, k:Array<Int>, b:Array<Int>, c:Array<Int>, seq:Int, dual:Int};
 
 	var parts:Array<Part>;
 	var bg:MC;
 	var last_dead:Float;
 	var time:Float;
 	var combo:Int;
+	// types of the 2 previous kills of the current combo chain (-1: none)
+	var prev1:Int = -1;
+	var prev2:Int = -1;
 	var combo_mc:MC;
 	var death:MC;
 
@@ -107,7 +112,9 @@ class Game implements kado.GameInterface {
 			g: [0, 0, 0],
 			k: [0, 0, 0],
 			c: [0, 0, 0, 0],
-			b: [0, 0, 0, 0, 0, 0]
+			b: [0, 0, 0, 0, 0, 0],
+			seq: 0,
+			dual: 0
 		};
 		genMonster();
 
@@ -176,8 +183,15 @@ class Game implements kado.GameInterface {
 		parts.push(p);
 	}
 
-	public function doCombo() {
-		if (time - last_dead < 2.5) {
+	public function doCombo(type:Int) {
+		var chained = time - last_dead < 2.5;
+		if (!chained)
+			prev1 = prev2 = -1;
+		else if (prev2 == 0 && prev1 == 1 && type == 2)
+			stats.seq++;
+		prev2 = prev1;
+		prev1 = type;
+		if (chained) {
 			if (combo < Const.COMBOS.length) {
 				if (combo_mc != null)
 					combo_mc.removeMovieClip();

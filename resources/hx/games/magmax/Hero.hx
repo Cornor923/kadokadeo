@@ -155,10 +155,14 @@ class Hero {
 				game.stats.b[b.t]++;
 				switch (b.t) {
 					case 3:
+						if (pow == 2)
+							game.stats.dual++;
 						setColor(mc, 0xFF0000);
 						speed = 7;
 						bonus_time += 8;
 					case 4:
+						if (speed == 7)
+							game.stats.dual++;
 						pow = 2;
 						bonus_time += 5;
 					case 0, 1, 2:

@@ -37,6 +37,7 @@ class AchievementsSeeder extends Seeder
         $this->createKaskade2Achievements();
         $this->createKillBulleAchievements();
         $this->createKSlashAchievements();
+        $this->createMagmaxAchievements();
         $this->createOpalus2Achievements();
         $this->createPiouPiouAchievements();
         $this->createPopcornAchievements();
@@ -561,6 +562,38 @@ class AchievementsSeeder extends Seeder
 
         $threeRespawns = $game->achievements()->create(['game_id' => $game->id, 'key' => 'three_respawns', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
         $threeRespawns->levels()->create(['level' => 1, 'target' => 3, 'reward' => 2000, 'title' => 'Plus fort que la mort', 'description' => 'Réapparaître 3 fois dans une partie.']);
+    }
+
+    private function createMagmaxAchievements()
+    {
+        $game = $this->games->where('game_key', 'magmax')->first();
+        if (!$game) {
+            return;
+        }
+
+        $turretsKilled = $game->achievements()->create(['game_id' => $game->id, 'key' => 'turrets_killed', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $turretsKilled->levels()->create(['level' => 1, 'target' => 10, 'reward' => 100, 'title' => 'Démontage de tourelle', 'description' => 'Tuer 10 tourelles.']);
+        $turretsKilled->levels()->create(['level' => 2, 'target' => 100, 'reward' => 500, 'title' => 'Poussière de tourelle', 'description' => 'Tuer 100 tourelles.']);
+        $turretsKilled->levels()->create(['level' => 3, 'target' => 1000, 'reward' => 1000, 'title' => 'Syndrome de la Tourelle', 'description' => 'Tuer 1.000 tourelles.']);
+
+        $gemsCollected = $game->achievements()->create(['game_id' => $game->id, 'key' => 'gems_collected', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $gemsCollected->levels()->create(['level' => 1, 'target' => 100, 'reward' => 100, 'title' => 'Premier collier', 'description' => 'Obtenir 100 boules de couleur.']);
+        $gemsCollected->levels()->create(['level' => 2, 'target' => 1000, 'reward' => 500, 'title' => 'Chasseur de perles', 'description' => 'Obtenir 1.000 boules de couleur.']);
+        $gemsCollected->levels()->create(['level' => 3, 'target' => 10000, 'reward' => 1000, 'title' => 'Parure légendaire', 'description' => 'Obtenir 10.000 boules de couleur.']);
+
+        $flowersOneGame = $game->achievements()->create(['game_id' => $game->id, 'key' => 'flowers_one_game', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $flowersOneGame->levels()->create(['level' => 1, 'target' => 5, 'reward' => 100, 'title' => 'Désherbage express', 'description' => 'Tuer 5 fleurs en une seule partie.']);
+        $flowersOneGame->levels()->create(['level' => 2, 'target' => 10, 'reward' => 500, 'title' => 'Le beau bouquet', 'description' => 'Tuer 10 fleurs en une seule partie.']);
+        $flowersOneGame->levels()->create(['level' => 3, 'target' => 15, 'reward' => 1000, 'title' => 'Fléau des Pétales', 'description' => 'Tuer 15 fleurs en une seule partie.']);
+
+        $magmax = $game->achievements()->create(['game_id' => $game->id, 'key' => 'magmax', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $magmax->levels()->create(['level' => 1, 'target' => 1, 'reward' => 250, 'title' => 'Maximaxeur', 'description' => 'Faire un Magmax.']);
+
+        $bothBonuses = $game->achievements()->create(['game_id' => $game->id, 'key' => 'both_bonuses', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $bothBonuses->levels()->create(['level' => 1, 'target' => 1, 'reward' => 1000, 'title' => 'Armé jusqu\'aux dents', 'description' => 'Obtenir les 2 bonus spéciaux en même temps.']);
+
+        $killOrder = $game->achievements()->create(['game_id' => $game->id, 'key' => 'kill_order', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $killOrder->levels()->create(['level' => 1, 'target' => 1, 'reward' => 2000, 'title' => 'Tri séquentiel', 'description' => 'Tuer dans l\'ordre goutte, fleur et tourelle dans un même combo.']);
     }
 
     private function createKanjiAchievements()
