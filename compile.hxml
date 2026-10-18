@@ -238,3 +238,6 @@ hammerfest.Game
 --next
 -js ./resources/js/games/brutalteenagecrisis.js
 brutalteenagecrisis.Game
+--next
+-js ./resources/js/games/rockfaller.js
+rockfaller.Game

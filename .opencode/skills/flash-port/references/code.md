@@ -172,7 +172,7 @@ changes the roundings. Do not use it for a new port.
 - Never edit `resources/js/games/*.js` or `public/gamesdata/*`: `make compile-games` (Docker) regenerates them.
 - An **Arkadeo** game (600 x 460): `'is_arkadeo' => true` in `GameSeeder.php`. The site gives it a canvas of 600 x 500 (the game
   area + the score bar, `KadoKadeoManager.gameAreaHeight()` = 460), its start screen is 600 x 460, test it in the harness with
-  `&h=500` (Mel, Brutal Teenage Crisis).
+  `&h=500` (Mel, Brutal Teenage Crisis, Rock Faller).
 
 ## Compile
 

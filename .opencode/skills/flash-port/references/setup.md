@@ -92,6 +92,7 @@ a few `src/*.png` with identical pixels (PNG compression of another Pillow versi
 | `swfdump.py` | minimal SWF parser: header (frame rate), exported symbols, timelines, matrices, colour transforms |
 | `swfrender.py` | Flash display-list compositor: nested timelines, stop / play / goto, named children forced to a frame, colour transforms, filters and blend modes; shapes rasterized by FFDec, composed supersampled then reduced |
 | `swffilters.py`, `swftext.py` | SWF 8 filters / blend modes (PlaceObject3), text fields (DefineEditText) |
+| `swffont.py` | embedded fonts (DefineFont2 / 3) and static texts without FFDec: glyphs rasterized with Pillow (Rock Faller's score) |
 | `clipexport.py` | Flash MovieClip -> timeline tables + minimal textures, played at runtime by the game's `Clip.hx` |
 | `pack_multi.py` | sprite sheets in TexturePacker "pixijs4" JSON (trim, extrude, identical frames aliased, multipack); run with `PACK_MAX=2040` |
 | `make_tps.py` + `tpl.tps` | TexturePacker project with the pivots, so the sheet can be rebuilt in TexturePacker |
