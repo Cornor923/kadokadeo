@@ -34,7 +34,9 @@ class Game implements kado.GameInterface {
 	public static inline var WIDTH = 600;
 	public static inline var HEIGHT = 460;
 
-	// geometry of the original (STAGE_Y = 35: the HTML5 port moved the grid to 50 for its 600 x 480 canvas)
+	// geometry of the original. The decor is framed like the Arkadeo HTML5 port (a scene of 600 x 480, the grid at 50),
+	// shown from its row 15 (the 460 rows of the game area): the grid at 35 again, the STAGE_Y of the original
+	// (rockfaller_assets.py, VIEW_Y)
 	public static inline var STAGE_SIZE = 6;
 	public static inline var STAGE_X = 120;
 	public static inline var STAGE_Y = 35;
