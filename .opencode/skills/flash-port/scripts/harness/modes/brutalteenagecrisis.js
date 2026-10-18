@@ -2,9 +2,10 @@
 // only the frame counter of the game and the url decide.
 //   test=btc  dif=<difficulty from the start: Big >= 50, Smart >= 90, Fly >= 250>  inv=1 (the hero keeps its 3 credits)
 //             frames=<game over at that frame of the game, through the game's own end (Mode.gameOver)>
+//             pow=<every that many frames of the game, the hero gets the super power (15 s, like the item)>
 TEST_MODES.btc = (P, q) => {
   const orig = P.update
-  const dif = +(q.get('dif') || 0), inv = q.get('inv') === '1', N = +(q.get('frames') || 0)
+  const dif = +(q.get('dif') || 0), inv = q.get('inv') === '1', N = +(q.get('frames') || 0), pow = +(q.get('pow') || 0)
   P.update = function (d) {
     const m = this.mode
     if (!this.__init) {
@@ -15,6 +16,7 @@ TEST_MODES.btc = (P, q) => {
       m.hero.credits = 3
       m.hud.refresh()
     }
+    if (pow && m.hero && this.frameCount % pow === 0) m.hero.cd.set('superPower', 30 * 15)
     orig.call(this, d)
     if (N && this.frameCount >= N && !this.over) m.gameOver(false)
   }

@@ -16,8 +16,8 @@ import mt.deepnight.slb.BSprite;
 //
 // What the Arkadeo HTML5 port added to the original and is kept here (Boot.hx there): the hero's fall speed is capped
 // and the hero stays under a ceiling (the Fly's charge threw it out of the map), a hero thrown under the map is put
-// back on the ground, and the super power gives a higher jump while up is held. They ran once per displayed picture
-// there: here once per frame of the game, right after it.
+// back on the ground. They ran once per displayed picture there: here once per frame of the game, right after it.
+// (Its higher jump with the super power is in en/Hero.hx: a longer jump extension.)
 @:expose('GameBrutalTeenageCrisis')
 class Game implements kado.GameInterface {
 	// arrows on the left, jump / go down on the right, the phase (space) above the jump; clear of the score bar
@@ -79,9 +79,7 @@ class Game implements kado.GameInterface {
 	static inline var FPS = 30;
 	static inline var STEPS_PER_SECOND = 32;
 
-	// (Arkadeo HTML5 port, Boot.hx) extra jump speed per frame while up is held during the jump extension, with the
-	// super power; the fall speed cap (cells / frame) and the ceiling of the hero (cy)
-	static inline var SUPER_JUMP_BOOST = 0.07;
+	// (Arkadeo HTML5 port, Boot.hx) the fall speed cap (cells / frame) and the ceiling of the hero (cy)
 	static inline var HERO_MAX_FALL = 0.45;
 	static inline var CEILING_CY = -6;
 
@@ -96,7 +94,6 @@ class Game implements kado.GameInterface {
 	var frameCount:Int;
 	var over:Bool;
 	var score:Int;
-	var prevJumpExtend:Bool;
 
 	public function new(mc:ASprite, ?isReplay:Bool = false) {
 		this.isReplay = isReplay;
@@ -121,7 +118,6 @@ class Game implements kado.GameInterface {
 		frameCount = 0;
 		over = false;
 		score = 0;
-		prevJumpExtend = false;
 
 		sheets = findSheets();
 		// pixel art: drawn without smoothing, like the Arkadeo HTML5 port (PIXI.SCALE_MODES.NEAREST)
@@ -157,7 +153,6 @@ class Game implements kado.GameInterface {
 	function gameFrame() {
 		mt.deepnight.Mode.updateAll(true);
 		frameCount++;
-		superPowerJumpBoost();
 		clampHero();
 		syncHeroAttachAlpha();
 	}
@@ -262,20 +257,6 @@ class Game implements kado.GameInterface {
 	}
 
 	// ---------------------------------------------------------------- hero guards (Arkadeo HTML5 port, Boot.hx)
-
-	// the super power's jump: extra speed while up is held during the jump extension, but not on the take-off frame (a
-	// short jump keeps its height, only a held jump gets higher)
-	function superPowerJumpBoost() {
-		var hero = mode.hero;
-		if (hero == null || hero.killed || hero.hasLeft) {
-			prevJumpExtend = false;
-			return;
-		}
-		var je = hero.cd.has("jumpExtend");
-		if (hero.hasSuperPower() && je && prevJumpExtend && KeyboardManager.isDown(KeyboardManager.UP) && hero.dy < 0)
-			hero.dy -= SUPER_JUMP_BOOST;
-		prevJumpExtend = je;
-	}
 
 	// the Fly's charge throws the hero down at ~2 cells / frame (the original has no terminal speed) and its pushes could
 	// throw it out of the map: fall speed capped, a ceiling, and a hero under the map put back on the ground
