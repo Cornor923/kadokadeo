@@ -123,6 +123,11 @@ const gameAchievements = computed(() => {
         <div v-else-if="profile">
           <div v-if="item.value === 'me'" class="space-y-4">
             <h1 class="mt-0 text-center">Profil de {{ profile.data.display_name }}</h1>
+            <p v-if="profile.data.etwin_id !== authSore.user?.etwin_id" class="text-center">
+              <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
+                <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
+              </RouterLink>
+            </p>
             <div v-if="feathersCount > 0" class="flex justify-center items-center gap-1 mb-4">
               <img v-for="i in feathersCount"
                    :key="i"

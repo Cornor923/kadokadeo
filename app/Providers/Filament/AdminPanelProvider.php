@@ -61,6 +61,8 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.anticheat-notices', [
                 'notices' => AntiCheatNotices::disabledRequirements(),
             ]))
+            // <kado-marktwin>: the private messages and their preview (resources/js/admin/marktwin.js)
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.marktwin-assets'))
             // the replay of a run, in a modal (App\Filament\Resources\Runs\RunVerificationTable::replayAction)
             ->authenticatedRoutes(function () {
                 Route::get('runs/{run}/replay', RunReplayController::class)->name('runs.replay');

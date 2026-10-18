@@ -8,6 +8,19 @@ typedef RunDTO = {
 	var seed:String;
 	// the daily game: the same seed for every player, the draws are not stirred (Seed.stir)
 	@:optional var shared_seed:Bool;
+	// a clan run: shown in the bottom bar instead of the contract
+	@:optional var clan:ClanGoalDTO;
+};
+
+// App\Services\ClanRunService::goal
+typedef ClanGoalDTO = {
+	// "attack", "defense" or "mission"
+	var type:String;
+	// the score to reach (a defense, a mission step), the score of the attack to improve (0 for a new attack)
+	var score:Int;
+	// the clan games left: the attack games of the day, the paid ones
+	var attack_games:Int;
+	var clan_games:Int;
 };
 
 typedef ApiResponse<T> = {

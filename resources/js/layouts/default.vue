@@ -5,10 +5,12 @@ import Kalendrier from '@/components/nav/Kalendrier.vue'
 import Navbar from '@/components/nav/Navbar.vue'
 import Starbar from '@/components/nav/Starbar.vue'
 import Sidebar from '@/components/side/Sidebar.vue'
+import SidebarDrawer from '@/components/side/SidebarDrawer.vue'
 import { achievementsEnabled } from '@/stores/achievement'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+const sidebarOpen = ref(false)
 </script>
 
 <template>
@@ -33,13 +35,15 @@ const authStore = useAuthStore()
       </template>
     </header>
 
-    <main class="items-center flex flex-col flex-1 overflow-auto md:overflow-clip pt-10">
+    <main class="items-center flex flex-col flex-1 overflow-auto md:overflow-clip pt-10 space-y-10">
 
-      <Announcement class="w-fit md:w-full max-w-4xl mb-6 text-sm" />
-      <PendingRuns class="w-fit md:w-full max-w-4xl mb-6 text-sm" />
+      <div class="w-fit md:w-full max-w-4xl text-sm space-y-6">
+        <Announcement class="w-full" />
+        <PendingRuns class="w-full" />
+      </div>
 
       <section id="bodySection" class="w-full md:mx-4 lg:mx-8 flex max-w-4xl border-2 border-solid border-kado-cyan-800 bg-kado-cyan-200 pb-4 md:mb-10">
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <slot />
         </div>
 
@@ -56,8 +60,26 @@ const authStore = useAuthStore()
     <KadoAchievementNotifications v-if="achievementsEnabled && authStore.isAuthenticated" />
 
     <div v-if="authStore.isAuthenticated" class="bgBack border-t-2 border-solid border-kado-cyan-50">
-      <Navbar class="md:hidden" />
+      <Navbar class="md:hidden">
+        <li class="min-w-0">
+          <button type="button"
+                  class="block cursor-pointer"
+                  title="Menu"
+                  aria-label="Menu"
+                  @click="sidebarOpen = true">
+            <svg width="117"
+                 height="95"
+                 viewBox="0 0 117 95"
+                 class="h-auto max-w-full fill-kado-cyan-700 stroke-white stroke-[3]"
+                 aria-hidden="true">
+              <path d="M36.5 13h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11zM36.5 31h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11zM36.5 49h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11z" />
+            </svg>
+          </button>
+        </li>
+      </Navbar>
     </div>
+
+    <SidebarDrawer v-if="authStore.isAuthenticated" v-model:open="sidebarOpen" />
   </div>
 </template>
 

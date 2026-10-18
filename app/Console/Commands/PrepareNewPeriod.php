@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Period;
+use App\Services\ClanPeriodService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
 use Carbon\Carbon;
@@ -27,7 +28,7 @@ class PrepareNewPeriod extends Command
     /**
      * Execute the console command.
      */
-    public function handle(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService)
+    public function handle(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService)
     {
         $period = Period::orderBy('id', 'desc')->first();
 
@@ -38,7 +39,7 @@ class PrepareNewPeriod extends Command
                 ->first();
 
             if ($previousPeriod) {
-                $this->closePeriod($previousPeriod, $period, $leagueService, $poidsPlumeService);
+                $this->closePeriod($previousPeriod, $period, $leagueService, $poidsPlumeService, $clanPeriodService);
             }
 
             $this->info('Current period is still active, no new period created.');
@@ -59,17 +60,18 @@ class PrepareNewPeriod extends Command
         $this->info('Period '.$newPeriod->id.' created: '.$newPeriod->start_at->toDateString().' to '.$newPeriod->end_at->toDateString());
 
         if ($period) {
-            $this->closePeriod($period, $newPeriod, $leagueService, $poidsPlumeService);
+            $this->closePeriod($period, $newPeriod, $leagueService, $poidsPlumeService, $clanPeriodService);
         }
 
         return 0;
     }
 
-    private function closePeriod(Period $period, Period $nextPeriod, LeagueService $leagueService, PoidsPlumeService $poidsPlumeService): void
+    private function closePeriod(Period $period, Period $nextPeriod, LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService): void
     {
         $this->info('Closing period '.$period->id.'...');
 
         $leagueService->closePeriod($period, $nextPeriod);
         $poidsPlumeService->closePeriod($period);
+        $clanPeriodService->closePeriod($period);
     }
 }

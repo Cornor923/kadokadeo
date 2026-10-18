@@ -34,11 +34,20 @@ services:
 
   kadokadeo_eternaltwin:
     container_name: kadokadeo_eternaltwin
+    # Upstream Eternaltwin `main`, pinned by ETERNALTWIN_REF (see docker/eternaltwin/Dockerfile).
+    # Rollback to the old npm CLI: dockerfile Dockerfile.legacy + volume ./eternaltwin:/www (etwin.toml).
     build:
       context: ./docker/eternaltwin
       dockerfile: Dockerfile
+      args:
+        ETERNALTWIN_REF: 63ace6b0fe60b9cb1540781d0e6ece6b57f342d8
+    depends_on:
+      - kadokadeo_database
+    environment:
+      ETERNALTWIN_PROFILE: dev
     volumes:
-      - ./eternaltwin:/www
+      # The binary reads ./eternaltwin/eternaltwin.toml (searched in its working directory).
+      - ./eternaltwin:/etc/eternaltwin:ro
     networks:
       - kadokadeo_network
     stdin_open: true

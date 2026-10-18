@@ -81,6 +81,17 @@ return [
         'jackpot' => env('KADO_POIDS_PLUME_JACKPOT', 0),
     ],
 
+    // the looks of the site (App\Http\Controllers\Api\ThemeController): "base" for everyone, the others bought once with
+    // Kado points. Karbon: the second theme of KadoKado (its images were in dat.kadokado.com/gfx/gui/karbon)
+    'themes' => [
+        'base' => ['name' => 'KadoKado', 'price' => 0],
+        'karbon' => ['name' => 'Karbon', 'price' => (int) env('KADO_THEME_KARBON_PRICE', 10000)],
+    ],
+
+    // tools to try the clans without other players (/clans/debug: fake attacks, defenses and mission steps, time going by,
+    // end of the period). Never in production.
+    'debug_tools' => (bool) env('KADO_DEBUG_TOOLS', false) && env('APP_ENV') !== 'production',
+
     // off: nothing is evaluated on runs / league changes and nothing is shown to players (the admin stays available)
     'achievements' => [
         'enabled' => (bool) env('KADO_ACHIEVEMENTS_ENABLED', false),

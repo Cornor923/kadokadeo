@@ -50,11 +50,14 @@ class Panel extends NineSlicePlane {
 	public function showMessage(title:String, message:String, ?hint:String):Void {
 		setTitle(title);
 		clearContent();
+		// (the messages of the server are not cut by lines)
 		var text = new pixi.core.text.Text(message, {
 			fontFamily: 'Fredoka Bold',
 			fontSize: 30,
 			fill: 0x78c3c9,
 			align: 'center',
+			wordWrap: true,
+			wordWrapWidth: this.width - KadoKadeoManager.I(24),
 		});
 		addContentDisplayObject(text);
 		text.x = (this.width - text.width) / 2;

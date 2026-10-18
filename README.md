@@ -31,6 +31,20 @@ Here are the configuration variables specific to the project (the standard Larav
 | `KADO_GAME_BUILDS_ENABLED`  | Replays played by the version of the game they were recorded with (archive of the old bundles). Off for now: the production wipes `storage/` at each deploy, so every replay is played by the current bundle | `false` |
 | `KADO_GAME_BUILDS_PATH`     | Folder of the archive of the old game bundles (written by `build-games.mjs`)        | `storage/app/game-builds` |
 
+### Themes
+
+The players can change the look of the site in « Mon compte »: the KadoKado theme for everyone, the Karbon theme (the second theme of KadoKado, `resources/css/themes/karbon.css`, images in `public/gfx/themes/karbon`) bought once with Kado points (`kado.themes` in [`config/kado.php`](config/kado.php)).
+
+| Variable                   | Description                                  | Default |
+| -------------------------- | -------------------------------------------- | ------- |
+| `KADO_THEME_KARBON_PRICE`  | Price of the Karbon theme in Kado points     | 10000   |
+
+### Clans
+
+The tournament of the clans lasts a period (`App\Services\ClanService`), with two rankings at the same time as on KadoKado since 2011: the attacks (the score of a run becomes an attack, the attacked clan has some hours to beat it) and the missions (a series of games to complete in a given time, more games in a bigger clan, harder scores with each mission: a completed mission gives points and opens the next one, a mission not finished in time loses a point by game not completed, minus one). Clan runs of missions are free, attacks and defenses have their own free games each day (given again by `kado:reset-daily-games`), then a paid clan game (bought by packs with Kado points, which their owner uses or gives to his clan, distributed by the leader and the right hands). The scores, the missions and the options start again from 0 on the first day of the next period (the clans and their members stay). It is closed with the period by `kado:prepare-new-period`, and `kado:clans:resolve-attacks` (scheduled every 5 minutes) gives their points to the attacks not repelled in time.
+
+All the rules (durations, points, steps, options, packs of paid games, rewards...) are settings of `App\Settings\ClanSettings` changed in the admin, « Paramètres > Clans », with their default values in [`database/settings`](database/settings). The help page shows them as they are set (`GET /api/clans/overview`, `rules`).
+
 ### Security and anti-cheat
 
 | Variable                    | Description                                                                         | Default                           |

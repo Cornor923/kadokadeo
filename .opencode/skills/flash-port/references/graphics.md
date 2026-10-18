@@ -209,8 +209,8 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   the embedded ones (`paradice/Txt.hx`).
 - A glow filter or a blend mode on a nested clip whose parts move on their own (Schizo Fuzz: the hero's outline on
   its `sub`, the `add` flash of the acorn): `Exporter.effects = True` keeps them on the CLIP layers (`fl`, `bl`), the
-  game's `Clip` applies them at run time (`schizofuzz/FlashGlow.hx`: Flash's glow, a box blur of the alpha drawn under
-  the clip; PIXI blends sprites, not containers: `add` is given to every picture inside). Baking a glow in each part
+  game's `Clip` applies them at run time (`schizofuzz/FlashGlow.hx`, `arkadeo.FlashGlow` for the AS3 games: Flash's
+  glow, a box blur of the alpha drawn under the clip; PIXI blends sprites, not containers: `add` is given to every picture inside). Baking a glow in each part
   would draw outlines inside the picture. A `lighten` layer inside a FLAT image: `SWF.lighten = True` (swfrender
   draws it normally otherwise, as the renders made before it did).
 - Pixel art in Flash's "low" quality (Judo Commando: `root._quality = "low"`, bitmaps never smoothed): FFDec draws

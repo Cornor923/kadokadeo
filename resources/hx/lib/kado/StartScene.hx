@@ -79,10 +79,30 @@ class StartScene extends Container {
 		this.interactive = false;
 		overlay.visible = true;
 		panel.visible = true;
-		panel.showMessage("", 'CONNEXION AU\nSERVEUR EN COURS...');
+		showMessage("", 'CONNEXION AU\nSERVEUR EN COURS...');
+	}
+
+	// the run could not begin: the message of the server (no games left, the daily game already played...)
+	public function showError(error:Dto.ApiError):Void {
+		var message = switch (error.status) {
+			case 0: "LE SERVEUR N'A PAS PU ÊTRE JOINT.";
+			case status if (status >= 500): "ERREUR DU SERVEUR.";
+			case _: error.message.toUpperCase();
+		}
+		// (refused by the server: asking again would be refused too)
+		var refused = error.status == 403 || error.status == 422;
+		showMessage("ERREUR", message, refused ? null : "CLIQUER POUR RÉESSAYER");
+	}
+
+	function showMessage(title:String, message:String, ?hint:String):Void {
+		panel.showMessage(title, message, hint);
+		panel.fitHeight(KadoKadeoManager.I(83));
+		panel.y = (kkm.screen.height - panel.height) / 2;
 	}
 
 	public function showContract(contract:Dto.RunDTO):Void {
+		panel.height = KadoKadeoManager.I(83);
+		panel.y = (kkm.screen.height - panel.height) / 2;
 		panel.setTitle("CONTRAT");
 		panel.clearContent();
 		var scoreToBeat = new pixi.core.text.Text('SCORE À BATTRE', {

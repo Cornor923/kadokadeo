@@ -1,5 +1,4 @@
 package mt.fx;
-import mt.bumdum9.Lib;
 /**
  * Fade to black with optionnal blur and scale fx
  */
@@ -7,7 +6,7 @@ class Vanish extends Visibility{
 	public var timer:Float;
 	public var fadeLimit:Float;
 
-	public function new(mc, ?timer=10, ?fadeLimit=10, ?fadeAlpha=false ) {
+	public function new(mc:arkadeo.DisplayObject, ?timer:Float=10, ?fadeLimit:Float=10, ?fadeAlpha=false ) {
 		super(mc);
 		this.timer = timer;
 		this.fadeLimit = fadeLimit;
@@ -21,7 +20,7 @@ class Vanish extends Visibility{
 	 * y : [-1,0,1]
 	 * other values discarded
 	 */
-	public function setFadeScale(x, y) {
+	public function setFadeScale(x:Int, y:Int) {
 		fadeScale = { sx:x,	sy:y, scx:root.scaleX, scy:root.scaleY	};
 		return this;
 	}
@@ -29,12 +28,12 @@ class Vanish extends Visibility{
 	/**
 	 * Adds a blur fx
 	 */
-	public function setFadeBlur(x,y) {
+	public function setFadeBlur(x:Float,y:Float) {
 		fadeBlur = { x:x, y:y };
 		return this;
 	}
 
-	override function update() {
+	override public function update() {
 		if( root.parent == null ) {
 			kill();
 			return;
@@ -47,7 +46,7 @@ class Vanish extends Visibility{
 
 	}
 
-	override function kill() {
+	override public function kill() {
 		super.kill();
 		if(root.parent != null) root.parent.removeChild(root);
 	}

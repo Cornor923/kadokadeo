@@ -39,6 +39,7 @@ export function useApi() {
     get: (url, config = {}) => request(() => client.get(url, config)),
     post: (url, data = {}, config = {}) => request(() => client.post(url, data, config)),
     put: (url, data = {}, config = {}) => request(() => client.put(url, data, config)),
+    patch: (url, data = {}, config = {}) => request(() => client.patch(url, data, config)),
     del: (url, config = {}) => request(() => client.delete(url, config)),
   }
 }

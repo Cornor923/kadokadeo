@@ -27,7 +27,7 @@ class Entity {
 	public var oppy:Float; // oppose to grav
 
 	public var flags:haxe.EnumFlags<EntFlags>;
-	public var mc:DO;
+	public var mc:DisplayObject;
 
 	public var page:Null<Int>;
 	public var maxPv:Float = 1.0;
@@ -119,7 +119,7 @@ class Entity {
 	}
 
 	// mc.getRect(level root)
-	public function getRect():Rect {
+	public function getRect():Rectangle {
 		return mc.getRect();
 	}
 

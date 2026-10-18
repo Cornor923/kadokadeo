@@ -1,0 +1,94 @@
+# Configuration of the local dev Eternaltwin (upstream `main`, built by docker/eternaltwin/Dockerfile).
+# Format: https://gitlab.com/eternaltwin/eternaltwin/-/blob/main/docs/app/etwin-config.md
+# Copy to eternaltwin.toml (read from the working directory of the container, /etc/eternaltwin).
+# Check what was loaded: docker exec kadokadeo_eternaltwin eternaltwin config
+#
+# The `dev` profile (ETERNALTWIN_PROFILE in compose.yaml) already seeds:
+# - users alice (administrator), bob, charlie, dan, eve, frank; password = 10 times the initial
+#   (alice / aaaaaaaaaa, bob / bbbbbbbbbb, ...)
+# - apps brute_dev, emush_dev, eternalfest_dev, kadokadeo_dev, kingdom_dev, myhordes_dev,
+#   neoparc_dev (client `<key>@clients`, secret "dev")
+# - the forum section tree: one root section per game (`kadokadeo`, ...) + `general`, with
+#   their main sections as children (`kadokadeo_main`, ...)
+# Everything below is merged onto those defaults. Seeding is an upsert run at every start.
+
+[backend]
+port = 50320
+# Kept from the old etwin.toml: the copied database was encrypted with it.
+secret = "dev_secret"
+store = "Postgres"
+clock = "System"
+mailer = "Mock"
+# `oauth_client = "Mock"` is ignored at 63ace6b0 (not applied by the config patch), the
+# Network clients need some Discord/GitLab credentials to start: dummy ones below
+# (signing in with Discord/GitLab does not work locally).
+
+[discord]
+client_id = "0"
+secret = "dev"
+
+[gitlab]
+client_id = "0"
+secret = "dev"
+
+[frontend]
+uri = "http://localhost:50320/"
+
+[postgres]
+host = "kadokadeo_database"
+port = 5432
+# Not "etwin.dev" (schema of the old `@eternal-twin/cli`, kept for the rollback).
+name = "etwin_main.dev"
+user = "kadokadeo.dev"
+password = "dev"
+admin_user = "kadokadeo.dev"
+admin_password = "dev"
+
+[opentelemetry]
+enabled = true
+
+# Apps (OAuth clients `<key>@clients`). The ones of the old etwin.toml are kept, same secrets.
+# `allowed_scopes` is only applied when the client is created.
+[seed.app.kadokadeo]
+uri = "http://kadokadeo.localhost/"
+oauth_callback = "http://kadokadeo.localhost/oauth/callback"
+secret = "dev_secret"
+allowed_scopes = "forum:write"
+description = "Kadokadeo is the reimplementation of Kadokado website, coming with future Arkadeo games."
+
+[seed.app.eternalfest]
+uri = "http://localhost:50313/"
+oauth_callback = "http://localhost:50313/oauth/callback"
+secret = "dev_secret"
+
+[seed.app.myhordes]
+uri = "http://myhordes.localhost/"
+oauth_callback = "http://myhordes.localhost/oauth/callback"
+secret = "dev_secret"
+
+[seed.app.neoparc]
+uri = "http://neoparc.localhost/"
+oauth_callback = "http://neoparc.localhost/oauth/callback"
+secret = "dev_secret"
+
+[seed.app.mjrt]
+uri = "http://mjrt.localhost/"
+oauth_callback = "http://mjrt.localhost/oauth/callback"
+secret = "dev_secret"
+
+[seed.app.emush]
+uri = "http://localhost/"
+oauth_callback = "http://localhost:8080/oauth/callback"
+secret = "dev_secret"
+
+# Forum: same names as production (https://eternaltwin.org/api/v1/forum/sections).
+[seed.forum_section.kadokadeo]
+display_name = "Kadokadeo"
+locale = "fr-FR"
+order = 50
+
+[seed.forum_section.kadokadeo_main]
+display_name = "Café des palabres"
+locale = "fr-FR"
+parent = "kadokadeo"
+order = 0

@@ -1,6 +1,6 @@
 package mt.deepnight;
 
-import flash.display.Sprite;
+import arkadeo.Sprite;
 
 class Mode {
 	static var ALL:Array<Mode> = [];
@@ -36,7 +36,7 @@ class Mode {
 		if (!destroyed) {
 			destroyed = true;
 			pause();
-			root.parent.removeChild(root);
+			root.detach();
 			KILL_LIST.push(this);
 		}
 	}

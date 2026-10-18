@@ -20,3 +20,6 @@ yarn.lock
 # Local configuration                                                         #
 ###############################################################################
 etwin.toml
+
+# Local configuration of the upstream Eternaltwin (copy of eternaltwin.toml.example)
+eternaltwin.toml

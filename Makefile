@@ -26,7 +26,6 @@ reset-dependencies: install-app install-eternaltwin
 
 build:
 	docker compose build
-	docker compose run -u node kadokadeo_eternaltwin chown -R node:node /www
 	docker compose up --no-start --remove-orphans
 
 install: setup-env-variables build start-kadokadeo-database install-app install-eternaltwin
@@ -37,14 +36,13 @@ install-app:
 	docker compose run kadokadeo_app php artisan migrate:fresh --force --seed
 
 install-eternaltwin:
-	docker compose run -u node kadokadeo_eternaltwin yarn install
-	docker compose run -u node kadokadeo_eternaltwin yarn etwin db create
+	docker compose run --rm kadokadeo_eternaltwin eternaltwin db sync
 
 reset-database:
 	docker compose run kadokadeo_app php artisan migrate:fresh --force --seed
 
 reset-eternaltwin-database:
-	docker compose run -u node kadokadeo_eternaltwin yarn etwin db create
+	docker compose run --rm kadokadeo_eternaltwin eternaltwin db reset
 
 start-kadokadeo-database:
 	docker start kadokadeo_database
@@ -53,6 +51,7 @@ setup-env-variables:
 	cp compose.override.yaml.example compose.override.yaml
 	cp .env.example .env
 	cp eternaltwin/etwin.toml.example eternaltwin/etwin.toml
+	cp eternaltwin/eternaltwin.toml.example eternaltwin/eternaltwin.toml
 	openssl genrsa -out storage/app/private/privkey.pem
 	openssl rsa -in storage/app/private/privkey.pem -pubout -out storage/app/private/pubkey.pem
 

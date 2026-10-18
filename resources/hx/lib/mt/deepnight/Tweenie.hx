@@ -89,12 +89,12 @@ class Tweenie {
 	// function create<T>( o : T, getSet : { function get(o:T) : Float; function set(o:T,v:Float) : Void } )
 
 	public inline function create(parent:Dynamic, varName:String, to:Float, ?tp:TType, ?duration_ms:Float) {
-		#if (nme || openfl)
-		return create_(parent, varName, to, tp, duration_ms);
-		#else
+		#if (flash && !(nme || openfl))
 		return if (Reflect.hasField(parent,
 			varName)) create_(parent, varName, to, tp,
 				duration_ms); else create_(parent, untyped __unprotect__(varName), to, tp, duration_ms); // champ obfuscqué
+		#else
+		return create_(parent, varName, to, tp, duration_ms);
 		#end
 	}
 
@@ -163,16 +163,10 @@ class Tweenie {
 		return t;
 	}
 
-	static inline function fastPow2(n:Float):Float {
-		return n * n;
-	}
-
-	static inline function fastPow3(n:Float):Float {
-		return n * n * n;
-	}
-
+	// (the products in the order of the Tweenie compiled in Mel: its tweens move objects the game reads)
 	static inline function bezier(t:Float, p0:Float, p1:Float, p2:Float, p3:Float) {
-		return fastPow3(1 - t) * p0 + 3 * t * fastPow2(1 - t) * p1 + 3 * fastPow2(t) * (1 - t) * p2 + fastPow3(t) * p3;
+		var u = 1 - t;
+		return u * u * u * p0 + 3 * t * u * u * p1 + 3 * t * t * u * p2 + t * t * t * p3;
 	}
 
 	public function delete(parent:Dynamic) { // attention : les callbacks end() / update() ne seront pas appelés !
@@ -255,14 +249,16 @@ class Tweenie {
 		for (t in tlist) {
 			var dist = t.to - t.from;
 			if (t.type == TRand)
-				t.ln += if (Std.random(100) < 33) t.speed * tmod else 0;
+				t.ln += if (kado.Seed.randomVfx(100) < 33) t.speed * tmod else 0;
 			else
 				t.ln += t.speed * tmod;
 			t.n = t.interpolate(t.ln);
 			if (t.ln < 1) {
 				// en cours...
+				// (the shakes on the random of the effects of KadoKadeo: the same in a replay)
 				var val = if (t.type != TShake && t.type != TShakeBoth) t.from + t.n * dist; else if (t.type == TShake) t.from
-					+ Math.random() * Lib.abs(t.n * dist) * (dist > 0 ? 1 : -1); else t.from + Math.random() * t.n * dist * (Std.random(2) * 2 - 1);
+					+ kado.Seed.randVfx() * Lib.abs(t.n * dist) * (dist > 0 ? 1 : -1); else t.from
+					+ kado.Seed.randVfx() * t.n * dist * (kado.Seed.randomVfx(2) * 2 - 1);
 				if (t.fl_pixel)
 					val = Math.round(val);
 				Reflect.setProperty(t.parent, t.vname, val);

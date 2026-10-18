@@ -70,7 +70,11 @@ class Bonus extends Entity {
 		sc.x = Std.int(game.char.mc.x);
 		sc.y = char.mc.y - char.heightOfMc() - 50;
 
-		char.mc.parent.addChild(sc);
+		// (on top of the parent of Mel: the root of the level)
+		if (game.level.dm.owns(char.mc))
+			game.level.dm.addTop(sc);
+		else
+			char.mc.parent.addChild(sc);
 
 		game.tweenie.create(sc, "y", sc.y - 35, TEaseIn, 500);
 		var v = new Vanish(sc, 80);

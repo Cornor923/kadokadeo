@@ -11,6 +11,9 @@ class GamePolicy
 {
     use HandlesAuthorization;
 
+    // playDaily: the daily game was already played today (it can be played again outside the production)
+    public const DAILY_ALREADY_PLAYED = 'daily_already_played';
+
     public function view(User $user, Game $game)
     {
         if (!$game->is_active) {
@@ -31,7 +34,7 @@ class GamePolicy
             ->first();
 
         if (!$dailyGame) {
-            return $this->deny('This game is not available as a daily game today');
+            return $this->deny('Ce jeu n\'est pas la partie du jour.');
         }
 
         $alreadyPlayed = $dailyGame->runs()
@@ -39,7 +42,7 @@ class GamePolicy
             ->exists();
 
         if ($alreadyPlayed) {
-            return $this->deny('You have already played the daily game today');
+            return $this->deny('Vous avez déjà joué la partie du jour : revenez demain !', self::DAILY_ALREADY_PLAYED);
         }
 
         return $this->allow();

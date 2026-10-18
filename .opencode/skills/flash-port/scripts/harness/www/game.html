@@ -33,6 +33,7 @@
   const H = +(q.get('h') || 640);
   document.getElementById('c').height = H;
   // test modes of the game: modes/<game>.js (optional) fills window.TEST_MODES[name] = (proto, query) => {...}
+  window.FP_STATE = {};
   window.TEST_MODES = {
     // any game: game over after N frames (identical in live and replay)
     generic(P, q) {
@@ -58,6 +59,19 @@
       // the url parameters may decide (see modes/kslash.js)
       if (!TEST_MODES[test]) throw new Error('unknown test mode ' + test);
       TEST_MODES[test](window[cls].prototype, q);
+    }
+    // fp=1: the gameplay state after every step of KadoKadeo, in window.__fp (FP_STATE[game](game) of modes/<game>.js):
+    // compared between two builds on the same replay (fp.mjs)
+    if (q.get('fp')) {
+      const F = FP_STATE[game], P = window[cls].prototype, orig = P.update;
+      window.__fp = [];
+      // (up to the step that ends the game: the steps of the end screen depend on when the test reads)
+      let done = false;
+      P.update = function (d) {
+        orig.call(this, d);
+        if (!done) window.__fp.push(JSON.stringify(F(this)));
+        done = done || !!window.__over;
+      };
     }
     window.kk = new KadoKadeo(document.getElementById('c'), window[cls], {
       name: game, gameId: 1, replayData: q.get('replay'), seed: q.get('seed') || '123',

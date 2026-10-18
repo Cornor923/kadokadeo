@@ -15,7 +15,9 @@ use App\Models\Game;
 use App\Models\GameBuild;
 use App\Models\Period;
 use App\Models\Run;
+use App\Policies\GamePolicy;
 use App\Services\AchievementService;
+use App\Services\ClanRunService;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\ReplayVerifier;
@@ -37,22 +39,30 @@ class RunController extends Controller implements HasMiddleware
         ];
     }
 
-    public function begin(RunStartRequest $request, GameService $gameService, LeagueService $leagueService, Game $game)
+    public function begin(RunStartRequest $request, GameService $gameService, LeagueService $leagueService, ClanRunService $clanRunService, Game $game)
     {
-        Gate::authorize('create', Run::class);
-
         $isDaily = $request->validated('daily', false);
-        $realContract = false;
-        $dailyGame = null;
-
+        // (prepared on demand, before the policy looks for it)
+        $dailyGame = $isDaily ? $gameService->getDailyGame() : null;
+        // the daily game: refused when the game is not the one of the day, or when it was already played today (outside
+        // the production it can be played again, 0fe63e9c). The message is shown in the game.
         if ($isDaily) {
-            // If it's a daily run, check if the game is a daily game and if the user already played it today
             $dailyGate = Gate::inspect('playDaily', $game);
-            $realContract = $dailyGate->allowed() || !app()->environment('production');
-            $dailyGame = $gameService->getDailyGame();
+            if ($dailyGate->denied() && ($dailyGate->code() !== GamePolicy::DAILY_ALREADY_PLAYED || app()->environment('production'))) {
+                abort(403, $dailyGate->message());
+            }
+        }
+        // an attack, a defense or a mission step asked on the clan pages: the runs of the missions are free, the attacks
+        // and the defenses have their own games (attack games of the day, then paid clan games)
+        $clanAction = $isDaily ? null : $clanRunService->pendingAction($request->user()->id, $game->id);
+        $cost = $clanRunService->runCost($clanAction);
+        if ($cost === ClanRunService::COST_GAME) {
+            Gate::authorize('create', Run::class);
+        } elseif ($cost === ClanRunService::COST_CLAN && !$clanRunService->useClanGame($request->user())) {
+            abort(403, 'Vous n\'avez plus de parties de clan. Vous pouvez en acheter avec vos points Kado.');
         }
 
-        if ($realContract && $dailyGame) {
+        if ($dailyGame) {
             $score = $dailyGame->contract_score;
             $points = $dailyGame->contract_points;
             $seed = $dailyGame->seed;
@@ -80,15 +90,21 @@ class RunController extends Controller implements HasMiddleware
             $run->save();
         }
 
-        if ($user->kado_games > 0) {
+        // only the clan run chosen above (none for the daily game, even when it is played again outside the production)
+        if ($clanAction) {
+            $clanRunService->bindRun($run, $clanAction);
+        }
+
+        if ($cost === ClanRunService::COST_GAME && $user->kado_games > 0) {
             $user->kado_games -= 1;
             $user->save();
         }
 
-        return new RunBeginResource($run);
+        // the goal of the clan run and the clan games left, in the bottom bar of the game
+        return (new RunBeginResource($run))->withClan($clanAction ? $clanRunService->goal($clanAction, $user->refresh()) : null);
     }
 
-    public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService)
+    public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService)
     {
         // a run sent again (offline retry, lost response) must not be rewarded twice
         if ($run->completed_at !== null) {
@@ -123,6 +139,15 @@ class RunController extends Controller implements HasMiddleware
             throw new BadRequestException($e->getMessage());
         }
 
+        // the score of an attack, a defense or a mission step of the clan of the player
+        // (the run is saved: a problem there must not lose it)
+        try {
+            $clanResult = $clanRunService->handleRunCompleted($run);
+        } catch (\Throwable $e) {
+            report($e);
+            $clanResult = null;
+        }
+
         // the score is sent by the game: the replay of a run that counts is played again on the server
         if ($replayVerifier->shouldVerify($run, $previousBestScore)) {
             $run->update(['verification' => RunVerification::PENDING]);
@@ -148,6 +173,7 @@ class RunController extends Controller implements HasMiddleware
                 'current_star' => $run->is_cheat ? $previousStar : $run->game->getStarFromScore($run->score),
                 'people_to_beat' => $toBeatCount,
                 'achievement_updates' => $achievementUpdates,
+                'clan' => $clanResult,
             ],
         ];
     }

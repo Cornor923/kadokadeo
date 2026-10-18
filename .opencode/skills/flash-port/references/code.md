@@ -28,6 +28,14 @@ lowercase, only `a-z0-9`: `K-Slash !` -> `kslash`, `Opalus 2` -> `opalus2`).
   import common_haxe_avm1.display.ASprite; import common_haxe_avm1.KKApi;
   import mt.Timer; import mt.bumdum.Lib;
   ```
+- Helpers that are not the game (a Flash API, an `mt.*` class of the original libs) come from `resources/hx/lib`:
+  `common_haxe_avm1` (AS1 / AS2 display: `ASprite`, the base of every sprite, interpolated by KadoKadeoManager),
+  `arkadeo` (the AS3 display list of the Arkadeo games over `ASprite`: DisplayObject / Sprite / Shape / Bitmap /
+  MovieClip + Clip / TextField, filters, `DepthManager` on `mt.DepthManager`, the AS3 `Rand`; per-game settings in
+  `arkadeo.Flash`), `mt.*` (`mt.DepthManager`, `mt.bumdum`, `mt.deepnight` Cooldown / Delayer / Tweenie / Mode /
+  Particle, SpriteLib `mt.deepnight.slb`, `mt.fx` effects, `mt.gx` Pool / FTimer, `mt.MLib`...). A class missing there,
+  or one that does not compile in Haxe 4 / JS (`Hash`, `flash.*`), is added to or fixed in the lib (on `ASprite` /
+  `arkadeo`), not copied into the game, and no second display stack is written next to them.
 - `Game.hx` implements `kado.GameInterface` (`update(delta)`, `destroy()`) and is exposed as `Game<Name>`, the name
   the page loads:
   ```haxe
@@ -127,7 +135,9 @@ changes the roundings. Do not use it for a new port.
 ## Randomness and determinism
 
 - Gameplay random -> `Seed.random(n)` / `Seed.rand()`; random that only changes pictures (particles, sparkles,
-  a random night in K-Slash) -> `Seed.randomVfx(n)` / `Seed.randVfx()`. A visual effect must never draw from the
+  a random night in K-Slash) -> `Seed.randomVfx(n)` / `Seed.randVfx()`. An original that keeps `mt.Rand` objects drawing
+  from the seed of the game: `Seed.random` / `range` / `irange` / `sign` (gameplay) and `Seed.randomVfx` / `rangeVfx`
+  / `irangeVfx` / `signVfx` (pictures), the formulas of `mt.Rand`. A visual effect must never draw from the
   gameplay random, or seeking and display settings change the game.
 - Trigonometry and powers whose result affects the game: round them (`Math.cos/sin/atan2/pow/sqrt` can differ in
   the last bits between browsers). K-Slash rounds to 1/65536, an exact binary fraction:
@@ -160,6 +170,9 @@ changes the roundings. Do not use it for a new port.
 - Start screen `public/assets/img/gfx/artwork/<game>.jpg`, 600x600, required (an empty start screen otherwise):
   composed from SWF renders, after the old thumbnail `artwork/old/<game>.gif` when there is one.
 - Never edit `resources/js/games/*.js` or `public/gamesdata/*`: `make compile-games` (Docker) regenerates them.
+- An **Arkadeo** game (600 x 460): `'is_arkadeo' => true` in `GameSeeder.php`. The site gives it a canvas of 600 x 500 (the game
+  area + the score bar, `KadoKadeoManager.gameAreaHeight()` = 460), its start screen is 600 x 460, test it in the harness with
+  `&h=500` (Mel, Brutal Teenage Crisis).
 
 ## Compile
 
