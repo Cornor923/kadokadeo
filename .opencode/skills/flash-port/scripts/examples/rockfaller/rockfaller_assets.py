@@ -11,10 +11,13 @@ usage: rockfaller_assets.py <port content folder> <gfx.swf of the original> <out
 writes:
   out/src/<anim>/<n>.png    the frames of the atlas animations, each animation on one canvas (its frames keep their
                             own pivot: the canvas puts every pivot on the same pixel)
-  out/src/bg.png            the Background, cut to the game area (600 x 460, placed at (0, 0))
-  out/src/fg.png            the Foreground without its gems (600 x 460)
+  out/src/bg.png            the Background as the port frames it, cut to the game area (600 x 460, placed at (0, 0))
+  out/src/fg.png            the Foreground without its gems, as the port frames it (600 x 460)
   out/src/fgGem<i>/<c>.png  the gem _g<i> of the Foreground in colour c (1-4, frames of gfx.Stone), turned and scaled
                             like in the SWF, cut by the mask of the Foreground (baked: no PIXI mask during the game)
+The decor follows the framing of the Arkadeo port (its Game.hx: a scene of 600 x 480, the Background scaled 1.023 at
+(-64, 0), the Foreground stretched to 600 x 480, the grid at y 50), shown from its row VIEW_Y: the 460 rows of the
+Arkadeo game area, the grid at y 35 (the STAGE_Y of the original), the tubes whole under the rocky lip.
   out/src/glow/<n>.png      the white glow of a selected stone (Filt.glow of the original), baked: 1-4 the gems, 5 rock
   out/src/scoreDigit/<n>.png  digit n - 1 of gfx.Score (Alba 14 px, white), pivot on its origin
   out/src/scorePts/1.png      "pts" of gfx.Score (Alba 10 px, white), pivot on its origin
@@ -32,9 +35,12 @@ import swffont
 SRC, SWF, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
 # the game area of an Arkadeo game
 W, H = 600, 460
-# where the Background symbol is drawn in the game area (its rendering starts 52 px left and 7 px above the
-# origin of the symbol: measured against the screenshots of the original)
-BG_X, BG_Y = -52, -7
+# the scene of the Arkadeo port (600 x 480): Background scaled BG_SCALE at (BG_X, BG_Y), Foreground stretched to it
+SCENE_W, SCENE_H = 600, 480
+BG_SCALE = 1.023
+BG_X, BG_Y = -64, 0
+# first row of that scene shown in the game area
+VIEW_Y = 15
 # gfx.Stone frames of the gems of the Foreground (gotoAndStop(rand(4) + 1)): Deco 1-4
 GEM_COLORS = 4
 # Filt.glow(stone.mc, 1.7, 10, 0xFFFFFF) of Slot.select: a white glow a bit larger than the stone
@@ -95,31 +101,43 @@ for anim, names in atlas['animations'].items():
 print('atlas: %d animations, %d frames' % (len(frames_of), sum(len(v) for v in frames_of.values())))
 
 # ---------------------------------------------------------------- Background, Foreground
+def resized(im, w, h):
+    # (premultiplied: no dark fringe on the transparent edges)
+    return im.convert('RGBa').resize((w, h), Image.BILINEAR).convert('RGBA')
+
+
+def view(scene):
+    return scene.crop((0, VIEW_Y, W, VIEW_Y + H))
+
+
 bg = Image.open(os.path.join(SRC, 'bg.png')).convert('RGBA')
-save(bg.crop((-BG_X, -BG_Y, -BG_X + W, -BG_Y + H)), 'bg.png')
+scene = Image.new('RGBA', (SCENE_W, SCENE_H), (0, 0, 0, 0))
+b = resized(bg, round(bg.width * BG_SCALE), round(bg.height * BG_SCALE))
+scene.paste(b, (BG_X, BG_Y), b)
+save(view(scene), 'bg.png')
 pivots['bg'] = [0, 0]
 fg = Image.open(os.path.join(SRC, 'fg.png')).convert('RGBA')
-save(fg.crop((0, 0, W, H)), 'fg.png')
+save(view(resized(fg, SCENE_W, SCENE_H)), 'fg.png')
 pivots['fg'] = [0, 0]
 
 # the gems of the Foreground (_g0.._g4): the Deco frame turned / scaled by its matrix, times the mask (alpha x red)
 mask = np.array(Image.open(os.path.join(SRC, 'fg_mask.png')).convert('RGBA')).astype(np.float64)
 mask = (mask[..., 0] / 255.0) * (mask[..., 3] / 255.0)
-mask = np.pad(mask, ((0, max(0, H - mask.shape[0])), (0, max(0, W - mask.shape[1]))))[:H, :W]
+mask = np.pad(mask, ((0, max(0, SCENE_H - mask.shape[0])), (0, max(0, SCENE_W - mask.shape[1]))))[:SCENE_H, :SCENE_W]
 
 
 def place(im, px, py, x, y, scale, rot):
-    """`im` (pivot px, py) drawn in the game area at (x, y), scaled and turned (degrees): premultiplied bilinear"""
+    """`im` (pivot px, py) drawn in the scene at (x, y), scaled and turned (degrees): premultiplied bilinear"""
     a = math.radians(rot)
     ca, sa = math.cos(a) * scale, math.sin(a) * scale
-    # game area -> image: inverse of [ca -sa; sa ca] then + pivot
+    # scene -> image: inverse of [ca -sa; sa ca] then + pivot
     det = ca * ca + sa * sa
     ia, ib, ic, id_ = ca / det, sa / det, -sa / det, ca / det
     arr = np.array(im).astype(np.float64)
     arr[..., :3] *= arr[..., 3:4] / 255.0
     pre = Image.fromarray(arr.clip(0, 255).astype(np.uint8), 'RGBA')
     coeffs = (ia, ib, px - ia * x - ib * y, ic, id_, py - ic * x - id_ * y)
-    out = pre.transform((W, H), Image.AFFINE, coeffs, resample=Image.BILINEAR)
+    out = pre.transform((SCENE_W, SCENE_H), Image.AFFINE, coeffs, resample=Image.BILINEAR)
     return np.array(out).astype(np.float64)
 
 
@@ -131,7 +149,7 @@ for gi, gm in enumerate(gems):
         im, px, py = frames_of['Deco'][c]
         o = place(im, px, py, gm['x'], gm['y'], gm['scale'], gm['rot'])
         o *= mask[..., None]
-        layers.append(o)
+        layers.append(o[VIEW_Y:VIEW_Y + H])
     alpha = np.max([l[..., 3] for l in layers], axis=0)
     ys, xs = np.nonzero(alpha > 0.5)
     if len(xs) == 0:

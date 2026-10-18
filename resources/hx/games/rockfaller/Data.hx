@@ -4,7 +4,7 @@ package rockfaller;
 // Arkadeo port and the font of the original gfx.swf: do not edit, run rebuild_assets.sh.
 class Data {
 	// top left corner of the gems _g0.._g4 of the Foreground (sprites fgGem<i>, cut by its mask)
-	public static final FG_GEMS:Array<Array<Int>> = [[519, 134], [546, 331], [499, 424], [86, 287], [0, 419]];
+	public static final FG_GEMS:Array<Array<Int>> = [[519, 119], [546, 316], [499, 409], [86, 272], [0, 404]];
 
 	// gfx.Score: advance of the digits 0-9 (Alba 14 px), centre of its text field and baseline of the number, origin of
 	// "pts" (Alba 10 px), from the origin of the symbol
