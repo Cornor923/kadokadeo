@@ -60,6 +60,13 @@ html[data-theme='karbon'] #containerSide .sideBoxViolet {
   box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.35);
 }
 
+/* their titles: the grey title, placed like the titles of the base theme (the h2 rule above puts it at 0 0, which shows
+   a wider frame instead of the square and leaves out the dark line under it); the green and pink boxes have their own,
+   the violet box of the clan missions keeps this one */
+html[data-theme='karbon'] #containerSide h2 {
+  background: url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -5px no-repeat;
+}
+
 html[data-theme='karbon'] #containerSide .sideBoxGreen h2 {
   background: url('/gfx/themes/karbon/greenh2_bg.jpg') -15px -5px no-repeat;
 }
@@ -79,8 +86,10 @@ html[data-theme='karbon'] #containerSide .sideBoxPink h2 {
   background: url('/gfx/themes/karbon/pinkh2_bg.jpg') -15px -5px no-repeat;
 }
 
-/* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css) */
+/* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css): the shadow of inputBg.jpg
+   (18 px high) stretched over the whole height of the input, like the 32 px one of the base theme */
 html[data-theme='karbon'] form div input {
   color: #466167;
   background: #fff url('/gfx/themes/karbon/inputBg.jpg') repeat-x;
+  background-size: auto 100%;
 }
