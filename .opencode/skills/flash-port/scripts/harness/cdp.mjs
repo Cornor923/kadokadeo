@@ -26,7 +26,8 @@ export async function launch(port = 9333) {
     '--headless=new', `--remote-debugging-port=${port}`, '--user-data-dir=' + profile,
     '--window-size=640,720', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     ...(process.env.GPU ? [...GPU_FLAGS, '--enable-gpu', '--ignore-gpu-blocklist'] : ['--enable-unsafe-swiftshader', '--use-angle=swiftshader']),
-    '--autoplay-policy=no-user-gesture-required',
+    // (the sounds of the games play, unheard: Hammerfest, Rock Faller)
+    '--autoplay-policy=no-user-gesture-required', '--mute-audio',
     'about:blank',
   ], { stdio: 'ignore' })
   let targets
