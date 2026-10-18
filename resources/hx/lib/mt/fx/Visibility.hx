@@ -1,6 +1,6 @@
 package mt.fx;
-import mt.bumdum9.Lib;
 
+// on the display objects of arkadeo (the AS3 games)
 class Visibility extends Fx{//}
 
 
@@ -10,10 +10,10 @@ class Visibility extends Fx{//}
 	var fadeScale: { sx:Int, sy:Int, scx:Float, scy:Float };
 	var fadeBlur: { x:Float, y:Float };
 
-	var root:flash.display.DisplayObject;
+	var root:arkadeo.DisplayObject;
 
 
-	public function new(mc) {
+	public function new(mc:arkadeo.DisplayObject) {
 		super();
 		root = mc;
 	}
@@ -21,16 +21,18 @@ class Visibility extends Fx{//}
 
 	function setVisibility(c:Float) {
 		if( fadeAlpha ) root.alpha = c * alpha;
-		if( fadeBlur != null ) 	root.filters = [ new flash.filters.BlurFilter(fadeBlur.x*(1-c),fadeBlur.y*(1-c)) ];
+		if( fadeBlur != null ) 	root.filters = [ new arkadeo.BlurFilter(fadeBlur.x*(1-c),fadeBlur.y*(1-c)) ];
 
 		if( fadeScale != null ) {
 			switch(fadeScale.sx) {
 				case -1 :	root.scaleX =  fadeScale.scx / c;
 				case 1 :	root.scaleX =  fadeScale.scx * c;
+				case _ :
 			}
 			switch(fadeScale.sy) {
 				case -1 :	root.scaleY =  fadeScale.scy / c;
 				case 1 :	root.scaleY =  fadeScale.scy * c;
+				case _ :
 			}
 		}
 

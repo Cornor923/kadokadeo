@@ -5,7 +5,7 @@ class Cooldown {
 	public var defaultAllowLower	: Bool;
 	//var listeners					: Hash< Void->Void >;
 	var cdList						: Array<{k:String, v:Float, cb:Null<Void->Void>}>;
-	var fastCheck					: Hash<Bool>;
+	var fastCheck					: Map<String,Bool>;
 	
 	public function new() {
 		defaultAllowLower = true;
@@ -15,7 +15,7 @@ class Cooldown {
 	public inline function reset() {
 		//cds = new Hash();
 		cdList = new Array();
-		fastCheck = new Hash();
+		fastCheck = new Map();
 		//listeners = new Hash();
 	}
 	
@@ -79,13 +79,13 @@ class Cooldown {
 	}
 	
 	public inline function unsetAll(search:String) { // supprime tous les cooldowns dont la clÃ© contient "search"
-		for( cd in cdList )
+		for( cd in cdList.copy() )
 			if( cd.k.indexOf(search)>=0 )
 				unsetObject(cd);
 	}
 	
 	public inline function has(k) {
-		return fastCheck.get(k);
+		return fastCheck.get(k)==true;
 	}
 	
 	public inline function hasSet(k, v:Float) {
@@ -99,8 +99,11 @@ class Cooldown {
 	}
 	
 	public function update(?tmod=1.0) {
-		for( cd in cdList )
-			if( cd.v-tmod<=0 ) {
+		// on a copy: an ended cooldown leaves cdList (and its callback may unset or set others)
+		for( cd in cdList.copy() )
+			if( cdList.indexOf(cd)<0 )
+				continue;
+			else if( cd.v-tmod<=0 ) {
 				unsetObject(cd);
 				if( cd.cb!=null ) {
 					var cb = cd.cb;

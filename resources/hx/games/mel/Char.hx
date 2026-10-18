@@ -104,7 +104,7 @@ class Char extends Entity {
 	public var jumpEscaped = false;
 	public var tasks:List<Void->Bool>; // true means remove me
 
-	public var cl:CT;
+	public var cl:ColorTransform;
 
 	public var targets:Pool<TargetedShape>;
 	public var kickData:{locked:Nmy, angle:Float, dist:Float};
@@ -120,7 +120,7 @@ class Char extends Entity {
 	// Mag Grips switched off by the player (key G): not in the original (Arkadeo players avoided picking them up)
 	public var gripOff = false;
 
-	var hits:Map<String, Rect>;
+	var hits:Map<String, Rectangle>;
 
 	static inline var MAX_JUMP_SPEED = -0.7;
 
@@ -135,7 +135,7 @@ class Char extends Entity {
 		changeState(SPAWN);
 		move(Lib.nbcw() >> 1, Lib.nbch() - 1);
 
-		cl = new CT();
+		cl = new ColorTransform();
 		me.colorTransform = cl;
 
 		flagsExt = haxe.EnumFlags.ofInt(0);
@@ -146,17 +146,17 @@ class Char extends Entity {
 
 		// the _hit box of each label of gfx.Hero (written in the code of the original)
 		hits = new Map();
-		hits.set('stand', new Rect(-10, -60, 20, 59.8));
-		hits.set('walk', new Rect(-2, -60, 20, 59.8));
-		hits.set('jump', new Rect(-9, -52.9, 20, 48.9));
-		hits.set('doubleJump', new Rect(-11.1, -26.4, 22.6, 23.7));
-		hits.set('grip', new Rect(-21.05, -36.85, 22.1, 45));
-		hits.set('crouch', new Rect(-9, -49.85, 20, 49.9));
+		hits.set('stand', new Rectangle(-10, -60, 20, 59.8));
+		hits.set('walk', new Rectangle(-2, -60, 20, 59.8));
+		hits.set('jump', new Rectangle(-9, -52.9, 20, 48.9));
+		hits.set('doubleJump', new Rectangle(-11.1, -26.4, 22.6, 23.7));
+		hits.set('grip', new Rectangle(-21.05, -36.85, 22.1, 45));
+		hits.set('crouch', new Rectangle(-9, -49.85, 20, 49.9));
 	}
 
-	static var mrect = new Rect();
+	static var mrect = new Rectangle();
 
-	override public function getRect():Rect {
+	override public function getRect():Rectangle {
 		var r = hits.get(me.currentLabel);
 		mrect.x = r.x + me.x;
 		mrect.y = r.y + me.y;
@@ -169,7 +169,7 @@ class Char extends Entity {
 
 	override public function onDestroy() {
 		game.pause = true;
-		Mov.stopAllIn(game);
+		MovieClip.stopAllIn(game.gs);
 		changeState(PAUSE);
 		gr = new FxGreyscale();
 		gr.setStrengthBloom(0);
@@ -518,7 +518,7 @@ class Char extends Entity {
 
 	function focusMax() {
 		if (!flagsExt.has(FOCUSED))
-			me.filters = [Glow(Data.ORANGE, 0.9666, 3, 3, 10)];
+			me.filters = [new GlowFilter(Data.ORANGE, 0.9666, 3, 3, 10)];
 		flagsExt.set(FOCUSED);
 	}
 
@@ -527,10 +527,8 @@ class Char extends Entity {
 		cl.rst();
 		mkCl();
 		me.filters = me.filters.filter(function(f) {
-			return switch (f) {
-				case Glow(_, a, _, _, _): Math.abs(a - 0.9666) >= 0.01;
-				case _: true;
-			}
+			var g = Std.downcast(f, GlowFilter);
+			return g == null || Math.abs(g.alpha - 0.9666) >= 0.01;
 		});
 		flagsExt.unset(FOCUSED);
 	}

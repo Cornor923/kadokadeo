@@ -11,7 +11,7 @@ import mel.Nmy;
 import mel.VScroller;
 
 // a wall of the level (a platform): it fills its cells of the collision map
-class LevelSprite extends Spr {
+class LevelSprite extends Sprite {
 	public var coll:Bool;
 
 	public var cw:Int;
@@ -93,7 +93,7 @@ class Crossing extends LevelSprite {
 		if (ch > 1)
 			throw "assert";
 		var l = lev();
-		var s = new MRand((px * py + Game.getSeed()) ^ (54354 * ch + 1337 * cw));
+		var s = new Rand((px * py + Game.getSeed()) ^ (54354 * ch + 1337 * cw));
 		var p = Pick.array(l.data.platforms, s);
 		var c = Pick.array(p.corner, s);
 		var pieces:Array<{p:Piece, x:Float, flip:Bool}> = [];
@@ -119,7 +119,7 @@ class Crossing extends LevelSprite {
 
 		if (s.random(10) == 0 && prop) {
 			var pr = Pick.array(l.data.props, s);
-			var b = new Bmp(pr.a);
+			var b = new Bitmap(pr.a);
 			addChild(b);
 			b.y -= b.bmpHeight;
 			b.x = s.random(Std.int(cw * Lib.cw - b.bmpWidth));
@@ -191,7 +191,7 @@ class PageItems {
 }
 
 // the bitmap of a column of wall tiles of a page (VScroller.KeyedBitmap with the bitmapData of a wallLine)
-class WallCol extends Spr {
+class WallCol extends Sprite {
 	public var key:Null<Int>;
 
 	var tiles:Array<PixiSprite> = [];
@@ -214,15 +214,15 @@ class WallCol extends Spr {
 }
 
 class Level {
-	public var sideDrops:Map<Int, Array<Bmp>>;
+	public var sideDrops:Map<Int, Array<Bitmap>>;
 
-	public var bg:Array<{first:Bmp, second:Bmp}>;
+	public var bg:Array<{first:Bitmap, second:Bitmap}>;
 
 	var char:Char;
 
-	public var dm:DM;
+	public var dm:DepthManager;
 
-	var root:Spr;
+	var root:Sprite;
 
 	public inline function getRoot()
 		return root;
@@ -240,7 +240,7 @@ class Level {
 
 	public static var DEPTHS = [SIDE_DEPTH, PRE_SWARM_DEPTH, DANGER_DEPTH, PLATFORM_DEPTH, CHAR_DEPTH, FX_DEPTH];
 
-	var mate:{p4:Bmp, p2mood:Bmp};
+	var mate:{p4:Bitmap, p2mood:Bitmap};
 
 	var previousPage:Null<Int> = null;
 
@@ -253,7 +253,7 @@ class Level {
 
 	var walls:Map<Int, LevelSprite>;
 
-	public var deadLine:Shp;
+	public var deadLine:Shape;
 
 	var dLevel:Float;
 
@@ -295,9 +295,9 @@ class Level {
 
 	public function new() {
 		dLevel = 0;
-		root = new Spr();
-		Fl.levelRoot = root;
-		dm = new DM(root);
+		root = new Sprite();
+		DisplayObject.defaultRectSpace = root;
+		dm = new DepthManager(root);
 		for (i in DEPTHS)
 			dm.getPlan(i);
 		pages = new Map();
@@ -337,7 +337,7 @@ class Level {
 		return nmy.get(t.getIndex());
 
 	public function init() {
-		var rd = new MRand(125435 - Game.getSeed());
+		var rd = new Rand(125435 - Game.getSeed());
 
 		// (AKApi.getInGamePrizeTokens: the prizes of Arkadeo, none on KadoKadeo)
 
@@ -351,7 +351,7 @@ class Level {
 
 		Game.me.char = char = new Char();
 		dm.add(char.mc, CHAR_DEPTH);
-		data.addLdLines(new MRand(Game.getSeed()));
+		data.addLdLines(new Rand(Game.getSeed()));
 
 		addPage(0);
 
@@ -394,12 +394,12 @@ class Level {
 	}
 
 	public function makeMate() {
-		var rd = new MRand(Game.getSeed() ^ 13371337);
+		var rd = new Rand(Game.getSeed() ^ 13371337);
 		// gfx.Plan1: the drops on the sides (4 copies of each frame)
 		var p1:Array<Dynamic> = Art.meta().planes.plan1;
 		for (i in 1...p1.length + 1) {
-			var c = new Bmp("plan1" + i);
-			var a = [c, Bmp.copy(c), Bmp.copy(c), Bmp.copy(c)];
+			var c = new Bitmap("plan1" + i);
+			var a = [c, Bitmap.copy(c), Bitmap.copy(c), Bitmap.copy(c)];
 			sideDrops.set(i, a);
 			for (p in a) {
 				dm.add(p, SIDE_DEPTH);
@@ -420,13 +420,13 @@ class Level {
 		var r2 = 1 + rd.random(4);
 		var r2b = 1 + rd.random(4);
 		var rm = 1 + rd.random(1);
-		mate = {p4: p4, p2mood: new Bmp("moodp2" + rm)};
+		mate = {p4: p4, p2mood: new Bitmap("moodp2" + rm)};
 
 		p3 = new P3Scroller();
 		p2 = new P2Scroller();
 		p2b = new P2BScroller();
 
-		deadLine = new Shp();
+		deadLine = new Shape();
 		var g = deadLine.graphics;
 		g.lineStyle(0.03, 0xFF0000);
 		g.moveTo(0, 0);
@@ -436,7 +436,7 @@ class Level {
 
 	// mate.p4: gfx.BG flattened, 4 rows of gfx.Plan4 details drawn into it with random matrices (the first row upside
 	// down at the top, the others from the bottom), gfx.MoodPlan4 drawn over; one picture
-	function makePlan4(rd:MRand):Bmp {
+	function makePlan4(rd:Rand):Bitmap {
 		var dims:Array<Array<Float>> = Art.meta().planes.plan4dims;
 		var bgDef = Art.meta().planes.bg[0];
 		var holder = new Container();
@@ -481,7 +481,7 @@ class Level {
 		var rt:RenderTexture = (cast RenderTexture : Dynamic).create({width: bgDef.w, height: bgDef.h, resolution: 1});
 		renderer.render(holder, {renderTexture: rt, clear: true});
 		holder.destroy({children: true});
-		var b = new Bmp();
+		var b = new Bitmap();
 		b.setTexture(rt, bgDef.w, bgDef.h);
 		plan4Tex = rt;
 		return b;
@@ -493,7 +493,7 @@ class Level {
 
 	public function addMate() {
 		var i = 0;
-		var g:DO = mate.p4;
+		var g:DisplayObject = mate.p4;
 		Game.me.addChild(g);
 		g.parent.setChildIndex(g, i++);
 
@@ -506,7 +506,7 @@ class Level {
 		if (Game.me.hasDeadLine()) {
 			calcDeadLine();
 			dm.add(deadLine, FX_DEPTH);
-			var r = new MRand(I32.of(Game.getLevel() * Game.getSeed()));
+			var r = new Rand(I32.of(Game.getLevel() * Game.getSeed()));
 			var n = 50;
 			for (i in 0...n) {
 				var nm = addNmy(NT_SWARM, r.random(Lib.nbcw()), 0);
@@ -551,7 +551,7 @@ class Level {
 	}
 
 	public function getRandomPlace(wallCache:Array<LevelSprite>, seed:Int):{pl:LevelSprite, px:Int, py:Int} {
-		var rd = new MRand(seed);
+		var rd = new Rand(seed);
 		for (i in 0...5) {
 			var pl = wallCache[rd.random(wallCache.length)];
 			if (pl == null)
@@ -620,7 +620,7 @@ class Level {
 
 		if (n == 0)
 			makeFloor();
-		var rd = new MRand(I32.of(Game.getSeed() * 351433848.0 + n * 138864868.0));
+		var rd = new Rand(I32.of(Game.getSeed() * 351433848.0 + n * 138864868.0));
 		var b = bmpPool.create();
 
 		var ph = Lib.ph();
@@ -645,10 +645,10 @@ class Level {
 		data.iterPage(n, function(rx, ry, col) procOthers(rd, rx, ry + n * Lib.nbch(), col, d, n));
 
 		pages.set(n, true);
-		root.setChildIndex(char.mc, root.numChildren - 1);
+		dm.toTop(char.mc);
 
 		var kc:Int = n;
-		var kdrb = new MRand(I32.of(kc * 354486.0 - Game.getSeed() * 3441.0));
+		var kdrb = new Rand(I32.of(kc * 354486.0 - Game.getSeed() * 3441.0));
 
 		var wallCache = getWallCache(n);
 
@@ -730,7 +730,7 @@ class Level {
 				p[2].w += b;
 			}
 		}
-		var r = new MRand(n * 137 + Game.getSeed()).random(100);
+		var r = new Rand(n * 137 + Game.getSeed()).random(100);
 		for (v in p) {
 			if (r < v.w)
 				return v.d;
@@ -787,7 +787,7 @@ class Level {
 		return p.has(CP_DOUBLE_JUMP) || p.has(CP_WALL_STICK) || p.has(CP_SUPER_JUMP);
 	}
 
-	function getBasic(rd:MRand) {
+	function getBasic(rd:Rand) {
 		if (Dice.percent(rd, 50))
 			return CP_SUPER_JUMP;
 		if (Dice.percent(rd, 50))
@@ -795,7 +795,7 @@ class Level {
 		return CP_DOUBLE_JUMP;
 	}
 
-	function getUnknownBasic(rd:MRand) {
+	function getUnknownBasic(rd:Rand) {
 		if (!char.powers.has(CP_SUPER_JUMP) && Dice.percent(rd, 50))
 			return CP_SUPER_JUMP;
 		if (!char.powers.has(CP_WALL_STICK) && Dice.percent(rd, 50))
@@ -806,7 +806,7 @@ class Level {
 			return CP_KICK;
 	}
 
-	public function procPlatforms(rd:MRand, rx:Int, ry:Int, col:Int, d:Float, n:Int) {
+	public function procPlatforms(rd:Rand, rx:Int, ry:Int, col:Int, d:Float, n:Int) {
 		function stop() {
 			if (cfx >= 0)
 				mkLine(cfx, cry, rx - cfx, n);
@@ -847,7 +847,7 @@ class Level {
 		return nmy_ent;
 	}
 
-	public function procBonus(rd:MRand, rx:Int, ry:Int, col:Int, d:Float, n:Int, pd:PageItems) {
+	public function procBonus(rd:Rand, rx:Int, ry:Int, col:Int, d:Float, n:Int, pd:PageItems) {
 		var cy = -ry + Lib.nbch();
 		if (col > 0xfa0000)
 			switch (col) {
@@ -868,7 +868,7 @@ class Level {
 			}
 	}
 
-	public function procOthers(rd:MRand, rx:Int, ry:Int, col:Int, d:Float, n:Int) {
+	public function procOthers(rd:Rand, rx:Int, ry:Int, col:Int, d:Float, n:Int) {
 		var cy = -ry + Lib.nbch();
 		var lev = game.level;
 
@@ -955,14 +955,14 @@ class Level {
 		removePage(n + 3);
 
 		function rd(n:Int)
-			return new MRand(I32.of(Game.getSeed() + 271622.0 * n + Game.getSeed() * (n * 402264.0 * 398287.0)));
+			return new Rand(I32.of(Game.getSeed() + 271622.0 * n + Game.getSeed() * (n * 402264.0 * 398287.0)));
 
 		var rdPN = rd(n);
 		var rdPNP = rd(n + 1);
 
 		var t = Lambda.count(sideDrops);
 
-		function assign(pn:{first:Bmp, second:Bmp}, pnp:{first:Bmp, second:Bmp}) {
+		function assign(pn:{first:Bitmap, second:Bitmap}, pnp:{first:Bitmap, second:Bitmap}) {
 			var vp1 = 1 + rdPN.random(t);
 			var vp2 = 1 + rdPN.random(t);
 			if (vp1 == vp2)
@@ -1143,7 +1143,7 @@ class Level {
 			for (e in nmy.get(k)) {
 				var del = e.page == i;
 				if (del && e.mc.parent != null)
-					root.removeChild(e.mc);
+					dm.remove(e.mc);
 				if (!del)
 					kept.add(e);
 			}

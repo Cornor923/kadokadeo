@@ -187,11 +187,11 @@ class KadoKadeoManager extends Application {
 		fpsText = new pixi.core.text.Text("FPS: --", {
 			fill: 0xFFFFFF,
 			fontFamily: "Arial",
-			fontSize: 24,
+			fontSize: 15,
 			align: "right"
 		});
-		fpsText.x = 790;
-		fpsText.y = 12;
+		fpsText.x = screen.width - S(45);
+		fpsText.y = S(4);
 		#if !debug
 		fpsText.visible = false;
 		#end
@@ -941,11 +941,10 @@ class KadoKadeoManager extends Application {
 		if (request == null) {
 			return cast Promise.reject(Api.toError("Missing run details"));
 		}
-		return endRunClient.submit(request)
-			.then((data) -> {
-				endRunDetails = data;
-				return endRunDetails;
-			});
+		return endRunClient.submit(request).then((data) -> {
+			endRunDetails = data;
+			return endRunDetails;
+		});
 		#else
 		trace(params);
 		return Promise.resolve({

@@ -82,7 +82,7 @@ class Game implements kado.GameInterface {
 	public static var me:Game;
 
 	public var tweenie:Tweenie;
-	public var fxMan:FxManager;
+	public var fxMan:Manager;
 	public var ui:Ui;
 
 	public var time:{ufr:Int};
@@ -90,7 +90,7 @@ class Game implements kado.GameInterface {
 	public var score:Int = 0;
 	public var fixScore:Int = 0;
 
-	public var rd:MRand;
+	public var rd:Rand;
 
 	public static function showScore()
 		return isLeague();
@@ -108,13 +108,13 @@ class Game implements kado.GameInterface {
 
 	public static var conf:{?deadLine:Bool, ?deadLineSpeed:Float, ?spawnBonuses:Bool};
 
-	public function getRandom():MRand {
-		return new MRand(getSeed() ^ Game.getFrame());
+	public function getRandom():Rand {
+		return new Rand(getSeed() ^ Game.getFrame());
 	}
 
 	// ---------------------------------------------------------------- the port
 	// the Sprite of the original Game (its children: the planes, the view, the interface...)
-	public var gs:Spr;
+	public var gs:Sprite;
 
 	var root:ASprite;
 	var isReplay:Bool;
@@ -148,15 +148,17 @@ class Game implements kado.GameInterface {
 		OverlayBlend.register(KadoKadeoManager.kkm.renderer);
 		// the seed of the game (AKApi.getSeed): every random of the original derives from it
 		seed = Seed.random(0x3FFFFFFF);
-		Mov.all = [];
-		Clip.reset();
-		FTimer.reset();
-		FxManager.DEFAULT = null;
+		Flash.reset();
+		Tex.init("/mel/");
+		Clip.init(Art.clips);
+		TextField.init(() -> Art.meta().fonts);
+		FTimer.clear();
+		Fx.DEFAULT_MANAGER = null;
 		Level.SKIP_VIEW_SYNC = false;
 		Level.cry = -1;
 		Level.cfx = -1;
 
-		gs = new Spr();
+		gs = new Sprite();
 		root.addChild(gs.node);
 		// the game area of Arkadeo (600 x 460): what goes out of it is not drawn (under the bar of KadoKadeo)
 		var mask = new Graphics();
@@ -167,9 +169,9 @@ class Game implements kado.GameInterface {
 		gs.node.mask = mask;
 
 		me = this;
-		rd = new MRand(I32.of(0xdeadbeef + getSeed()));
+		rd = new Rand(I32.of(0xdeadbeef + getSeed()));
 
-		fxMan = new FxManager();
+		fxMan = new Manager();
 
 		Nmy.create();
 		time = {ufr: 0};
@@ -187,7 +189,7 @@ class Game implements kado.GameInterface {
 		ui = new Ui();
 
 		warmShaders();
-		Fl.display(gs, 1);
+		Flash.display(gs, 1);
 	}
 
 	public function hasDeadLine() {
@@ -253,10 +255,10 @@ class Game implements kado.GameInterface {
 		return false;
 
 	// ---------------------------------------------------------------- the Sprite of the original Game
-	public function addChild(o:DO):DO
+	public function addChild(o:DisplayObject):DisplayObject
 		return gs.addChild(o);
 
-	public function setChildIndex(o:DO, i:Int)
+	public function setChildIndex(o:DisplayObject, i:Int)
 		gs.setChildIndex(o, i);
 
 	public var numChildren(get, never):Int;
@@ -264,12 +266,12 @@ class Game implements kado.GameInterface {
 	inline function get_numChildren()
 		return gs.numChildren;
 
-	public var filters(get, set):Array<Flt>;
+	public var filters(get, set):Array<BitmapFilter>;
 
 	inline function get_filters()
 		return gs.filters;
 
-	inline function set_filters(f:Array<Flt>) {
+	inline function set_filters(f:Array<BitmapFilter>) {
 		gs.filters = f;
 		return f;
 	}
@@ -284,7 +286,7 @@ class Game implements kado.GameInterface {
 			frameAcc -= 4;
 			flashFrame();
 		}
-		Fl.display(gs, frameAcc / 4);
+		Flash.display(gs, frameAcc / 4);
 	}
 
 	// one Flash frame: the playheads advance, then the game (enterFrame), then the frame scripts of the timelines
@@ -294,8 +296,8 @@ class Game implements kado.GameInterface {
 			KeyboardManager.CONTROL, KeyboardManager.G])
 			if (KeyboardManager.isDown(k))
 				keyNow.set(k, true);
-		Fl.frameStart(gs);
-		Mov.tickAll();
+		Flash.frameStart(gs);
+		MovieClip.tickAll();
 		origUpdate();
 		Clip.runPending();
 		keyPrev = keyNow;
@@ -347,9 +349,13 @@ class Game implements kado.GameInterface {
 	function warmShaders() {
 		var renderer:Dynamic = KadoKadeoManager.kkm.renderer;
 		var holder = new pixi.core.display.Container();
-		var fl:Array<Flt> = [Glow(0, 1, 3, 3, 2), Blur(4, 4), Matrix([0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0, 0, 0, 1, 0])];
+		var fl:Array<BitmapFilter> = [
+			new GlowFilter(0, 1, 3, 3, 2),
+			new BlurFilter(4, 4),
+			new ColorMatrixFilter([0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0, 0, 0, 1, 0])
+		];
 		for (f in fl) {
-			var d = new Shp();
+			var d = new Shape();
 			d.graphics.beginFill(0xFFFFFF);
 			d.graphics.drawRect(0, 0, 8, 8);
 			d.graphics.endFill();
@@ -367,9 +373,8 @@ class Game implements kado.GameInterface {
 
 	public function destroy():Void {
 		over = true;
-		Mov.all = [];
-		Clip.reset();
-		FTimer.reset();
+		Flash.reset();
+		FTimer.clear();
 		if (level != null && level.plan4Tex != null)
 			level.plan4Tex.destroy(true);
 		me = null;

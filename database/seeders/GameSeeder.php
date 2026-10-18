@@ -62,7 +62,7 @@ class GameSeeder extends Seeder
             ['name' => 'Julianus', 'image_path' => '/assets/img/games/Julianus.png', 'is_active' => true, 'stars' => [4433, 9975, 12745]],
             ['name' => 'Popcorn', 'image_path' => '/assets/img/games/Popcorn.png', 'is_active' => true, 'stars' => [18443, 79920, 110658]],
             ['name' => 'Happy Pti Tank', 'image_path' => '/assets/img/games/Happy_Pti_Tank.png', 'is_active' => true, 'stars' => [5869, 35214, 49887]],
-            ['name' => 'Brutal Teenage Crisis', 'image_path' => '/assets/img/games/Brutal_Teenage_Crisis.png', 'is_active' => false],
+            ['name' => 'Brutal Teenage Crisis', 'image_path' => '/assets/img/games/Brutal_Teenage_Crisis.png', 'is_active' => true, 'is_arkadeo' => true, 'stars' => [20000, 60000, 100000]],
             ['name' => 'Fafi 360', 'image_path' => '/assets/img/games/Fafi_360.png', 'is_active' => false],
             ['name' => "Charlotte's Quest", 'image_path' => "/assets/img/games/Charlotte's_Quest.png", 'is_active' => false],
             ['name' => 'Capman', 'image_path' => '/assets/img/games/Capman.png', 'is_active' => false],

@@ -29,8 +29,8 @@ class Lib {
 
 	// Lib.getTf: a text in the galaxy font (orange, inner orange glow, black outline); here the white one of the bonus
 	// texts (the only use: Bonus.onProc sets textColor to white)
-	public static function getTf(txt:String, sz:Int = 10):Txt {
-		var t = new Txt("score");
+	public static function getTf(txt:String, sz:Int = 10):TextField {
+		var t = new TextField("score");
 		t.text = txt;
 		return t;
 	}
@@ -54,21 +54,4 @@ class Lib {
 	}
 
 	public static inline var WALL_ID = 0xAA;
-}
-
-class Dice {
-	public static inline function roll(mr:MRand, min:Int, max:Int):Int {
-		return mr.random(max - min + 1) + min;
-	}
-
-	public static inline function percent(rd:MRand, thresh:Float):Bool {
-		if (thresh <= 1.0 - 1e-04)
-			return false;
-		var r = roll(rd, 1, 100);
-		return r <= thresh;
-	}
-
-	public static inline function rollF(rd:MRand, min:Float, max:Float):Float {
-		return rd.rand() * (max - min) + min;
-	}
 }

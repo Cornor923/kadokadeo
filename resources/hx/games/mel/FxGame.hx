@@ -11,8 +11,8 @@ class FxGreyscale {
 		m = [0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0.3, 0.59, 0.11, 0, 0, 0, 0, 0, 1, 0];
 	}
 
-	public function get():Flt {
-		return Matrix(m);
+	public function get():BitmapFilter {
+		return new ColorMatrixFilter(m);
 	}
 
 	static inline function l1v(v:Float, r:Float)
@@ -28,13 +28,13 @@ class FxGreyscale {
 
 // fx/Init.hx: 4 orange arrows bouncing at the top and a big word blinking ("SAUTE !", "PULPZ!") for 200 frames
 class FxInit {
-	public var arrows:Array<Bmp>;
-	public var word:Txt;
+	public var arrows:Array<Bitmap>;
+	public var word:TextField;
 
 	public function new(?msg:String) {
 		FTimer.tick(function(r) tick(r), 200);
 
-		arrows = [new Bmp("arrow"), new Bmp("arrow"), new Bmp("arrow"), new Bmp("arrow")];
+		arrows = [new Bitmap("arrow"), new Bitmap("arrow"), new Bitmap("arrow"), new Bitmap("arrow")];
 		var arrWidth = 64;
 		var i = 0;
 		var p = [0.2, 0.4, 0.6, 0.8];
@@ -46,7 +46,7 @@ class FxInit {
 			i++;
 		}
 
-		word = new Txt("big");
+		word = new TextField("big");
 		word.text = msg != null ? msg : Text.jump;
 		word.y = 200;
 		word.x = (Lib.w() >> 1) - (word.textWidth * 0.5);
@@ -81,8 +81,8 @@ enum SMS_STATE {
 // fx/SMS.hx: a black bar coming up at the bottom of the screen with a message (the radio of the resistance, the
 // propaganda flashes), 180 frames, then going down
 class SMS extends Fx {
-	public var bg:Spr;
-	public var label:Txt;
+	public var bg:Sprite;
+	public var label:TextField;
 	public var msg:String;
 	public var state:SMS_STATE;
 	public var H = 32;
@@ -91,7 +91,7 @@ class SMS extends Fx {
 		super();
 		this.msg = msg;
 
-		bg = new Spr();
+		bg = new Sprite();
 		var gfx = bg.graphics;
 		gfx.beginFill(0x000000);
 		gfx.drawRect(0, 0, Lib.w(), H);
@@ -100,9 +100,9 @@ class SMS extends Fx {
 		Game.me.view.parent.addChild(bg);
 		state = GROW;
 		bg.alpha = 0.8;
-		bg.filters = [Glow(0x000000, 1, 10, 10, 0.5)];
+		bg.filters = [new GlowFilter(0x000000, 1, 10, 10, 0.5)];
 
-		label = new Txt("sms");
+		label = new TextField("sms");
 		label.text = msg;
 		label.x = 8;
 		label.y = 0;
@@ -141,10 +141,10 @@ class SMS extends Fx {
 }
 
 // fx/Score.hx: the lines of a bonus text ("DOUBLE|SAUT")
-class FxScore extends Spr {
-	var tfs:Array<Txt>;
+class FxScore extends Sprite {
+	var tfs:Array<TextField>;
 
-	public function new(msg:String, create:String->Txt) {
+	public function new(msg:String, create:String->TextField) {
 		super();
 		tfs = [];
 		for (m in msg.split("|")) {
@@ -156,12 +156,12 @@ class FxScore extends Spr {
 }
 
 // a frozen copy of the picture of an object (mt.deepnight.Lib.flatten with its transform), for the afterimages
-class Ghost extends DO {
+class Ghost extends DisplayObject {
 	var ns:Float = 1;
-	var inner:CT;
+	var inner:ColorTransform;
 
-	public function new(o:DO) {
-		var mv = Std.downcast(o, Mov);
+	public function new(o:DisplayObject) {
+		var mv = Std.downcast(o, MovieClip);
 		super(mv != null ? mv.clip.snapshot(1) : new common_haxe_avm1.display.ASprite());
 		if (mv != null) {
 			ns = mv.clip.baseScale;
@@ -183,7 +183,7 @@ class Ghost extends DO {
 	}
 
 	// a colour transform over the copied picture (the picture has the colours of the object, its own transform too)
-	public function setCT(ct:CT) {
+	public function setCT(ct:ColorTransform) {
 		var c = ct.after(inner);
 		var mv = Std.downcast(node, Clip);
 		if (mv != null)
@@ -205,12 +205,12 @@ class FxShade extends Fx {
 	var alphaStart = 0.6;
 	var fadeAlpha = true;
 
-	public function new(mc:DO, timer:Int, ?col:Null<Int>) {
+	public function new(mc:DisplayObject, timer:Int, ?col:Null<Int>) {
 		super();
 		bmp = new Ghost(mc);
 		bmp.putAfter(mc);
 		if (col != null) {
-			var ct = new CT();
+			var ct = new ColorTransform();
 			ct.mul(0.3, 0.3, 0.3);
 			ct.ofs(col >> 16, (col >> 8) & 0xFF, col & 0xFF);
 			bmp.setCT(ct);
@@ -253,14 +253,14 @@ class FxShade2 extends Fx {
 	var timer = 0;
 	var dur = 0;
 	var alphaStart = 0.6;
-	var ct:CT;
+	var ct:ColorTransform;
 	var basecol:Int;
 
-	public function new(mc:DO, timer:Int, col:Int) {
+	public function new(mc:DisplayObject, timer:Int, col:Int) {
 		super();
 		bmp = new Ghost(mc);
 		bmp.putAfter(mc);
-		ct = new CT();
+		ct = new ColorTransform();
 		ct.mul(0.2, 0.2, 0.2);
 		ct.ofs(col >> 16, (col >> 8) & 0xFF, col & 0xFF);
 		bmp.setCT(ct);

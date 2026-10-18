@@ -2,7 +2,7 @@ package mt.deepnight;
 
 class Delayer {
 	var delays		: Array<{t:Float, cb:Void->Void}>;
-	var now			: mt.flash.Volatile<Float>;
+	var now			: Float;
 	var fps			: Float;
 	
 	public function new(?fps=30) {

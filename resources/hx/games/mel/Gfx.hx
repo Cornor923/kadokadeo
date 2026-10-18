@@ -1,28 +1,27 @@
 package mel;
 
-import mel.Fl;
 
 // the symbols of gfx.swf the game creates (gfx.Hero, gfx.MovementFX...), with the rectangles of their _hit boxes
 // measured in the SWF (Art.meta().hits): getRect of the original read them on the display
 
-class Hero extends Mov {
+class Hero extends MovieClip {
 	public function new() {
 		super("hero");
 	}
 }
 
-class MovementFX extends Mov {
+class MovementFX extends MovieClip {
 	public function new() {
 		super("movefx");
 	}
 }
 
-private class HitMov extends Mov {
-	static function rect(a:Array<Float>):Rect {
-		return a == null ? null : new Rect(a[0], a[1], a[2], a[3]);
+private class HitMov extends MovieClip {
+	static function rect(a:Array<Float>):Rectangle {
+		return a == null ? null : new Rectangle(a[0], a[1], a[2], a[3]);
 	}
 
-	function hitOf(t:Dynamic, smcFrame:Int):Rect {
+	function hitOf(t:Dynamic, smcFrame:Int):Rectangle {
 		var a:Array<Dynamic> = t;
 		if (a == null)
 			return null;
@@ -43,7 +42,7 @@ class Swarm extends HitMov {
 		super("swarm");
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		var h:Array<Dynamic> = Art.meta().hits.swarm;
 		return hitOf(h[clip.currentFrame - 1], 1);
 	}
@@ -55,7 +54,7 @@ class Grabbers extends HitMov {
 		super("grabbers");
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		var s = smc;
 		return hitOf(Art.meta().hits.grabbers, s == null ? 1 : s.currentFrame);
 	}
@@ -67,7 +66,7 @@ class Danger extends HitMov {
 		super("danger");
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		var t:Array<Dynamic> = Art.meta().hits.torch;
 		var s = smc;
 		return hitOf(t[clip.currentFrame == 2 ? 1 : 0], s == null ? 1 : s.currentFrame);
@@ -80,14 +79,14 @@ class Sentinel extends HitMov {
 		super("sentinel");
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		var t:Array<Dynamic> = Art.meta().hits.sentinel;
 		var s = smc;
 		return hitOf(t[clip.currentFrame == 2 ? 1 : 0], s == null ? 1 : s.currentFrame);
 	}
 }
 
-class LifeBar extends Mov {
+class LifeBar extends MovieClip {
 	public function new() {
 		super("lifebar");
 	}
@@ -104,12 +103,12 @@ class LifeBar extends Mov {
  * not) in the space asked, moved by the current bitmap's offset and the _hit rectangle of the frame (in the space of
  * the clip: a rotated blade gets a shifted box, like the original).
  */
-class Blade extends DO {
+class Blade extends DisplayObject {
 	public var cursor:Float = 0;
 
 	var frames:Array<pixi.core.textures.Texture>;
 	var defs:Array<Dynamic>;
-	var union:Rect;
+	var union:Rectangle;
 
 	public function new() {
 		super(new common_haxe_avm1.display.ASprite());
@@ -122,7 +121,7 @@ class Blade extends DO {
 			x1 = Math.max(x1, d.bx + d.w);
 			y1 = Math.max(y1, d.by + d.h);
 		}
-		union = new Rect(x0, y0, x1 - x0, y1 - y0);
+		union = new Rectangle(x0, y0, x1 - x0, y1 - y0);
 		node.anchor.copyFrom(frames[0].defaultAnchor);
 		update(0);
 	}
@@ -134,15 +133,15 @@ class Blade extends DO {
 		node.texture = frames[Std.int(cursor)];
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		return union;
 	}
 
-	override public function getRect(?space:DO):Rect {
+	override public function getRect(?space:DisplayObject):Rectangle {
 		var mr = super.getRect(space);
 		var d = defs[Std.int(cursor)];
 		var cr:Array<Float> = d.hit;
-		return new Rect(mr.x - d.bx + cr[0], mr.y - d.by + cr[1], cr[2], cr[3]);
+		return new Rectangle(mr.x - d.bx + cr[0], mr.y - d.by + cr[1], cr[2], cr[3]);
 	}
 }
 
@@ -151,7 +150,7 @@ class Blade extends DO {
  * at the scale of its variant (pow: 0.8 with the glow, the bonuses of the level; powUi / powGrey: 0.6 without filter,
  * in colour or grey, the icons of the interface).
  */
-class Pow extends DO {
+class Pow extends DisplayObject {
 	public var frame(default, null):Int;
 
 	var variant:String;
@@ -176,28 +175,31 @@ class Pow extends DO {
 		return 1 / baked;
 	}
 
-	override public function localRect():Rect {
+	override public function localRect():Rectangle {
 		var r:Array<Float> = Art.meta().powRects[frame - 1];
-		return new Rect(r[0], r[1], r[2], r[3]);
+		return new Rectangle(r[0], r[1], r[2], r[3]);
 	}
 }
 
 // gfx.Height: the plate with its "0000000mmm" in the grid font, and the height in _txt
-class HeightSign extends Spr {
-	public var _txt:Txt;
+class HeightSign extends Sprite {
+	public var _txt:TextField;
 
-	public var height(default, null):Float;
+	var fullH:Float;
 
 	public function new() {
 		super();
 		var h = Art.meta().height;
-		addChild(new Bmp("heightPlate"));
-		_txt = new Txt("height");
+		addChild(new Bitmap("heightPlate"));
+		_txt = new TextField("height");
 		_txt.x = h.x;
 		_txt.y = h.y;
 		_txt.fieldWidth = h.w;
 		_txt.align = "right";
 		addChild(_txt);
-		height = h.fullH;
+		fullH = h.fullH;
 	}
+
+	override function get_height():Float
+		return fullH;
 }

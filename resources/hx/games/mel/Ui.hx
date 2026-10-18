@@ -16,10 +16,10 @@ class Ui {
 		return Game.me;
 
 	public function new() {
-		var mc = new Spr();
+		var mc = new Sprite();
 		powers = [];
 
-		var border = new Spr();
+		var border = new Sprite();
 		var by = 8;
 		var bx = Lib.w() - 140;
 		border.x = bx;
@@ -99,18 +99,18 @@ class Ui {
  * from mouse over events, outside of the game logic).
  */
 class Tip {
-	public var spr:Spr;
+	public var spr:Sprite;
 
-	var bg:Spr;
-	var txt:Txt;
+	var bg:Sprite;
+	var txt:TextField;
 	var last:Int = -1;
 
 	public function new() {
-		spr = new Spr();
+		spr = new Sprite();
 		spr.visible = false;
-		bg = new Spr();
+		bg = new Sprite();
 		spr.addChild(bg);
-		txt = new Txt("tip");
+		txt = new TextField("tip");
 		txt.x = 5;
 		txt.y = 3;
 		spr.addChild(txt);
@@ -175,7 +175,7 @@ class Tip {
 }
 
 // View.hx of the original: the sprite moved by the camera (the root of the level is in it)
-class View extends Spr {
+class View extends Sprite {
 	public function new() {
 		super();
 	}

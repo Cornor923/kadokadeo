@@ -53,7 +53,7 @@ class VScroller {
 	public function drawPage(i:Int) {}
 }
 
-class KeyedBitmap extends Bmp {
+class KeyedBitmap extends Bitmap {
 	public var key:Null<Int>; // key is the num of the page regarded
 
 	public function new() {
@@ -80,7 +80,7 @@ class ClipScroller extends VScroller {
 	}
 
 	function getFrame(i:Int) {
-		return bmps.get(1 + new MRand(Std.int((seed * Game.getSeed() * (i * 123456743)) ^ 0xdeadbeef)).random(nframes));
+		return bmps.get(1 + new Rand(Std.int((seed * Game.getSeed() * (i * 123456743)) ^ 0xdeadbeef)).random(nframes));
 	}
 
 	override public function hidePage(i:Int) {
@@ -129,7 +129,7 @@ class ClipScroller extends VScroller {
 		rd.snap();
 	}
 
-	function addReader(rd:DO) {
+	function addReader(rd:DisplayObject) {
 		throw "implement me";
 	}
 
@@ -157,7 +157,7 @@ class P3Scroller extends ClipScroller {
 	override function viewToScroll(f:Float):Float
 		return f * 0.05;
 
-	override function addReader(rd:DO) {
+	override function addReader(rd:DisplayObject) {
 		game.addChild(rd);
 		game.setChildIndex(rd, game.level.p3index);
 	}
@@ -172,7 +172,7 @@ class P2Scroller extends ClipScroller {
 	override function viewToScroll(f:Float):Float
 		return f * 0.15;
 
-	override function addReader(rd:DO) {
+	override function addReader(rd:DisplayObject) {
 		game.addChild(rd);
 		var m = game.level.p3.getMaxIndex();
 		game.setChildIndex(rd, (m == null ? 0 : m) + 1);
@@ -188,7 +188,7 @@ class P2BScroller extends P2Scroller {
 	override function viewToScroll(f:Float):Float
 		return f * 0.10;
 
-	override function addReader(rd:DO) {
+	override function addReader(rd:DisplayObject) {
 		rd.scaleX = -1;
 		rd.x = Lib.w();
 		game.addChild(rd);
