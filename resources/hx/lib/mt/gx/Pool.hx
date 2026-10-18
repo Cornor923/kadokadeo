@@ -23,7 +23,7 @@ class Pool<T>
 		return n;
 	}
 	
-	public inline function nbUsed() return used.length
+	public inline function nbUsed() return used.length;
 	public function getUsed() : List<T>
 	{
 		return used;
@@ -34,7 +34,7 @@ class Pool<T>
 		return free;
 	}
 	
-	public function getAll() : List<T>
+	public function getAll() : Array<T>
 	{
 		return Lambda.concat( used,free);
 	}

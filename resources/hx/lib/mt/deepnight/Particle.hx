@@ -1,10 +1,13 @@
 package mt.deepnight;
 
-import flash.Vector;
+import kado.Seed;
 
-class Particle extends #if spriteParticles flash.display.Sprite #else flash.display.Shape #end {
-	public static var ALL:Vector<Particle> = new Vector();
-	public static var DEFAULT_BOUNDS:flash.geom.Rectangle = null;
+// On the AS3 display list of arkadeo: a Sprite (children allowed), the random draws on KadoKadeo's visual random (the
+// effects of a replay are the ones of the game), a scale changed by ds / dsx / dsy that stops at 0, destroy() frees the
+// particle at once.
+class Particle extends arkadeo.Sprite {
+	public static var ALL:Array<Particle> = [];
+	public static var DEFAULT_BOUNDS:arkadeo.Rectangle = null;
 	public static var AUTO_RESET_SETTINGS = true;
 	public static var GX = 0;
 	public static var GY = 0.4;
@@ -24,21 +27,22 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 	public var dsy:Float; // scaleY
 	public var frictX:Float;
 	public var frictY:Float;
+	public var frict(never, set):Float;
 	public var gx:Float;
 	public var gy:Float;
 	public var dr:Float;
 	public var bounce:Float;
-	@:isVar public var life(default, set_life):Float;
+	@:isVar public var life(default, set):Float;
 
 	var rlife:Float;
 	var maxLife:Float;
 
-	public var bounds:Null<flash.geom.Rectangle>;
+	public var bounds:Null<arkadeo.Rectangle>;
 	public var fl_wind:Bool;
 	public var groundY:Null<Float>;
 	public var groupId:Null<String>;
 
-	@:isVar public var delay(default, set_delay):Float;
+	@:isVar public var delay(default, set):Float;
 
 	public var onStart:Null<Void->Void>;
 	public var onBounce:Null<Void->Void>;
@@ -57,55 +61,30 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 		}
 		setPos(x, y);
 		dx = dy = da = ds = dsx = dsy = 0;
-		gx = GX;
-		gy = GY + Std.random(Std.int(GY * 10)) / 10;
 		ignoreLimit = false;
 		bounce = 0.85;
 		dr = 0;
-		frictX = 0.95 + Std.random(40) / 1000;
-		frictY = 0.97;
+		if (AUTO_RESET_SETTINGS)
+			reset();
+		else {
+			gx = GX;
+			gy = GY + Seed.randomVfx(Std.int(GY * 10)) / 10;
+			frictX = 0.95 + Seed.randomVfx(40) / 1000;
+			frictY = 0.97;
+		}
 		delay = 0;
-		life = 32 + Std.random(32);
+		life = 32 + Seed.randomVfx(32);
 		pixel = DEFAULT_SNAP_PIXELS;
 		bounds = DEFAULT_BOUNDS;
 		killOnLifeOut = false;
 		fl_wind = true;
 		ALL.push(this);
-		if (AUTO_RESET_SETTINGS)
-			reset();
-		#if spriteParticles
 		this.mouseChildren = this.mouseEnabled = false;
-		#end
 	}
 
 	function set_delay(d:Float):Float {
 		visible = d <= 0;
 		return delay = d;
-	}
-
-	#if spriteParticles
-	public function flatten(?padding = 0.0) { // EXPERIMENTAL
-		if (parent != null)
-			parent.removeChild(this);
-
-		var bmp = mt.deepnight.Lib.flatten(this, padding);
-		bmp.smoothing = false;
-		graphics.clear();
-		while (numChildren > 0)
-			removeChildAt(0);
-		addChild(bmp);
-
-		for (f in filters)
-			bmp.bitmapData.applyFilter(bmp.bitmapData, bmp.bitmapData.rect, new flash.geom.Point(0, 0), f);
-		filters = null;
-	}
-	#end
-
-	public function clone():Particle {
-		var s = new haxe.Serializer();
-		s.useCache = true;
-		s.serialize(this);
-		return haxe.Unserializer.run(s.toString());
 	}
 
 	function set_life(l:Float):Float {
@@ -115,6 +94,10 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 		rlife = l;
 		maxLife = l;
 		return l;
+	}
+
+	inline function set_frict(f:Float):Float {
+		return frictX = frictY = f;
 	}
 
 	public inline function time() {
@@ -128,11 +111,17 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 		graphics.endFill();
 	}
 
-	public inline function drawCircle(r:Float, col:Int, ?a = 1.0) {
+	// a disc, or a circle line (`fill` false, `thickness`)
+	public inline function drawCircle(r:Float, col:Int, ?a = 1.0, ?fill = true, ?thickness = 0.0) {
 		graphics.clear();
-		graphics.beginFill(col, a);
-		graphics.drawCircle(0, 0, r);
-		graphics.endFill();
+		if (fill && thickness <= 0) {
+			graphics.beginFill(col, a);
+			graphics.drawCircle(0, 0, r);
+			graphics.endFill();
+		} else {
+			graphics.lineStyle(thickness > 0 ? thickness : 1, col, a);
+			graphics.drawCircle(0, 0, r);
+		}
 	}
 
 	public inline function drawDot(w:Int, col:Int, ?a = 1.0) {
@@ -149,9 +138,9 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 			powY = Math.round(powX * 2);
 		var list = new List();
 		for (i in 0...n) {
-			var p = new Particle(x + Std.random(700) / 1000 * sign(), y + Std.random(700) / 1000 * sign());
-			p.dx = Std.random(powX * 1000) / 1000 * sign();
-			p.dy = -Std.random(powY * 1000) / 1000;
+			var p = new Particle(x + Seed.randomVfx(700) / 1000 * sign(), y + Seed.randomVfx(700) / 1000 * sign());
+			p.dx = Seed.randomVfx(powX * 1000) / 1000 * sign();
+			p.dy = -Seed.randomVfx(powY * 1000) / 1000;
 			if (i < n * 0.3)
 				p.dy *= 1 + randFloat(2);
 			if (i >= n * 0.3 && i < n * 0.6)
@@ -174,11 +163,11 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 		return list;
 	}
 
+	// out of ALL and of the display list, its node freed
 	public function destroy() {
-		alpha = 0;
-		life = 0;
-		if (parent != null)
-			parent.removeChild(this);
+		ALL.remove(this);
+		detach();
+		node.destroy({children: true});
 	}
 
 	public inline function getSpeed() {
@@ -186,11 +175,11 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 	}
 
 	public static inline function sign() {
-		return Std.random(2) * 2 - 1;
+		return Seed.randomVfx(2) * 2 - 1;
 	}
 
 	public static inline function randFloat(f:Float) {
-		return Std.random(Std.int(f * 10000)) / 10000;
+		return Seed.randomVfx(Std.int(f * 10000)) / 10000;
 	}
 
 	public inline function moveAng(a:Float, spd:Float) {
@@ -204,19 +193,19 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 	}
 
 	public static function clearAll() {
-		for (p in ALL)
+		for (p in ALL.copy())
 			p.destroy();
-		ALL = new flash.Vector();
+		ALL = [];
 	}
 
 	public static function update(?tmod = 1.0) {
-		var i:#if nme Int #else UInt #end = 0;
+		var i = 0;
 		var all = ALL;
 		var wx = WINDX;
 		var wy = WINDY;
 		var limit = LIMIT;
 
-		var count:#if nme Int #else UInt #end = all.length;
+		var count = all.length;
 		while (i < count) {
 			var p = ALL[i];
 			var wind = (p.fl_wind ? 1 : 0);
@@ -231,7 +220,7 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 					cb();
 				}
 
-				// gravitÃ©
+				// gravité
 				p.dx += tmod * (p.gx + wind * wx);
 				p.dy += tmod * (p.gy + wind * wy);
 
@@ -259,8 +248,11 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 				}
 
 				p.rotation += p.dr * tmod;
-				p.scaleX += (p.ds + p.dsx) * tmod;
-				p.scaleY += (p.ds + p.dsy) * tmod;
+				// (a shrinking scale stops at 0 instead of growing back mirrored)
+				if (p.ds + p.dsx != 0)
+					p.scaleX = Math.max(0, p.scaleX + (p.ds + p.dsx) * tmod);
+				if (p.ds + p.dsy != 0)
+					p.scaleY = Math.max(0, p.scaleY + (p.ds + p.dsy) * tmod);
 
 				if (p.rlife > 0 && p.da != 0) {
 					p.alpha += p.da * tmod;
@@ -272,17 +264,16 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 
 				p.rlife -= tmod;
 
-				if (p.rlife <= 0 || !p.ignoreLimit && Std.int(i) < cast(all.length - limit))
+				if (p.rlife <= 0 || !p.ignoreLimit && i < all.length - limit)
 					p.alpha -= 0.1 * tmod;
 
 				if (p.rlife <= 0 && (p.alpha <= 0 || p.killOnLifeOut) || p.bounds != null && !p.bounds.contains(p.rx, p.ry)) {
 					// Destruction
-					if (p.onKill != null)
-						p.onKill();
-					if (p.parent != null)
-						p.parent.removeChild(p);
 					all.splice(i, 1);
 					count--;
+					if (p.onKill != null)
+						p.onKill();
+					p.detach();
 				} else {
 					if (p.onUpdate != null)
 						p.onUpdate();
@@ -292,8 +283,3 @@ class Particle extends #if spriteParticles flash.display.Sprite #else flash.disp
 		}
 	}
 }
-//
-// @:build(mt.deepnight.ParticleBuilder.getFields())
-// class ParticleSprite extends flash.display.Sprite {
-// public static var ALL : Vector<ParticleSprite> = new Vector();
-// }

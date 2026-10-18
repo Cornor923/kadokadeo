@@ -59,7 +59,7 @@ class Nmy extends Entity {
 	public static var massPool:Pool<Sentinel>;
 
 	public static function create() {
-		var mr = new MRand(Game.getSeed());
+		var mr = new Rand(Game.getSeed());
 		swarmPool = new Pool(function() {
 			var r = new Swarm();
 			r.mouseEnabled = false;
@@ -110,7 +110,7 @@ class Nmy extends Entity {
 		spawnCell = {x: 0, y: 0};
 	}
 
-	override public function getRect():Rect {
+	override public function getRect():Rectangle {
 		return mc.getRect();
 	}
 
@@ -119,9 +119,9 @@ class Nmy extends Entity {
 		return {x: r.x + r.width * 0.5, y: r.y + r.height * 0.5};
 	}
 
-	static var colTrans = new CT();
+	static var colTrans = new ColorTransform();
 	static var bisColTrans = {
-		var c = new CT();
+		var c = new ColorTransform();
 		c.mul(.2, .2, .2);
 		c.ofs(50, 50, 50);
 		c;
@@ -267,7 +267,7 @@ class Nmy extends Entity {
 	}
 
 	function getMr() {
-		return new MRand(I32.of(Game.getSeed() + (Game.getFrame() * 44353.0) + uid));
+		return new Rand(I32.of(Game.getSeed() + (Game.getFrame() * 44353.0) + uid));
 	}
 
 	public function update() {
@@ -468,6 +468,8 @@ class Nmy extends Entity {
 		aggro = false;
 
 		var p = mc.parent;
+		// (a child of the root of the level: on top of it again)
+		var inLevel = game.level.dm.owns(mc);
 		var v = new Vanish(mc);
 		v.setFadeBlur(10, 10);
 		v.fadeAlpha = true;
@@ -489,7 +491,10 @@ class Nmy extends Entity {
 						pv = 1;
 						mc.alpha = 1;
 						mc.filters = [];
-						p.addChild(mc);
+						if (inLevel)
+							game.level.dm.addTop(mc);
+						else
+							p.addChild(mc);
 						new Spawn(mc);
 						game.level.nmyGet(type).push(this);
 					}, 40 * 5);
@@ -533,7 +538,7 @@ class Nmy extends Entity {
 		});
 	}
 
-	public function getMovieClip():Mov {
+	public function getMovieClip():MovieClip {
 		return cast mc;
 	}
 }

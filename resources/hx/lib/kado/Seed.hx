@@ -62,6 +62,33 @@ class Seed {
 		return gameplayRng.random(max);
 	}
 
+	// the helpers of mt.Rand on the gameplay random (an original that kept mt.Rand generators): inclusive [min, max],
+	// the value drawn before the optional sign
+	public static inline function range(min:Float, max:Float, ?randSign = false):Float {
+		return (min + rand() * (max - min)) * (randSign ? random(2) * 2 - 1 : 1);
+	}
+
+	public static inline function irange(min:Int, max:Int, ?randSign = false):Int {
+		return (min + random(max - min + 1)) * (randSign ? random(2) * 2 - 1 : 1);
+	}
+
+	public static inline function sign():Int {
+		return random(2) * 2 - 1;
+	}
+
+	// the same on the random of the effects
+	public static inline function rangeVfx(min:Float, max:Float, ?randSign = false):Float {
+		return (min + randVfx() * (max - min)) * (randSign ? randomVfx(2) * 2 - 1 : 1);
+	}
+
+	public static inline function irangeVfx(min:Int, max:Int, ?randSign = false):Int {
+		return (min + randomVfx(max - min + 1)) * (randSign ? randomVfx(2) * 2 - 1 : 1);
+	}
+
+	public static inline function signVfx():Int {
+		return randomVfx(2) * 2 - 1;
+	}
+
 	public static inline function randVfx():Float {
 		ensureInit();
 		return vfxRng.rand();

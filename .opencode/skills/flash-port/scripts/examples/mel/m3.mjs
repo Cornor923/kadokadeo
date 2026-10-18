@@ -15,7 +15,11 @@ const MAXT = +(process.env.MAXT || 2500)
 const K = { left: [37, 'ArrowLeft'], up: [38, 'ArrowUp'], right: [39, 'ArrowRight'], down: [40, 'ArrowDown'], space: [32, ' '], ctrl: [17, 'Control'] }
 const ALT = { left: [81, 'KeyA'], right: [68, 'KeyD'], up: [87, 'KeyW'], down: [83, 'KeyS'] }
 let b = await launch(PORT)
-const send = (type, [code, k]) => b.send('Input.dispatchKeyEvent', { type, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code, key: k, code: k })
+// (headless Chrome on macOS hides the page on a Control key event: no more frames until it is brought to the front)
+const send = async (type, [code, k]) => {
+  await b.send('Input.dispatchKeyEvent', { type, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code, key: k, code: k })
+  if (code === 17) await b.send('Page.bringToFront')
+}
 const held = new Set()
 const press = async (name, alt) => { const kk = alt && ALT[name] ? ALT[name] : K[name]; await send('keyDown', kk); held.add(kk) }
 const release = async (name) => { for (const kk of [K[name], ALT[name]]) if (kk && held.has(kk)) { await send('keyUp', kk); held.delete(kk) } }
@@ -59,7 +63,7 @@ try {
   liveOver = await b.eval('JSON.stringify(window.__over)')
   data = (await b.eval(`window.__logs.find(l => l.includes("Replay data:"))`)).split('Replay data: ')[1].trim()
   console.log('live', liveOver, JSON.stringify(stats), 'actions', t, 'replay chars', data.length)
-  writeFileSync('C:/kkw/mel/h/replay_' + process.argv[2] + '.txt', data + '\n' + liveOver)
+  writeFileSync(gameDir('mel', 'replays') + '/m_replay_' + process.argv[2] + '.txt', data + '\n' + liveOver)
 } finally {
   const errs = b.consoleLines.filter(l => /EXCEPTION|rror|CRASH/i.test(l)); if (errs.length) console.log(errs.slice(0, 3).join('\n').slice(0, 2000))
   await b.close()

@@ -25,18 +25,13 @@ class Fx {
 	public function update() { }
 
 	public function kill() {
-		if( dead ) {
-			#if debug
-			throw("fx already dead");
-			#else
-			trace("Warning : fx already dead");
-			#end
+		// (an effect killed twice: ignored, the games relied on it)
+		if( dead )
 			return;
-		}
 		dead = true;
 		if( onFinish != null ) onFinish();
 		if( poolBack != null ) poolBack();
-		manager.remove(this);
+		if( manager != null ) manager.remove(this);
 	}
 
 	// SHORTCUT

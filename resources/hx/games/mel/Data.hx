@@ -31,7 +31,7 @@ class Data {
 
 	public static var ORANGE = 0xde7a00;
 
-	public var bmpHit:Bmp;
+	public var bmpHit:Bitmap;
 
 	public var game(get, null):Game;
 
@@ -97,7 +97,7 @@ class Data {
 
 		makeLdLines();
 
-		bmpHit = new Bmp("hitflash");
+		bmpHit = new Bitmap("hitflash");
 		bmpHit.scaleX = bmpHit.scaleY = 2;
 		bmpHit.blendMode = "add";
 	}
@@ -136,7 +136,7 @@ class Data {
 
 	// the page bitmap: lines of the level design one above the other (league: the first line, then random ones from
 	// the 19th), each flipped or not
-	public function addLdLines(rd:MRand) {
+	public function addLdLines(rd:Rand) {
 		var totalH = Lib.nbch() * 128;
 		pageW = Lib.nbcw();
 		pageH = totalH;
@@ -223,7 +223,7 @@ class Data {
 	public static var SMS_N = Text.var_n.split(',');
 
 	public static function getSmsVar():String {
-		var rd = new MRand(I32.of(Game.getSeed() * 8788383.0 + Game.getLevel() + Game.getFrame()));
+		var rd = new Rand(I32.of(Game.getSeed() * 8788383.0 + Game.getLevel() + Game.getFrame()));
 		var s = Pick.array(SMS_RAND_REP, rd);
 		s = s.split("$n").join(Pick.array(SMS_N, rd));
 		return s.split("$p").join(Pick.array(SMS_P, rd));
