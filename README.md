@@ -126,6 +126,7 @@ openssl rsa -in keypair.pem -pubout -out public.pem
 | `kado:replays:analyze {game}`                    | Runs the move analyzer of a game on the replays of its runs and shows its metrics, to calibrate the thresholds (nothing is stored). Options: `--since=`, `--limit=50`, `--user=` | ❌                                                             |
 | `kado:clean-old-runs`                            | Deletes for good the runs older than two months without a score                                                                                                       | ❌ (disabled in `routes/console.php`)                          |
 | `kado:reset-scores {gameId?}`                    | ⚠️ Soft-deletes the runs of every game, or of one game, and erases their replays                                                                                                | ❌                                                             |
+| `kado:worker`                                    | The only worker of the production: runs `queue:work` and `reverb:start` as children and starts again the one that stops. Options: `--queue-args=`, `--reverb-args=` | ❌ (a systemd service)                                         |
 
 The schedule is defined in [`routes/console.php`](routes/console.php) and run by the cron of the app container ([`docker/app/conf/crontab`](docker/app/conf/crontab): `artisan schedule:run` every minute). Times are in UTC.
 
