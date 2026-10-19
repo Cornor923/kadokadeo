@@ -238,6 +238,9 @@ class ClanMissionService
         $period = $this->clanService->assertPeriod();
 
         DB::transaction(function () use ($bonus, $clan, $period, $params) {
+            // the option locked and read again: two clicks at the same time use it once
+            $bonus = ClanBonus::query()->lockForUpdate()->findOrFail($bonus->id);
+            $this->assertUsable($bonus);
             $mission = $this->currentMission($clan, $period);
             // the game added to the "Jeux caca" or the "Jeux cool"
             $gameId = null;
@@ -258,10 +261,13 @@ class ClanMissionService
                     $gameId = $this->addToGameList($bonus, $period, $params['game_id'] ?? null);
                     break;
                 case ClanBonusType::MORE_TIME:
+                    $mission = $this->lockActiveMission($mission);
                     $mission->update(['expires_at' => $mission->expires_at->addHours(app(ClanSettings::class)->mission_more_time_hours)]);
                     break;
                 case ClanBonusType::SKIP_STEP:
-                    $step = $mission->steps()->whereKey($params['step_id'] ?? 0)->first();
+                    // the step, then the mission locked, as when a run completes it (completeStep)
+                    $step = $mission->steps()->whereKey($params['step_id'] ?? 0)->lockForUpdate()->first();
+                    $mission = $this->lockActiveMission($mission);
                     if (!$step || $step->isDone()) {
                         throw new ClanException('Choisissez une étape de la mission en cours qui n\'est pas encore réussie.');
                     }
@@ -320,11 +326,25 @@ class ClanMissionService
         return $game->id;
     }
 
-    // all the steps done in time: the points of the mission, maybe an option, and the next mission
+    // the mission locked by the caller, read again: still in progress
+    private function lockActiveMission(ClanMission $mission): ClanMission
+    {
+        $mission = ClanMission::query()->lockForUpdate()->find($mission->id);
+        if (!$mission || $mission->status !== ClanMission::ACTIVE || $mission->expires_at->isPast()) {
+            throw new ClanException('Aucune mission en cours.');
+        }
+
+        return $mission;
+    }
+
+    // all the steps done in time: the points of the mission, maybe an option, and the next mission (the mission locked by
+    // the caller)
     private function completeMissionIfDone(ClanMission $mission): void
     {
         $mission->refresh();
-        if ($mission->steps()->get()->contains(fn (ClanMissionStep $step) => !$step->isDone())) {
+        // (completed or lost meanwhile: its points are given once)
+        if ($mission->status !== ClanMission::ACTIVE
+            || $mission->steps()->get()->contains(fn (ClanMissionStep $step) => !$step->isDone())) {
             return;
         }
 

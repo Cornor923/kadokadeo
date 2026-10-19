@@ -91,8 +91,10 @@ class GameController extends Controller implements HasMiddleware
         $dailyGame = $gameService->getDailyGame();
         Gate::authorize('view', $dailyGame?->game);
 
+        // without its seed: the game gets it when its run begins (RunBeginResource), and the replays of the day are hidden
+        // until the next day (the coming pieces)
         return GameResource::make($dailyGame->game)->additional([
-            'dailyGame' => $dailyGame,
+            'dailyGame' => $dailyGame->makeHidden('seed'),
         ]);
     }
 }

@@ -5,6 +5,8 @@ on:
     branches:
       - staging
       - main
+  # the checks (lint, tests) on the pull requests too, without the deployment
+  pull_request:
 
 # One deployment at a time per branch, the next push waits for the current one
 concurrency:
@@ -43,6 +45,10 @@ jobs:
 
       - name: Pint
         run: vendor/bin/pint --test
+
+      # (the errors already there are in phpstan-baseline.neon)
+      - name: Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 
       - name: ESLint
         run: yarn eslint ./resources/js
@@ -86,6 +92,7 @@ jobs:
 
   deploy:
     needs: [lint, tests]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Update the release of the channel

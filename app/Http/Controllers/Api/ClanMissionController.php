@@ -23,7 +23,7 @@ class ClanMissionController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('auth:sanctum'),
-            new Middleware('throttle:30,1', only: ['play', 'reserve']),
+            new Middleware('throttle:30,1', only: ['play', 'reserve', 'useBonus']),
         ];
     }
 
@@ -45,7 +45,8 @@ class ClanMissionController extends Controller implements HasMiddleware
             ? $this->missionService->currentMission($clan, $period)
             : ClanMission::query()->where('clan_id', $clan->id)->where('period_id', $period->id)
                 ->where('status', ClanMission::ACTIVE)->where('expires_at', '>', now())->first();
-        $score = $this->clanService->periodScore($clan, $period);
+        // (another clan looking does not create its score of the period and its options either)
+        $score = $isMember ? $this->clanService->periodScore($clan, $period) : $this->clanService->existingPeriodScore($clan, $period);
         // the "Jeux caca" and the "Jeux cool", in the order they were added
         $lists = $isMember ? $this->missionService->gameLists($clan, $period) : ['banned' => collect(), 'forced' => collect()];
         $listGames = Game::query()->whereIn('id', $lists['banned']->concat($lists['forced']))->get(['id', 'name'])->keyBy('id');
@@ -68,8 +69,8 @@ class ClanMissionController extends Controller implements HasMiddleware
                         // the option won with the mission, if any
                         'bonus' => $isMember && $mission->bonus ? $this->bonusData($mission->bonus) + ['used' => $mission->bonus->used_at !== null] : null,
                     ]),
-                'mission_score' => $score->mission_score,
-                'missions_completed' => $score->missions_completed,
+                'mission_score' => $score?->mission_score ?? 0,
+                'missions_completed' => $score?->missions_completed ?? 0,
                 'banned_games' => $gameList($lists['banned']),
                 'forced_games' => $gameList($lists['forced']),
                 'bonuses' => $isMember

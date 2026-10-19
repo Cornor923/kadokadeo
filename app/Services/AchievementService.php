@@ -139,7 +139,7 @@ class AchievementService
             return null;
         }
 
-        return UserAchievementProgress::query()->firstOrCreate([
+        $progress = UserAchievementProgress::query()->firstOrCreate([
             'user_id' => $user->id,
             'achievement_id' => $achievement->id,
             'scope_key' => $periodId === null ? 'lifetime' : 'period:'.$periodId,
@@ -150,6 +150,10 @@ class AchievementService
             'completed_level' => 0,
             'state' => [],
         ]);
+
+        // locked until the end of the transaction of handle(), read again: two runs of the player finished at once
+        // progress one after the other (each from the value saved by the other, a level crossed and paid once)
+        return UserAchievementProgress::query()->whereKey($progress->getKey())->lockForUpdate()->first();
     }
 
     private function updateCompletedLevel(UserAchievementProgress $progress, Achievement $achievement): void

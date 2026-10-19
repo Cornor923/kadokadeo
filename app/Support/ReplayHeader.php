@@ -15,6 +15,13 @@ class ReplayHeader
     // predicted before the input)
     public const FLAG_INPUT_PHASES = 128;
 
+    // the longest replay once inflated: a frame takes a few bytes (version 3+ packs the sections column by column, an
+    // hour of a mouse game is about 115 000 positions, a few hundred KB), so 16 MB is dozens of hours of play. Deflate
+    // gives up to about 1000 times its input: a replay made to inflate more (a few KB are enough) stops there, read as
+    // no replay, without filling the memory of PHP (zlib_decode checks it between its rounds, which double: up to about
+    // twice that in memory)
+    public const MAX_INFLATED_BYTES = 16 * 1024 * 1024;
+
     // frames: number of frames of the game ("LEN" trailer), null for the replays without it
     private function __construct(public readonly int $version, public readonly int $flags, public readonly ?int $frames = null) {}
 
@@ -25,7 +32,7 @@ class ReplayHeader
         }
         $decoded = base64_decode($replay, true);
         // the first replays were not deflated (ReplayManager.parseReplayString reads both)
-        $binary = $decoded !== false && self::isZlib($decoded) ? (@zlib_decode($decoded) ?: false) : $decoded;
+        $binary = $decoded !== false && self::isZlib($decoded) ? (@zlib_decode($decoded, self::MAX_INFLATED_BYTES) ?: false) : $decoded;
         if ($binary === false || strlen($binary) < 6 || !str_starts_with($binary, 'KADO')) {
             return null;
         }

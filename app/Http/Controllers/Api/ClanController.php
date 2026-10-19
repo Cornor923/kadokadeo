@@ -60,8 +60,10 @@ class ClanController extends Controller implements HasMiddleware
 
         $ranking = $validated['ranking'] ?? 'war';
         $query = $this->clanService->rankingQuery($period, $ranking)->withCount('members');
-        if (!empty($validated['q'])) {
-            $query->where('clans.name', 'like', '%'.$validated['q'].'%');
+        // whatever the case; the wildcards of LIKE are removed (never in a name, App\Rules\ClanName)
+        $search = trim(str_replace(['%', '_', '\\'], ' ', $validated['q'] ?? ''));
+        if ($search !== '') {
+            $query->whereLike('clans.name', "%{$search}%");
         }
 
         $clans = $query->paginate(50);
@@ -76,13 +78,14 @@ class ClanController extends Controller implements HasMiddleware
                 ->get()
                 ->keyBy('clan_id')
             : collect();
-        $clans->getCollection()->each(function (Clan $clan, int $index) use ($clans, $validated, $period, $ranking, $missions) {
+        // in a search, the position in the whole ranking
+        $ranks = $search !== '' ? $this->clanService->ranksOf($clans->getCollection()->pluck('id')->all(), $period, $ranking) : collect();
+        $clans->getCollection()->each(function (Clan $clan, int $index) use ($clans, $search, $ranks, $missions) {
             $mission = $missions->get($clan->id);
             $clan->mission = $mission ? ['number' => $mission->number, 'steps' => $mission->steps_count, 'steps_done' => $mission->steps_done_count] : null;
-            // in a search, the position in the whole ranking
-            $clan->rank = empty($validated['q'])
+            $clan->rank = $search === ''
                 ? ($clans->currentPage() - 1) * $clans->perPage() + $index + 1
-                : $this->clanService->rankOf($clan, $period, $ranking);
+                : $ranks->get($clan->id);
         });
 
         return ClanListResource::collection($clans)->additional(['tournament' => $this->clanService->tournamentInfo()]);
@@ -115,8 +118,8 @@ class ClanController extends Controller implements HasMiddleware
                     ->map(fn (ClanApplication $a) => ['id' => $a->id, 'clan' => ['id' => $a->clan->id, 'name' => $a->clan->name]]),
                 'top' => ClanListResource::collection($top('war')),
                 'top_missions' => ClanListResource::collection($top('missions')),
-                // the tools of /clans/debug (kado.debug_tools)
-                'debug' => (bool) config('kado.debug_tools'),
+                // the tools of /clans/debug (kado.debug_tools, for the admins: App\Http\Controllers\Api\DebugClanController)
+                'debug' => (bool) config('kado.debug_tools') && $user->is_admin,
                 // the rules of the clans (App\Settings\ClanSettings), for the help page and the clan pages
                 'rules' => $this->rules(),
             ],

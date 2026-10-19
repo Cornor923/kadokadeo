@@ -16,7 +16,9 @@ use App\Models\Game;
 use App\Models\GameBuild;
 use App\Models\Period;
 use App\Models\Run;
+use App\Models\User;
 use App\Policies\GamePolicy;
+use App\Policies\RunPolicy;
 use App\Services\AchievementService;
 use App\Services\ClanRunService;
 use App\Services\GameService;
@@ -28,6 +30,7 @@ use App\Settings\ClanSettings;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
@@ -38,32 +41,24 @@ class RunController extends Controller implements HasMiddleware
         return [
             new Middleware('auth:sanctum', except: ['publicKey']),
             new Middleware('throttle:10,1', only: ['begin']), // 10 requests per minute
+            // (its own counter: the runs finished in a row, and their retries, do not use up the begins)
+            new Middleware('throttle:30,1,run-end', only: ['end']),
         ];
     }
 
     public function begin(RunStartRequest $request, GameService $gameService, LeagueService $leagueService, ClanRunService $clanRunService, Game $game)
     {
+        // a game that can't be opened (turned off, no bundle) can't be played either
+        Gate::authorize('view', $game);
+        $user = $request->user();
         $isDaily = $request->validated('daily', false);
         // (prepared on demand, before the policy looks for it)
         $dailyGame = $isDaily ? $gameService->getDailyGame() : null;
-        // the daily game: refused when the game is not the one of the day, or when it was already played today (outside
-        // the production it can be played again, 0fe63e9c). The message is shown in the game.
-        if ($isDaily) {
-            $dailyGate = Gate::inspect('playDaily', $game);
-            if ($dailyGate->denied() && ($dailyGate->code() !== GamePolicy::DAILY_ALREADY_PLAYED || app()->environment('production'))) {
-                abort(403, $dailyGate->message());
-            }
-        }
         // an attack, a defense or a mission step asked on the clan pages: the runs of the missions are free, the attacks
         // and the defenses have their own games (attack games of the day, then paid clan games). None while the clans are
         // turned off (ClanSettings::$enabled)
-        $clanAction = $isDaily || !app(ClanSettings::class)->enabled ? null : $clanRunService->pendingAction($request->user()->id, $game->id);
+        $clanAction = $isDaily || !app(ClanSettings::class)->enabled ? null : $clanRunService->pendingAction($user->id, $game->id);
         $cost = $clanRunService->runCost($clanAction);
-        if ($cost === ClanRunService::COST_GAME) {
-            Gate::authorize('create', Run::class);
-        } elseif ($cost === ClanRunService::COST_CLAN && !$clanRunService->useClanGame($request->user())) {
-            abort(403, 'Vous n\'avez plus de parties de clan. Vous pouvez en acheter avec vos points Kado.');
-        }
 
         if ($dailyGame) {
             $score = $dailyGame->contract_score;
@@ -75,36 +70,62 @@ class RunController extends Controller implements HasMiddleware
             $seed = $gameService->generateSeed();
         }
 
-        $user = $request->user();
         $period = Period::current()->first();
         $membership = $period ? $leagueService->resolveMembership($user, $game, $period) : null;
-        $run = $game->runs()->create([
-            'user_id' => $user->id,
-            'period_id' => $period?->id,
-            'league_id' => $membership?->league_id,
-            'seed' => $seed,
-            'contract_score' => $score,
-            'contract_points' => $points,
-            'game_build_id' => GameBuild::resolve($game, $request->validated('build'))?->id,
-        ]);
+        $build = GameBuild::resolve($game, $request->validated('build'));
+        // the games are taken back if the run is not created
+        $run = DB::transaction(function () use ($build, $clanRunService, $game, $user, $isDaily, $dailyGame, $clanAction, $cost, $period, $membership, $score, $points, $seed) {
+            // the daily game: refused when the game is not the one of the day, or when it was already played today (outside
+            // the production it can be played again, 0fe63e9c). The message is shown in the game. The player is locked
+            // until their run is created: two daily runs begun at once would both find none played (the check is done again
+            // by the second one once the first one is created)
+            if ($isDaily) {
+                User::query()->whereKey($user->id)->lockForUpdate()->first();
+                $dailyGate = Gate::inspect('playDaily', $game);
+                if ($dailyGate->denied() && ($dailyGate->code() !== GamePolicy::DAILY_ALREADY_PLAYED || app()->environment('production'))) {
+                    abort(403, $dailyGate->message());
+                }
+            }
+            if ($cost === ClanRunService::COST_GAME) {
+                Gate::authorize('create', Run::class);
+                // (checked on the player loaded by the auth: taken in one query, two runs begun at once can't both take the
+                // last game)
+                abort_unless($this->useGame($user), 403, RunPolicy::NO_GAMES_LEFT);
+            } elseif ($cost === ClanRunService::COST_CLAN && !$clanRunService->useClanGame($user)) {
+                abort(403, 'Vous n\'avez plus de parties de clan. Vous pouvez en acheter avec vos points Kado.');
+            }
 
-        if ($dailyGame?->seed === $run->seed && $dailyGame?->game_id === $run->game_id) {
-            $run->daily_game_id = $dailyGame->id;
-            $run->save();
-        }
+            $run = $game->runs()->create([
+                'user_id' => $user->id,
+                'period_id' => $period?->id,
+                'league_id' => $membership?->league_id,
+                'seed' => $seed,
+                'contract_score' => $score,
+                'contract_points' => $points,
+                // (the daily game of this game, checked by GamePolicy::playDaily)
+                'daily_game_id' => $dailyGame?->id,
+                'game_build_id' => $build?->id,
+            ]);
 
-        // only the clan run chosen above (none for the daily game, even when it is played again outside the production)
-        if ($clanAction) {
-            $clanRunService->bindRun($run, $clanAction);
-        }
+            // only the clan run chosen above (none for the daily game, even when it is played again outside the production)
+            if ($clanAction) {
+                $clanRunService->bindRun($run, $clanAction);
+            }
 
-        if ($cost === ClanRunService::COST_GAME && $user->kado_games > 0) {
-            $user->kado_games -= 1;
-            $user->save();
-        }
+            return $run;
+        });
 
         // the goal of the clan run and the clan games left, in the bottom bar of the game
         return (new RunBeginResource($run))->withClan($clanAction ? $clanRunService->goal($clanAction, $user->refresh()) : null);
+    }
+
+    // one of the games of the day of the player, only while they have one left. Unlimited games: the counter goes down to 0
+    // and the runs go on
+    private function useGame(User $user): bool
+    {
+        $used = User::query()->whereKey($user->id)->where('kado_games', '>', 0)->decrement('kado_games') > 0;
+
+        return $used || config('kado.games_per_day') <= 0;
     }
 
     public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService)
@@ -126,8 +147,15 @@ class RunController extends Controller implements HasMiddleware
         $previousBest = $scoreService->getUserBestScore($run->game, $user->id, $periodId);
         $previousBestScore = ($previousBest?->score ?? 0);
 
+        // a payload the server can't read (bad signature, old key, invalid data): refused, the fault of the client
         try {
             $decoded = $runService->decodeRun($payload, $key, $sign);
+        } catch (\Throwable $e) {
+            info(sprintf('RunController@end: user %d run end refused: %s', Auth::id(), $e->getMessage()));
+            throw new BadRequestException($e->getMessage());
+        }
+
+        try {
             $run = $runService->confirmRun($run, $decoded);
             $runService->rewardStars($run);
             if (!$run->is_cheat) {
@@ -143,7 +171,8 @@ class RunController extends Controller implements HasMiddleware
         } catch (RunAlreadyCompletedException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            info(sprintf('RunController@end: user %d run end failed: %s', Auth::id(), $e->getMessage()));
+            // not expected: reported (a BadRequestException is not), the game still gets its 400
+            report($e);
             throw new BadRequestException($e->getMessage());
         }
 

@@ -13,10 +13,14 @@ class RunEndRequest extends FormRequest
      */
     public function rules(): array
     {
+        // the payload: base64 of the IV and the encrypted JSON (the replay, kado.replay_max_length, and the score and
+        // its data), a third more than what it holds
+        $maxPayload = intdiv((int) config('kado.replay_max_length') * 4, 3) + 1_000_000;
+
         return [
-            'payload' => 'required|string', // encrypted with AES
-            'key' => 'required|string', // AES key, encrypted with server's public key
-            'sign' => 'required|string', // signed with AES key
+            'payload' => 'required|string|max:'.$maxPayload, // encrypted with AES
+            'key' => 'required|string|max:2048', // AES key, encrypted with server's public key (base64 of an RSA block)
+            'sign' => 'required|string|max:255', // signed with AES key (base64 of a HMAC-SHA256)
         ];
     }
 }

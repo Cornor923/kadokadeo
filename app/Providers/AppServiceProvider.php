@@ -78,6 +78,9 @@ class AppServiceProvider extends ServiceProvider
             'run_comment' => \App\Models\RunComment::class,
         ]);
 
+        // last_used_at written every 5 minutes, not at each request
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
+
         // the settings cache (SETTINGS_CACHE_ENABLED) keeps serialized settings objects: a property added by a settings
         // migration stays uninitialized in them ("must not be accessed before initialization"), so every `migrate` clears it
         // (also with nothing to migrate, for a deployment whose migrations already ran)

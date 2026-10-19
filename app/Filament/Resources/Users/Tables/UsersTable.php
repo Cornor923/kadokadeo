@@ -4,8 +4,6 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Resources\Users\Actions\ModerationActions;
 use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -66,14 +64,10 @@ class UsersTable
                     ->trueLabel('Bannis')
                     ->falseLabel('Non bannis'),
             ])
+            // no deletion of players (UserResource): banning is the sanction
             ->recordActions([
                 EditAction::make(),
                 ActionGroup::make(ModerationActions::all()),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

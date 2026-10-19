@@ -9,6 +9,7 @@ use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanAction;
 use App\Models\ClanAttack;
+use App\Models\ClanPeriodScore;
 use App\Models\ClanWar;
 use App\Models\Game;
 use App\Models\Period;
@@ -114,19 +115,30 @@ class ClanWarService
             throw new ClanException('Ce clan est protégé de vos attaques : son score est trop éloigné du vôtre.');
         }
 
-        $this->clanService->forgetUnplayedActions($user);
-        $this->assertClanGame($user);
-        if ($this->runningAttacksCount($user) >= $this->maxAttacks($user, $clan)) {
-            throw new ClanException('Vous avez déjà le maximum d\'attaques en cours. Vous pouvez améliorer ou annuler une attaque depuis la page statut de votre clan.');
-        }
+        return DB::transaction(function () use ($user, $clan, $defender, $game) {
+            // the player locked: two attacks asked at the same time are counted one after the other (the attack asked
+            // before and not begun is forgotten, the one begun counts)
+            User::query()->lockForUpdate()->find($user->id);
+            $this->clanService->forgetUnplayedActions($user);
+            $this->assertClanGame($user);
+            if ($this->runningAttacksCount($user) >= $this->maxAttacks($user, $clan)) {
+                throw new ClanException('Vous avez déjà le maximum d\'attaques en cours. Vous pouvez améliorer ou annuler une attaque depuis la page statut de votre clan.');
+            }
 
-        return ClanAction::query()->create([
-            'clan_id' => $clan->id,
-            'user_id' => $user->id,
-            'game_id' => $game->id,
-            'type' => ClanActionType::ATTACK,
-            'defender_clan_id' => $defender->id,
-        ]);
+            return ClanAction::query()->create([
+                'clan_id' => $clan->id,
+                'user_id' => $user->id,
+                'game_id' => $game->id,
+                'type' => ClanActionType::ATTACK,
+                'defender_clan_id' => $defender->id,
+            ]);
+        });
+    }
+
+    // the attacker, still in the clan of the attack (a member who left or was excluded no longer acts for it)
+    private function isAttacker(User $user, ClanAttack $attack): bool
+    {
+        return $attack->attacker_user_id === $user->id && $this->clanService->clanOf($user)?->id === $attack->attacker_clan_id;
     }
 
     // a new run on the game of his attack: its score replaces the score of the attack only if it is higher
@@ -134,7 +146,7 @@ class ClanWarService
     {
         $this->resolveExpired();
         $attack->refresh();
-        if ($attack->attacker_user_id !== $user->id) {
+        if (!$this->isAttacker($user, $attack)) {
             throw new ClanException('Seul l\'attaquant peut améliorer son attaque.');
         }
         if ($attack->status !== ClanAttackStatus::ACTIVE) {
@@ -200,7 +212,7 @@ class ClanWarService
 
     public function cancelAttack(User $user, ClanAttack $attack): void
     {
-        if ($attack->attacker_user_id !== $user->id) {
+        if (!$this->isAttacker($user, $attack)) {
             throw new ClanException('Seul l\'attaquant peut annuler son attaque.');
         }
 
@@ -333,17 +345,22 @@ class ClanWarService
                 }
 
                 $period = $attack->period;
-                $attackerScore = $this->clanService->periodScore($attack->attackerClan, $period);
-                $defenderScore = $this->clanService->periodScore($attack->defenderClan, $period);
+                // both scores locked (in the order of their ids: two attacks between the same clans resolved together),
+                // then read again: the points and the score of the defender computed from the true scores
+                $scoreIds = [
+                    $this->clanService->periodScore($attack->attackerClan, $period)->id,
+                    $this->clanService->periodScore($attack->defenderClan, $period)->id,
+                ];
+                $scores = ClanPeriodScore::query()->whereKey($scoreIds)->orderBy('id')->lockForUpdate()->get()->keyBy('clan_id');
+                $attackerScore = $scores->get($attack->attacker_clan_id);
+                $defenderScore = $scores->get($attack->defender_clan_id);
                 $points = $this->clanService->attackPoints($attackerScore->war_score, $defenderScore->war_score);
 
                 $attack->update(['status' => ClanAttackStatus::WON, 'points' => $points, 'resolved_at' => now()]);
                 $attackerScore->increment('war_score', $points);
                 $attackerScore->increment('attacks_won');
-                $defenderScore->update([
-                    'war_score' => max(0, $defenderScore->war_score - $points),
-                    'attacks_lost' => $defenderScore->attacks_lost + 1,
-                ]);
+                $defenderScore->update(['war_score' => max(0, $defenderScore->war_score - $points)]);
+                $defenderScore->increment('attacks_lost');
                 $stat = $this->clanService->memberStat($attack->attacker_clan_id, $attack->attacker_user_id, $period->id);
                 $stat->increment('attacks_won');
                 $stat->increment('performance', $points);

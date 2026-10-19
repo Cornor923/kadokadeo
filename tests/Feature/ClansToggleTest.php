@@ -9,13 +9,14 @@ use App\Models\User;
 use App\Settings\ClanSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Tests\Concerns\PlayableGames;
 use Tests\TestCase;
 
 // the clans turned off in the admin (ClanSettings::$enabled, off by default): their routes are refused, the runs take
 // no clan action, the admin still manages them
 class ClansToggleTest extends TestCase
 {
-    use RefreshDatabase;
+    use PlayableGames, RefreshDatabase;
 
     protected function setUp(): void
     {

@@ -14,7 +14,8 @@ class GamePolicy
     // playDaily: the daily game was already played today (it can be played again outside the production)
     public const DAILY_ALREADY_PLAYED = 'daily_already_played';
 
-    public function view(User $user, Game $game)
+    // (the guests too: the ranking of a game, GameScoreController::search)
+    public function view(?User $user, Game $game)
     {
         if (!$game->is_active) {
             return $this->deny('Game not active');

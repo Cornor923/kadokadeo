@@ -19,6 +19,7 @@
 - Production build: `npm run build` (installs Haxe libs, compiles all games, bundles games, then Vite build).
 - Game bundle only: `make compile-games`.
 - Backend tests: `docker exec kadokadeo_app php artisan test` (configured for SQLite in-memory via `phpunit.xml`).
+- Static analysis: `docker exec -w /www kadokadeo_app vendor/bin/phpstan analyse --memory-limit=2G` (Larastan level 5, in CI; the old errors are in `phpstan-baseline.neon`: new code adds none).
 - DB sync/reset in Docker context: `make sync-database`, `make reset-database`.
 
 ## Game Pipeline Gotchas

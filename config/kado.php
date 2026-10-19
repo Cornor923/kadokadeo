@@ -12,6 +12,12 @@ return [
     // Same: to turn on a day or two after the deployment of the games that record it.
     'require_input_phases' => env('KADO_REQUIRE_INPUT_PHASES', false),
 
+    // the longest replay sent at the end of a run (base64 of the deflated replay, App\Support\ReplayHeader), in
+    // characters: the replays of long games stay far below (a frame takes a few bytes once deflated). The end of the run
+    // (App\Http\Requests\RunEndRequest) is refused above it, the encrypted payload being a third bigger: keep it under
+    // the post_max_size of PHP (16M, docker/app/conf/php.ini)
+    'replay_max_length' => (int) env('KADO_REPLAY_MAX_LENGTH', 10_000_000),
+
     'anticheat' => [
         // the bits of what the game detected during a run (App\Enums\AntiCheatBit) that don't mark it as cheated, but put
         // it in the queue of the suspicious runs (extensions can do it too: other display objects, functions of the

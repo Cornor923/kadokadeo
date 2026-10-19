@@ -5,13 +5,16 @@ namespace Tests\Feature;
 use App\Enums\BanReason;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\Game;
 use App\Models\GamePeriodStar;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Services\ModerationService;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -98,5 +101,44 @@ class UserBanTest extends TestCase
 
         $this->assertSame(0, $other->runs()->count());
         $this->assertFalse($other->fresh()->isBanned());
+    }
+
+    // the ban and the deletion of the scores in one transaction, the ban first: a run finishing meanwhile can not
+    // be saved between the two
+    public function test_the_ban_and_the_deletion_of_the_scores_are_one_transaction(): void
+    {
+        $user = $this->createPlayerWithScores();
+        $level = DB::transactionLevel();
+        $writes = [];
+        DB::listen(function (QueryExecuted $query) use (&$writes) {
+            if (preg_match('/^(update|delete from) "(users|runs|game_period_stars|user_stars)"/i', $query->sql, $match)) {
+                $writes[] = [$match[2], DB::transactionLevel()];
+            }
+        });
+
+        app(ModerationService::class)->ban($user, BanReason::CHEAT);
+
+        $this->assertSame(['users', 'runs', 'game_period_stars', 'user_stars'], array_column($writes, 0));
+        foreach ($writes as [$table, $writeLevel]) {
+            $this->assertGreaterThan($level, $writeLevel, $table);
+        }
+    }
+
+    // deleting a player unbans them (the account is created again at the next login): banning is the sanction
+    public function test_players_can_not_be_deleted_from_the_admin(): void
+    {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+        $player = $this->createPlayerWithScores();
+
+        Livewire::test(ListUsers::class)
+            ->assertTableBulkActionDoesNotExist('delete')
+            ->assertTableActionDoesNotExist('delete');
+        Livewire::test(EditUser::class, ['record' => $player->getRouteKey()])
+            ->assertActionDoesNotExist('delete');
+
+        $this->assertFalse(UserResource::canDelete($player));
+        $this->assertFalse(UserResource::canDeleteAny());
+        $this->assertFalse(UserResource::canForceDelete($player));
+        $this->assertNotNull($player->fresh());
     }
 }

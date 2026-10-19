@@ -9,8 +9,10 @@ use App\Models\GamePeriodStar;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use App\Services\AchievementService;
 use App\Services\RunService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -253,5 +255,77 @@ class RunEndTest extends TestCase
 
         Queue::assertPushed(VerifyRunReplay::class, fn ($job) => $job->runId === $run->id);
         $this->assertSame(RunVerification::PENDING, $run->verification);
+    }
+
+    public function test_a_replay_above_the_size_limit_is_refused(): void
+    {
+        config(['kado.replay_max_length' => 100]);
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($run->user);
+        $finish = fn (string $replay) => $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 10,
+            'timestamp' => now()->timestamp,
+            'replay' => $replay,
+            'data' => [],
+            'ac' => 0,
+        ]));
+
+        $finish(str_repeat('A', 101))->assertStatus(400);
+        $this->assertNull($run->fresh()->completed_at);
+        $finish(str_repeat('A', 100))->assertOk();
+    }
+
+    public function test_a_payload_above_the_size_limit_is_refused_before_it_is_decrypted(): void
+    {
+        config(['kado.replay_max_length' => 0]);
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($run->user);
+
+        $this->postJson("/api/runs/{$run->id}/finish", ['payload' => str_repeat('A', 1_000_001), 'key' => 'key', 'sign' => 'sign'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['payload']);
+    }
+
+    public function test_the_ends_of_runs_are_throttled_apart_from_the_begins(): void
+    {
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($run->user);
+        $body = ['payload' => 'bad', 'key' => 'bad', 'sign' => 'bad'];
+
+        for ($i = 0; $i < 30; $i++) {
+            $this->postJson("/api/runs/{$run->id}/finish", $body)->assertStatus(400);
+        }
+        $this->postJson("/api/runs/{$run->id}/finish", $body)->assertStatus(429);
+        // (refused by GamePolicy::view, the game has no bundle in the tests: not 429)
+        $this->postJson("/api/runs/games/{$run->game_id}")->assertForbidden();
+    }
+
+    // a payload the server can't read is the fault of the client (400, not reported); an error after it is reported, the
+    // game still gets its 400
+    public function test_the_unexpected_errors_of_the_end_of_a_run_are_reported(): void
+    {
+        Exceptions::fake();
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($run->user);
+        $body = $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 10,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => [],
+            'ac' => 0,
+        ]);
+
+        $this->postJson("/api/runs/{$run->id}/finish", [...$body, 'sign' => base64_encode('forged')])
+            ->assertStatus(400)
+            ->assertJsonPath('message', 'Bad request.');
+        Exceptions::assertNothingReported();
+
+        $this->mock(AchievementService::class)->shouldReceive('handleGameRunCompleted')->andThrow(new \RuntimeException('boom'));
+        $this->postJson("/api/runs/{$run->id}/finish", $body)
+            ->assertStatus(400)
+            ->assertJsonPath('message', 'Bad request.');
+        Exceptions::assertReported(fn (\RuntimeException $e) => $e->getMessage() === 'boom');
     }
 }

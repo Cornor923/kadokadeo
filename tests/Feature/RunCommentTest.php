@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\Run;
 use App\Models\RunComment;
 use App\Models\User;
+use App\Services\RunCommentService;
 use App\Settings\ReplaySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -124,6 +125,67 @@ class RunCommentTest extends TestCase
         $this->postJson("/api/runs/{$this->run->id}/comments", ['frame' => 1, 'content' => 'a'])->assertForbidden();
         Sanctum::actingAs($this->player);
         $this->getJson("/api/runs/{$this->run->id}/comments")->assertOk();
+    }
+
+    // the actions on a comment check the replay too: the comments of today's daily game are hidden until the next day
+    public function test_the_comments_of_a_hidden_replay_can_not_be_touched(): void
+    {
+        $id = $this->comment($this->viewer);
+        $daily = DailyGame::create(['day' => today(), 'game_id' => $this->run->game_id, 'seed' => 'daily', 'contract_score' => 0, 'contract_points' => 0]);
+        $this->run->update(['daily_game_id' => $daily->id]);
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->putJson("/api/run-comments/{$id}/like")->assertForbidden();
+        $this->deleteJson("/api/run-comments/{$id}/like")->assertForbidden();
+        $this->postJson("/api/run-comments/{$id}/report", ['reason' => 'spam'])->assertForbidden();
+        // its author neither, until the next day
+        Sanctum::actingAs($this->viewer);
+        $this->patchJson("/api/run-comments/{$id}", ['content' => 'Corrigé'])->assertForbidden();
+        $this->deleteJson("/api/run-comments/{$id}")->assertForbidden();
+        $this->assertSame(0, RunComment::find($id)->likes_count);
+        $this->assertNotSoftDeleted('run_comments', ['id' => $id]);
+
+        // the player of the run sees his replay
+        Sanctum::actingAs($this->player);
+        $this->putJson("/api/run-comments/{$id}/like")->assertOk();
+        $this->deleteJson("/api/run-comments/{$id}")->assertNoContent();
+    }
+
+    // two deletes sent at once (each one loaded the comment before the other deleted it): counted once
+    public function test_a_comment_deleted_twice_at_once_is_counted_once(): void
+    {
+        $this->comment($this->viewer, 10);
+        $id = $this->comment($this->viewer);
+        $answer = $this->comment($this->player, 0, 'Réponse', $id);
+        $first = RunComment::find($answer);
+        $second = RunComment::find($answer);
+
+        app(RunCommentService::class)->delete($this->player, $first);
+        app(RunCommentService::class)->delete($this->player, $second);
+
+        $this->assertSame(2, $this->run->refresh()->comments_count);
+        $this->assertSame(0, RunComment::find($id)->replies_count);
+        $this->assertSoftDeleted('run_comments', ['id' => $answer, 'deleted_by' => $this->player->id]);
+        $this->assertTrue($first->trashed());
+    }
+
+    // comments sent at once (each one with the run loaded before the others were counted): the limit is checked on the
+    // count of the database
+    public function test_the_limit_of_comments_is_checked_on_the_saved_count(): void
+    {
+        $settings = app(ReplaySettings::class);
+        $settings->comments_max_per_run = 1;
+        $settings->save();
+        $stale = Run::find($this->run->id);
+        $this->comment($this->viewer);
+
+        $this->expectException(\App\Exceptions\RunCommentException::class);
+        try {
+            app(RunCommentService::class)->create($this->player, $stale, 10, 'Trop tard');
+        } finally {
+            $this->assertSame(1, $this->run->refresh()->comments_count);
+            $this->assertSame(1, RunComment::count());
+        }
     }
 
     public function test_the_author_edits_the_author_the_player_and_the_admins_delete(): void

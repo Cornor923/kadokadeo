@@ -1,0 +1,15 @@
+# Larastan (static analysis): vendor/bin/phpstan analyse
+# The errors already there are kept in phpstan-baseline.neon: new code must not add any. Fixing one of them: remove its
+# entry (vendor/bin/phpstan analyse --generate-baseline once several are fixed)
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - config
+        - database
+        - routes
+    tmpDir: storage/framework/cache/phpstan

@@ -62,4 +62,21 @@ class ReplayHeaderTest extends TestCase
         $this->assertNull(ReplayHeader::parse(base64_encode(gzcompress('NOPE'))));
         $this->assertNull(ReplayHeader::parse('936 bytes'));
     }
+
+    // a small replay made to inflate to more than the limit (a zip bomb) is not inflated
+    public function test_it_does_not_inflate_past_the_limit(): void
+    {
+        $deflate = deflate_init(ZLIB_ENCODING_DEFLATE, ['level' => 9]);
+        $bomb = deflate_add($deflate, "KADO\x04\x41", ZLIB_NO_FLUSH);
+        $zeros = str_repeat("\x00", 1024 * 1024);
+        // (zlib_decode may go a bit past the limit before it stops)
+        for ($i = 0; $i < 4 * ReplayHeader::MAX_INFLATED_BYTES / strlen($zeros); $i++) {
+            $bomb .= deflate_add($deflate, $zeros, ZLIB_NO_FLUSH);
+        }
+        $bomb = base64_encode($bomb.deflate_add($deflate, '', ZLIB_FINISH));
+
+        $this->assertLessThan(200_000, strlen($bomb));
+        $this->assertNull(ReplayHeader::parse($bomb));
+        $this->assertSame(4, ReplayHeader::parse(base64_encode(gzcompress("KADO\x04\x41".str_repeat("\x00", 1000), 9)))->version);
+    }
 }

@@ -15,6 +15,9 @@ class ClanName implements ValidationRule
     // after the accents are dropped and in lower case
     private const CHARACTERS = '/^[a-z0-9 \-\'’.!?]+$/u';
 
+    // (also when two clans get the same name at the same time: App\Services\ClanService::create)
+    public const TAKEN = 'Ce nom de clan est déjà pris.';
+
     public function __construct(private readonly ?int $ignoreClanId = null) {}
 
     // the spaces at the ends removed, several spaces in a row as one
@@ -46,7 +49,7 @@ class ClanName implements ValidationRule
             ->when($this->ignoreClanId, fn ($query) => $query->whereKeyNot($this->ignoreClanId))
             ->exists();
         if ($taken) {
-            $fail('Ce nom de clan est déjà pris.');
+            $fail(self::TAKEN);
         }
     }
 }

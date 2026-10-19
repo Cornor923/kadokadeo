@@ -78,16 +78,19 @@ class RunCommentService
             $frame = $parent->frame;
         }
         $frame = max(0, $run->replay_frames > 0 ? min($frame, $run->replay_frames) : $frame);
-        if ($run->comments_count >= $this->settings->comments_max_per_run) {
-            throw new RunCommentException('Ce replay a atteint le nombre maximum de commentaires.');
-        }
-        // the deleted ones too: deleting does not give the right to write again
-        $written = RunComment::withTrashed()->where('user_id', $user->id)->where('run_id', $run->id)->count();
-        if ($written >= $this->settings->comments_max_per_user_per_run) {
-            throw new RunCommentException('Vous avez déjà beaucoup commenté ce replay.');
-        }
 
         return DB::transaction(function () use ($user, $run, $frame, $content, $parent) {
+            // the run locked until the comment is counted: comments sent at once can't all pass the limits
+            $run->comments_count = (int) Run::withTrashed()->whereKey($run->id)->lockForUpdate()->value('comments_count');
+            if ($run->comments_count >= $this->settings->comments_max_per_run) {
+                throw new RunCommentException('Ce replay a atteint le nombre maximum de commentaires.');
+            }
+            // the deleted ones too: deleting does not give the right to write again
+            $written = RunComment::withTrashed()->where('user_id', $user->id)->where('run_id', $run->id)->count();
+            if ($written >= $this->settings->comments_max_per_user_per_run) {
+                throw new RunCommentException('Vous avez déjà beaucoup commenté ce replay.');
+            }
+
             $comment = RunComment::create([
                 'run_id' => $run->id,
                 'user_id' => $user->id,
@@ -140,9 +143,12 @@ class RunCommentService
             throw new RunCommentException('Vous ne pouvez pas supprimer ce commentaire.');
         }
         DB::transaction(function () use ($user, $comment) {
-            // the soft delete only writes deleted_at
-            $comment->update(['deleted_by' => $user->id]);
-            $comment->delete();
+            // only if it is still there: of two deletes sent at once, the second one deletes nothing and counts nothing
+            $now = $comment->freshTimestamp();
+            if (RunComment::query()->whereKey($comment->id)->update(['deleted_at' => $now, 'deleted_by' => $user->id]) === 0) {
+                return;
+            }
+            $comment->forceFill(['deleted_at' => $now, 'deleted_by' => $user->id])->syncOriginal();
             $this->count($comment->run, -1);
             if ($comment->parent_id) {
                 RunComment::withTrashed()->whereKey($comment->parent_id)->where('replies_count', '>', 0)->toBase()->decrement('replies_count');
@@ -158,8 +164,11 @@ class RunCommentService
             return;
         }
         DB::transaction(function () use ($comment) {
-            $comment->deleted_by = null;
-            $comment->restore();
+            // (only if it is still deleted: restored twice at once, it is counted once)
+            if (RunComment::onlyTrashed()->whereKey($comment->id)->update(['deleted_at' => null, 'deleted_by' => null]) === 0) {
+                return;
+            }
+            $comment->forceFill(['deleted_at' => null, 'deleted_by' => null])->syncOriginal();
             $this->count($comment->run, 1);
             if ($comment->parent_id) {
                 RunComment::withTrashed()->whereKey($comment->parent_id)->toBase()->increment('replies_count');

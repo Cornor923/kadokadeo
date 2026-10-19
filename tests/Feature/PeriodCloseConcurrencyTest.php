@@ -13,11 +13,12 @@ use App\Services\LeagueService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Tests\Concerns\PlayableGames;
 use Tests\TestCase;
 
 class PeriodCloseConcurrencyTest extends TestCase
 {
-    use RefreshDatabase;
+    use PlayableGames, RefreshDatabase;
 
     public function test_membership_inserted_by_a_concurrent_request_is_read_again(): void
     {

@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Database\Eloquent\Model;
 
 class UserResource extends Resource
 {
@@ -53,5 +55,27 @@ class UserResource extends Resource
             'create' => CreateUser::route('/create'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
+    }
+
+    // a player is never deleted from the admin: the account would be created again, blank and not banned, at the
+    // next login (and their stars, favorites... block it): banning is the sanction
+    public static function getDeleteAuthorizationResponse(Model $record): Response
+    {
+        return Response::deny('Un joueur ne peut pas être supprimé : bannissez-le.');
+    }
+
+    public static function getDeleteAnyAuthorizationResponse(): Response
+    {
+        return Response::deny('Un joueur ne peut pas être supprimé : bannissez-le.');
+    }
+
+    public static function getForceDeleteAuthorizationResponse(Model $record): Response
+    {
+        return Response::deny('Un joueur ne peut pas être supprimé : bannissez-le.');
+    }
+
+    public static function getForceDeleteAnyAuthorizationResponse(): Response
+    {
+        return Response::deny('Un joueur ne peut pas être supprimé : bannissez-le.');
     }
 }

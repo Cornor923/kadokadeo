@@ -10,13 +10,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\EnablesClans;
+use Tests\Concerns\PlayableGames;
 use Tests\TestCase;
 
 // the daily game is played once a day: asked again the same day, it is refused with a message shown in the game. Outside
 // the production it can be played again (0fe63e9c, the staging).
 class DailyGameOnceTest extends TestCase
 {
-    use EnablesClans, RefreshDatabase;
+    use EnablesClans, PlayableGames, RefreshDatabase;
 
     private Game $game;
 

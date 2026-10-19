@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 // the comments of a replay (App\Services\RunCommentService), its views (App\Services\RunViewService) and the reports of
-// its comments (App\Services\ReportService): for the players who can watch the replay (RunPolicy::view)
+// its comments (App\Services\ReportService): for the players who can watch the replay (RunPolicy::view, checked by
+// each action: the replays of today's daily game are hidden)
 class RunCommentController extends Controller implements HasMiddleware
 {
     public static function middleware()
@@ -71,6 +72,7 @@ class RunCommentController extends Controller implements HasMiddleware
 
     public function update(Request $request, RunComment $comment)
     {
+        Gate::authorize('view', $comment->run);
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:'.$this->comments->maxLength()],
         ], $this->messages());
@@ -81,6 +83,7 @@ class RunCommentController extends Controller implements HasMiddleware
 
     public function destroy(Request $request, RunComment $comment)
     {
+        Gate::authorize('view', $comment->run);
         $this->comments->delete($request->user(), $comment);
 
         return response()->noContent();
@@ -88,16 +91,21 @@ class RunCommentController extends Controller implements HasMiddleware
 
     public function like(Request $request, RunComment $comment)
     {
+        Gate::authorize('view', $comment->run);
+
         return response()->json(['data' => ['liked' => true, 'likes_count' => $this->comments->like($request->user(), $comment)]]);
     }
 
     public function unlike(Request $request, RunComment $comment)
     {
+        Gate::authorize('view', $comment->run);
+
         return response()->json(['data' => ['liked' => false, 'likes_count' => $this->comments->unlike($request->user(), $comment)]]);
     }
 
     public function report(Request $request, RunComment $comment, ReportService $reports)
     {
+        Gate::authorize('view', $comment->run);
         $validated = $request->validate([
             'reason' => ['required', Rule::enum(ReportReason::class)],
             'details' => ['nullable', 'string', 'max:500'],

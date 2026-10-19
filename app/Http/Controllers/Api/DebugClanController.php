@@ -25,8 +25,8 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 
-// tools to try the clans alone (kado.debug_tools, never in production): runs with a chosen score as an attack, a defense
-// or a mission step, the time going by for the attacks and the missions, the end of the period
+// tools to try the clans alone (kado.debug_tools, never in production; admins only): runs with a chosen score as an
+// attack, a defense or a mission step, the time going by for the attacks and the missions, the end of the period
 class DebugClanController extends Controller implements HasMiddleware
 {
     public static function middleware()
@@ -35,6 +35,8 @@ class DebugClanController extends Controller implements HasMiddleware
             new Middleware('auth:sanctum'),
             function ($request, $next) {
                 abort_unless(config('kado.debug_tools'), 404);
+                // they change the scores of any clan: for the admins only, even outside the production
+                abort_unless((bool) $request->user()?->is_admin, 403);
 
                 return $next($request);
             },

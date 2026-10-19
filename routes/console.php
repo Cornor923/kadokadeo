@@ -11,15 +11,17 @@ use App\Console\Commands\ResolveClanAttacks;
 use App\Models\ReplayVerification;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command(ResetDailyGames::class)->daily();
-Schedule::command(PrepareDailyGame::class)->daily();
+// (withoutOverlapping: a run still going when the next one starts is not doubled; the lock expires after the minutes
+// given, for a run killed before releasing it)
+Schedule::command(ResetDailyGames::class)->daily()->withoutOverlapping(60);
+Schedule::command(PrepareDailyGame::class)->daily()->withoutOverlapping(60);
 // Schedule::command(CleanOldRuns::class)->twiceDailyAt(6, 18);
-Schedule::command(PrepareNewPeriod::class)->weeklyOn(1);
+Schedule::command(PrepareNewPeriod::class)->weeklyOn(1)->withoutOverlapping(120);
 // the clan attacks not repelled within 12 hours give their points (they are also resolved when the clan pages are read)
-Schedule::command(ResolveClanAttacks::class)->everyFiveMinutes();
+Schedule::command(ResolveClanAttacks::class)->everyFiveMinutes()->withoutOverlapping(10);
 // versions of the games still used by replays (the next build removes the others)
-Schedule::command(KeepGameBuilds::class)->daily();
+Schedule::command(KeepGameBuilds::class)->daily()->withoutOverlapping(60);
 // the verifications of replays that went well, after 30 days (App\Models\ReplayVerification)
-Schedule::command('model:prune', ['--model' => [ReplayVerification::class]])->daily();
+Schedule::command('model:prune', ['--model' => [ReplayVerification::class]])->daily()->withoutOverlapping(60);
 // the browsers of the replay verifier left running by a script killed (each one takes a CPU)
-Schedule::command(ReapVerifierBrowsers::class)->everyFiveMinutes();
+Schedule::command(ReapVerifierBrowsers::class)->everyFiveMinutes()->withoutOverlapping(10);

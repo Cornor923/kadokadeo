@@ -13,6 +13,9 @@ class GameLeaguesOverview extends ChartWidget
 {
     protected ?string $heading = 'Répartition par ligue';
 
+    // not polled (every 5 s by default)
+    protected ?string $pollingInterval = null;
+
     public ?Model $record = null;
 
     protected array $colors = [

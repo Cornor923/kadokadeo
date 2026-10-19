@@ -19,22 +19,24 @@ class UserForm
                 TextInput::make('display_name')
                     ->label('Pseudo')
                     ->required(),
-                TextInput::make('kado_points')
+                // counters changed by the games meanwhile: read-only once created (the form would write back the
+                // values loaded with the page), changed by the actions « Ajuster les points Kado / les parties »
+                self::counter(TextInput::make('kado_points'))
                     ->label('Kadopoints')
                     ->required()
                     ->numeric()
                     ->default(0),
-                TextInput::make('kado_games')
+                self::counter(TextInput::make('kado_games'))
                     ->label('Jeux kado')
                     ->required()
                     ->numeric(),
-                TextInput::make('clan_attack_games')
+                self::counter(TextInput::make('clan_attack_games'))
                     ->label('Parties d\'attaque de clan du jour')
                     ->required()
                     ->integer()
                     ->minValue(0)
                     ->default(0),
-                TextInput::make('clan_games')
+                self::counter(TextInput::make('clan_games'))
                     ->label('Parties de clan achetées')
                     ->required()
                     ->integer()
@@ -52,5 +54,13 @@ class UserForm
                     ->label('Administrateur')
                     ->required(),
             ]);
+    }
+
+    private static function counter(TextInput $input): TextInput
+    {
+        return $input
+            ->disabledOn('edit')
+            ->dehydrated(fn (string $operation) => $operation !== 'edit')
+            ->helperText(fn (string $operation) => $operation === 'edit' ? 'Modifiable par les actions « Ajuster ».' : null);
     }
 }

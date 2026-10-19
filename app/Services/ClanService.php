@@ -15,9 +15,12 @@ use App\Models\ClanMemberStat;
 use App\Models\ClanPeriodScore;
 use App\Models\Period;
 use App\Models\User;
+use App\Rules\ClanName;
 use App\Settings\ClanSettings;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 // the clans: groups of 1 to 50 players, led by a leader (a single one) helped by right hands (ClanRole). The tournament
 // lasts a period (14 days): during all of it the clans attack each other and complete missions, then the scores, the
@@ -65,19 +68,21 @@ class ClanService
         }
     }
 
+    // none outside the clan, even for a leader_id left on it
     public function roleOf(User $user, Clan $clan): ?ClanRole
     {
-        if ($clan->leader_id === $user->id) {
-            return ClanRole::LEADER;
+        $member = ClanMember::query()->where('clan_id', $clan->id)->where('user_id', $user->id)->first();
+        if (!$member) {
+            return null;
         }
 
-        return ClanMember::query()->where('clan_id', $clan->id)->where('user_id', $user->id)->first()?->role;
+        return $clan->leader_id === $user->id ? ClanRole::LEADER : $member->role;
     }
 
     // what only the leader can do: disband the clan, give the leadership
     public function assertLeader(User $user, Clan $clan): void
     {
-        if ($clan->leader_id !== $user->id) {
+        if ($clan->leader_id !== $user->id || !$this->isMember($user, $clan)) {
             throw new ClanException('Seul le chef de clan peut faire ça.');
         }
     }
@@ -120,7 +125,7 @@ class ClanService
                 throw new ClanException('Il vous faut '.number_format($price, 0, ',', '.').' points Kado pour créer un clan.');
             }
 
-            $clan = Clan::query()->create([
+            $clan = $this->createClanRow([
                 'name' => $name,
                 'description' => $description,
                 'leader_id' => $user->id,
@@ -131,6 +136,18 @@ class ClanService
 
             return $clan;
         });
+    }
+
+    // the name is unique whatever the case (clans_name_lower_unique): of two clans created together with the same name,
+    // one gets the error of App\Rules\ClanName
+    private function createClanRow(array $attributes): Clan
+    {
+        try {
+            // (a savepoint: PostgreSQL refuses anything else in a transaction after the error)
+            return DB::transaction(fn () => Clan::query()->create($attributes));
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['name' => ClanName::TAKEN]);
+        }
     }
 
     // an application costs ClanSettings::$application_price Kado points; several clans can be asked at once, each once
@@ -302,16 +319,20 @@ class ClanService
             throw new ClanException('Vous ne faites partie d\'aucun clan.');
         }
 
-        $membersCount = $clan->members()->count();
-        if ($clan->leader_id === $user->id && $membersCount > 1) {
-            throw new ClanException('Vous devez d\'abord nommer un nouveau chef de clan.');
-        }
-        if ($this->isNewMember($user, $clan)) {
-            throw new ClanException('Vous avez rejoint ce clan pendant cette période : vous pourrez le quitter à partir de la prochaine période.');
-        }
+        DB::transaction(function () use ($clan, $user) {
+            // the clan locked, then its members: a leadership given to him or a kick at the same time waits
+            $clan = $this->lockClan($clan, [$user->id]);
+            $this->assertMember($user, $clan);
+            $membersCount = $clan->members()->count();
+            if ($clan->leader_id === $user->id && $membersCount > 1) {
+                throw new ClanException('Vous devez d\'abord nommer un nouveau chef de clan.');
+            }
+            if ($this->isNewMember($user, $clan)) {
+                throw new ClanException('Vous avez rejoint ce clan pendant cette période : vous pourrez le quitter à partir de la prochaine période.');
+            }
 
-        DB::transaction(function () use ($clan, $user, $membersCount) {
             $clan->members()->where('user_id', $user->id)->delete();
+            $this->forgetClanActions($user, $clan);
             if ($membersCount <= 1) {
                 $clan->delete();
             }
@@ -320,32 +341,59 @@ class ClanService
 
     public function kick(User $manager, Clan $clan, User $member): void
     {
-        $this->assertManager($manager, $clan);
-        if ($member->id === $manager->id) {
-            throw new ClanException('Vous ne pouvez pas vous exclure vous-même.');
-        }
-        if ($member->id === $clan->leader_id) {
-            throw new ClanException('Le chef de clan ne peut pas être exclu.');
-        }
-        $this->assertMember($member, $clan);
-        if ($this->isNewMember($member, $clan)) {
-            throw new ClanException('Ce joueur a rejoint le clan pendant cette période : il pourra être exclu à partir de la prochaine période.');
-        }
+        DB::transaction(function () use ($manager, $clan, $member) {
+            $clan = $this->lockClan($clan, [$manager->id, $member->id]);
+            $this->assertManager($manager, $clan);
+            if ($member->id === $manager->id) {
+                throw new ClanException('Vous ne pouvez pas vous exclure vous-même.');
+            }
+            if ($member->id === $clan->leader_id) {
+                throw new ClanException('Le chef de clan ne peut pas être exclu.');
+            }
+            $this->assertMember($member, $clan);
+            if ($this->isNewMember($member, $clan)) {
+                throw new ClanException('Ce joueur a rejoint le clan pendant cette période : il pourra être exclu à partir de la prochaine période.');
+            }
 
-        $clan->members()->where('user_id', $member->id)->delete();
+            $clan->members()->where('user_id', $member->id)->delete();
+            $this->forgetClanActions($member, $clan);
+        });
     }
 
     // the former leader becomes a right hand
     public function transferLeadership(User $leader, Clan $clan, User $member): void
     {
-        $this->assertLeader($leader, $clan);
-        $this->assertMember($member, $clan);
-
         DB::transaction(function () use ($leader, $clan, $member) {
+            // the new leader can't leave nor be kicked meanwhile
+            $clan = $this->lockClan($clan, [$leader->id, $member->id]);
+            $this->assertLeader($leader, $clan);
+            $this->assertMember($member, $clan);
+
             $clan->update(['leader_id' => $member->id]);
             $clan->members()->where('user_id', $member->id)->update(['role' => ClanRole::MEMBER]);
             $clan->members()->where('user_id', $leader->id)->update(['role' => ClanRole::RIGHT_HAND]);
         });
+    }
+
+    // the clan read again and locked, then the rows of these members (in the order of their ids, as everywhere)
+    /**
+     * @param  array<int, int>  $userIds
+     */
+    private function lockClan(Clan $clan, array $userIds): Clan
+    {
+        $clan = Clan::query()->lockForUpdate()->find($clan->id) ?? throw new ClanException('Ce clan n\'existe plus.');
+        ClanMember::query()->where('clan_id', $clan->id)->whereIn('user_id', $userIds)->orderBy('id')->lockForUpdate()->get();
+
+        return $clan;
+    }
+
+    // out of the clan: the clan runs he asked for are forgotten, the ones he began no longer count for it (if the run ends
+    // anyway, it is a normal run)
+    private function forgetClanActions(User $user, Clan $clan): void
+    {
+        $actions = ClanAction::query()->where('user_id', $user->id)->where('clan_id', $clan->id)->whereNull('completed_at');
+        $actions->clone()->whereNull('run_id')->delete();
+        $actions->clone()->update(['result' => 'cancelled', 'completed_at' => now()]);
     }
 
     // "Bras droit" or member
@@ -426,6 +474,12 @@ class ClanService
 
     // ---------------------------------------------------------------- scores
 
+    // what the pages show, without creating it (0 everywhere when the clan did not play yet)
+    public function existingPeriodScore(Clan $clan, Period $period): ?ClanPeriodScore
+    {
+        return ClanPeriodScore::query()->where('clan_id', $clan->id)->where('period_id', $period->id)->first();
+    }
+
     // created the first time the clan plays in the period, with the "Jeu cool" and "Jeu caca" options given to every clan
     public function periodScore(Clan $clan, Period $period): ClanPeriodScore
     {
@@ -505,6 +559,26 @@ class ClanService
             ->selectRaw('COALESCE(clan_period_scores.missions_completed, 0) as missions_completed')
             ->orderByRaw("COALESCE(clan_period_scores.{$column}, 0) desc")
             ->orderBy('clans.id');
+    }
+
+    // the ranks of these clans in the whole ranking, in one query: the position in the same order as rankingQuery
+    /**
+     * @param  array<int, int>  $clanIds
+     * @param  'war'|'missions'  $ranking
+     * @return \Illuminate\Support\Collection<int, int> by clan id
+     */
+    public function ranksOf(array $clanIds, Period $period, string $ranking = 'war')
+    {
+        $column = $ranking === 'missions' ? 'mission_score' : 'war_score';
+        $ranked = Clan::query()
+            ->leftJoin('clan_period_scores', function ($join) use ($period) {
+                $join->on('clan_period_scores.clan_id', '=', 'clans.id')
+                    ->where('clan_period_scores.period_id', '=', $period->id);
+            })
+            ->select('clans.id')
+            ->selectRaw("ROW_NUMBER() OVER (ORDER BY COALESCE(clan_period_scores.{$column}, 0) DESC, clans.id) as position");
+
+        return DB::query()->fromSub($ranked, 'ranked')->whereIn('id', $clanIds)->pluck('position', 'id')->map(fn ($rank) => (int) $rank);
     }
 
     public function rankOf(Clan $clan, Period $period, string $ranking = 'war'): int

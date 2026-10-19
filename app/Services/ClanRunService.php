@@ -86,7 +86,7 @@ class ClanRunService
     // the clan run asked by the player on this game, not begun yet
     public function pendingAction(int $userId, int $gameId): ?ClanAction
     {
-        return ClanAction::query()
+        $action = ClanAction::query()
             ->where('user_id', $userId)
             ->where('game_id', $gameId)
             ->whereNull('run_id')
@@ -94,6 +94,21 @@ class ClanRunService
             ->where('created_at', '>=', now()->subMinutes(ClanWarService::ACTION_TTL_MINUTES))
             ->latest('id')
             ->first();
+
+        // a new attack checked again when it begins (out of the clan, or the maximum of attacks reached meanwhile: his seat
+        // of "Attaquant" taken back...): forgotten, the run is a normal one
+        if ($action?->type === ClanActionType::ATTACK && $action->clan_attack_id === null) {
+            $user = $action->user;
+            $clan = $action->clan;
+            if (!$clan || (int) $user->clanMember()->value('clan_id') !== $clan->id
+                || $this->warService->runningAttacksCount($user) >= $this->warService->maxAttacks($user, $clan)) {
+                $action->delete();
+
+                return null;
+            }
+        }
+
+        return $action;
     }
 
     // a mission step

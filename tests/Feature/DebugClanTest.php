@@ -27,11 +27,21 @@ class DebugClanTest extends TestCase
         $this->postJson('/api/debug/clans/time', ['hours' => 12])->assertNotFound();
     }
 
+    public function test_the_debug_tools_are_for_the_admins_only(): void
+    {
+        config(['kado.debug_tools' => true]);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->getJson('/api/debug/clans')->assertForbidden();
+        $this->postJson('/api/debug/clans/time', ['hours' => 12])->assertForbidden();
+        $this->postJson('/api/debug/clans/end-period')->assertForbidden();
+    }
+
     public function test_attacks_defenses_and_time_with_the_debug_tools(): void
     {
         config(['kado.debug_tools' => true]);
         $period = Period::factory()->create(['start_at' => now()->subDay(), 'end_at' => now()->addDays(12)]);
-        $me = User::factory()->create();
+        $me = User::factory()->create(['is_admin' => true]);
         $mine = Clan::factory()->withLeader($me)->create();
         $other = Clan::factory()->withLeader()->create();
         $game = Game::factory()->create();

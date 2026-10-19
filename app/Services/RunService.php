@@ -61,7 +61,8 @@ class RunService
             'run_id' => 'required|exists:runs,id',
             'score' => 'required|integer|min:0',
             'timestamp' => 'required|integer',
-            'replay' => 'nullable|string', // TODO: make a function to decode a replay.
+            // (base64 of the deflated replay, App\Support\ReplayHeader)
+            'replay' => 'nullable|string|max:'.config('kado.replay_max_length'),
             'data' => 'nullable|array',
             'ac' => 'nullable|integer|min:0|max:1000000',
         ]);
@@ -87,11 +88,13 @@ class RunService
         $antiCheat = (int) data_get($decoded, 'ac', 0);
 
         $end = Carbon::createFromTimestamp($timestamp);
+        // (inflated once, outside the lock)
+        $header = ReplayHeader::parse($replay);
 
         // if ($end->clone()->diffInSeconds($realEnd, true) > 30) {
         //     throw new \Error('Invalid timestamp');
         // }
-        return DB::transaction(function () use ($run, $score, $replay, $data, $antiCheat) {
+        return DB::transaction(function () use ($run, $score, $replay, $header, $data, $antiCheat) {
             $run = Run::query()->whereKey($run->id)->lockForUpdate()->firstOrFail();
             if ($run->completed_at !== null) {
                 throw new RunAlreadyCompletedException();
@@ -103,9 +106,9 @@ class RunService
             $run->score = $score;
             $run->replay = $replay;
             $run->score_details = $data;
-            $run->is_cheat = AntiCheatBit::hardBits($antiCheat) !== 0 || !$this->hasExpectedRngStir($run, $replay);
+            $run->is_cheat = AntiCheatBit::hardBits($antiCheat) !== 0 || !$this->hasExpectedRngStir($run, $header);
             $run->anticheat_flags = $antiCheat;
-            $run->replay_frames = ReplayHeader::parse($replay)?->frames;
+            $run->replay_frames = $header?->frames;
             $run->save();
             if (!$run->is_cheat && $run->contract_score > 0 && $run->score >= $run->contract_score) {
                 $user = $run->user;
@@ -156,7 +159,8 @@ class RunService
 
     public function rewardStars(Run $run)
     {
-        if ($run->is_cheat) {
+        // (a player banned while their run was finishing: the ban took their stars back, the run gives none)
+        if ($run->is_cheat || $run->user->isBanned()) {
             return;
         }
 
@@ -204,9 +208,8 @@ class RunService
     // (the coming pieces can't be listed from the seed, nor predicted before an input): a replay without it comes from a
     // modified game. Replays of older versions (no header flag) are accepted while their game version is still the
     // one sent by the page.
-    private function hasExpectedRngStir(Run $run, ?string $replay): bool
+    private function hasExpectedRngStir(Run $run, ?ReplayHeader $header): bool
     {
-        $header = ReplayHeader::parse($replay);
         if ($run->daily_game_id !== null || $header === null) {
             return true;
         }

@@ -1,0 +1,2215 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzeReplays.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/AnalyzeReplays.php
+
+		-
+			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/AnalyzeReplays.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/AnalyzeReplays.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\GameBuild\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KeepGameBuilds.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\GameBuild model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/KeepGameBuilds.php
+
+		-
+			message: '#^Relation ''runs'' is not found in App\\Models\\Game model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/KeepGameBuilds.php
+
+		-
+			message: '#^Relation ''runs'' is not found in App\\Models\\GameBuild model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/KeepGameBuilds.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DailyGame\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/PrepareDailyGame.php
+
+		-
+			message: '#^Method App\\Enums\\ControlKey\:\:getLabel\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Enums/ControlKey.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ReplayVerification\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/ReplayVerifierDashboard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/ReplayVerifierDashboard.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ReplayVerification\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Filament/Pages/ReplayVerifierDashboard.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Filament/Pages/ReplayVerifierDashboard.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/ReplayVerifierDashboard.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMember\:\:\$stat_attacks\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Clans/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMember\:\:\$stat_defenses\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Clans/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leader_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Clans/RelationManagers/MembersRelationManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$steps\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Resources/Clans/RelationManagers/MissionsRelationManager.php
+
+		-
+			message: '#^Parameter \#1 \$clan of method App\\Services\\ClanMissionService\:\:regenerateMission\(\) expects App\\Models\\Clan, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Clans/RelationManagers/MissionsRelationManager.php
+
+		-
+			message: '#^Cannot access property \$id on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/Games/Pages/EditGame.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Filament/Resources/Games/Schemas/GameForm.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: mixed, Closure\(App\\Models\\Game\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Games/Tables/GamesTable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Games/Tables/GamesTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Report\:\:\$reportedUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Reports/Tables/ReportsTable.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: mixed, Closure\(App\\Models\\Report\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Reports/Tables/ReportsTable.php
+
+		-
+			message: '#^Parameter \#1 \$content of method App\\Services\\ReportService\:\:dismissAll\(\) expects App\\Contracts\\Reportable&Illuminate\\Database\\Eloquent\\Model, App\\Contracts\\Reportable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Reports/Tables/ReportsTable.php
+
+		-
+			message: '#^Relation ''reporter'' is not found in App\\Models\\Report model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Filament/Resources/Reports/Tables/ReportsTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunFlag\:\:\$run\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Filament/Resources/RunFlags/Tables/RunFlagsTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunFlag\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/RunFlags/Tables/RunFlagsTable.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: mixed, Closure\(App\\Models\\RunFlag\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/RunFlags/Tables/RunFlagsTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$parent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$comments_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>display_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Achievement model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Filament/Resources/Users/RelationManagers/AchievementProgressRelationManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Users/RelationManagers/AchievementProgressRelationManager.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<string\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Filament/Widgets/LaravelLogTailWidget.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>aggregate" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Widgets/RunsPlayedChart.php
+
+		-
+			message: '#^Call to function is_int\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Helpers/Format.php
+
+		-
+			message: '#^Function typoFromImg\(\) should return string\|null but returns int\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Helpers/Format.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$level_user_counts\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AchievementController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$levels\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AchievementController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Achievement model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/AchievementController.php
+
+		-
+			message: '#^Relation ''levels'' is not found in App\\Models\\Achievement model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/AchievementController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$attack\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$missionStep\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Relation ''attack'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Relation ''clan'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Relation ''missionStep'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanActionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$leader\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$members_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$mission\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$rank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$attack\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$missionStep\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanApplication\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMember\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanWar\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanWar\:\:\$targetClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\Period\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed, Closure\(App\\Models\\Clan, int\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''attackerClan'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''attackerUser'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''clan'' is not found in App\\Models\\ClanApplication model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''defenderUser'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''defenseRun'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''leader'' is not found in App\\Models\\Clan model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''members'' is not found in App\\Models\\Clan model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''reservedBy'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''steps'' is not found in App\\Models\\ClanMission model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\ClanMember model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>attacks" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>attacks_won" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>defenses" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>defenses_won" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mission_score" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mission_steps" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>performance" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>war_score" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanForumMessage\:\:\$topic\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanForumController.php
+
+		-
+			message: '#^Relation ''lastMessageUser'' is not found in App\\Models\\ClanForumTopic model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanForumController.php
+
+		-
+			message: '#^Relation ''topic'' is not found in App\\Models\\ClanForumMessage model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanForumController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\ClanForumTopic model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanForumController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanGameTransfer\:\:\$fromUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanGameController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanGameTransfer\:\:\$toUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanGameController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanApplication\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMemberController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$bonus\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$steps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$completedBy\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$reservedBy\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$reserved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$reserved_by_user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\Period\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Relation ''bonus'' is not found in App\\Models\\ClanMission model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Relation ''steps'' is not found in App\\Models\\ClanMission model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mission_score" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>missions_completed" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ClanMissionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$leader\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Clan\:\:\$members_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$steps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$mission\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\Period\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Clan\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''attackerClan'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''attackerUser'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\ClanAttack model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''leader'' is not found in App\\Models\\Clan model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''members'' is not found in App\\Models\\Clan model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Relation ''steps'' is not found in App\\Models\\ClanMission model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/DebugClanController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DailyGame\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/GameController.php
+
+		-
+			message: '#^Relation ''category'' is not found in App\\Models\\Game model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/GameController.php
+
+		-
+			message: '#^Relation ''controls'' is not found in App\\Models\\Game model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/GameController.php
+
+		-
+			message: '#^Relation ''periodStars'' is not found in App\\Models\\Game model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/GameController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DailyGame\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/GameScoreController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/GameScoreController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/GameScoreController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>has_replay" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/GameScoreController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Message\:\:\$recipient\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MessageController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Message\:\:\$sender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MessageController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/MessageController.php
+
+		-
+			message: '#^Relation ''recipient'' is not found in App\\Models\\Message model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/MessageController.php
+
+		-
+			message: '#^Relation ''sender'' is not found in App\\Models\\Message model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/MessageController.php
+
+		-
+			message: '#^Parameter \#1 \$value of method Symfony\\Component\\HttpFoundation\\Response\:\:setMaxAge\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/PeriodController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$run\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/RunCommentController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/RunController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/RunController.php
+
+		-
+			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/RunController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/RunController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>score" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/RunController.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$unlocked_themes \(string\|null\) does not accept array\<mixed\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Http/Controllers/Api/ThemeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$achievementProgress\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\Collection\<\(int\|string\), mixed\>\:\:load\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/RunReplayController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$gameBuild\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/RunReplayController.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/RunReplayController.php
+
+		-
+			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/RunReplayController.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$icon\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$obtained_percentage\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$reward\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$target\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementLevelResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$category\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$level_user_counts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$levels\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$progress_scope\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AchievementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attackerClan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attackerUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attacker_user_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defenderUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defender_clan_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$expires_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$points\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$reservedBy\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$reserved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$reserved_by_user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$resolved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$clanMember\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/ClanAttackResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$content\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$edited_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumMessageResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ClanForumMessageResource\:\:trashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumMessageResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$is_locked\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$is_pinned\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$lastMessageUser\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$last_message_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$last_message_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$replies_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanForumTopicResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ClanForumTopicResource\:\:pages\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/ClanForumTopicResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$attackerClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$attackerUser\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$attacker_clan_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$defenderUser\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$defenseRun\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$points\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$resolved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanHistoryResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/ClanHistoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanListResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanListResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanListResource\:\:\$is_recruiting\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanListResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ClanListResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ClanListResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameControlResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameControlResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameControlResource\:\:\$keys\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameControlResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameControlResource\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameControlResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$category_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$gamedata\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$image_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$is_arkadeo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$pascal_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$periodStars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$score_rankv1\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\GameResource\:\:\$stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$favorite\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/GameResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$contract_points\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$contract_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$daily_game_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunBeginResource\:\:\$seed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunBeginResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$content\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$edited_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$frame\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$likes_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunCommentResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\RunCommentResource\:\:trashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/RunCommentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$comments_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$completed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$contract_points\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$contract_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$gameBuild\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$has_replay\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$is_cheat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$league_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$league_rank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$period_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$play_time_seconds\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$rank_position\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$replay\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$replay_frames\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$seed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RunResource\:\:\$views_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\RunResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/RunResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserAchievementProgressResource\:\:\$achievement_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserAchievementProgressResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserAchievementProgressResource\:\:\$completed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserAchievementProgressResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserAchievementProgressResource\:\:\$completed_level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserAchievementProgressResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserAchievementProgressResource\:\:\$current_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserAchievementProgressResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserAchievementProgressResource\:\:\$period_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserAchievementProgressResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserLightResource\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserLightResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserLightResource\:\:\$etwin_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserLightResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$achievementProgress\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$clan_attack_games\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$clan_games\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$etwin_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$is_admin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$kado_games\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$kado_points\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserStarResource\:\:\$green_stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserStarResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserStarResource\:\:\$orange_stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserStarResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserStarResource\:\:\$period_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserStarResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserStarResource\:\:\$purple_stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserStarResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserStarResource\:\:\$red_stars\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserStarResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Jobs/VerifyRunReplay.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/VerifyRunReplay.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Jobs/VerifyRunReplay.php
+
+		-
+			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Jobs/VerifyRunReplay.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Jobs/VerifyRunReplay.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/GameLeaguesOverview.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AchievementLevel\:\:\$achievement\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/AchievementLevel.php
+
+		-
+			message: '#^Relation ''category'' is not found in App\\Models\\Game model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/Game.php
+
+		-
+			message: '#^Method App\\Models\\Report\:\:reportable\(\) should return Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<App\\Contracts\\Reportable&Illuminate\\Database\\Eloquent\\Model, \$this\(App\\Models\\Report\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<Illuminate\\Database\\Eloquent\\Model, \$this\(App\\Models\\Report\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Report.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/RunComment.php
+
+		-
+			message: '#^Cannot call method message\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Offset ''forum_write'' on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between false and true will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^The @use tag of class App\\Models\\User describes Illuminate\\Database\\Eloquent\\Factories\\HasFactory but the class uses Laravel\\Sanctum\\HasApiTokens\.$#'
+			identifier: generics.wrongParent
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AchievementService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$levels\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/AchievementService.php
+
+		-
+			message: '#^Relation ''levels'' is not found in App\\Models\\Achievement model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/AchievementService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanForumMessage\:\:\$topic\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/ClanForumService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanForumTopic\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/ClanForumService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanBonus\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$period\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$mission\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$reserved_by_user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Relation ''steps'' is not found in App\\Models\\ClanMission model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanMissionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanMemberStat\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanPeriodService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$attack\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$missionStep\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Relation ''attack'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Relation ''missionStep'' is not found in App\\Models\\ClanAction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>score" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ClanRunService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanApplication\:\:\$clan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanService.php
+
+		-
+			message: '#^Parameter \#1 \$application of method App\\Services\\ClanService\:\:closeApplication\(\) expects App\\Models\\ClanApplication, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/ClanService.php
+
+		-
+			message: '#^Relation ''periodScores'' is not found in App\\Models\\Clan model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$period\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$reserved_by_user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$attackerClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$defenderClan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$period\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Relation ''clan'' is not found in App\\Models\\ClanWar model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Relation ''targetClan'' is not found in App\\Models\\ClanWar model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ClanWarService.php
+
+		-
+			message: '#^Binary operation "/" between \(float\|int\) and \-1\|\-1\.0\|\-0\.99\|\-0\.97\|\-0\.94\|\-0\.88\|\-0\.75\|\-0\.5\|\-0\.49\|\-0\.47\|\-0\.43999999999999995\|\-0\.38\|\-0\.25\|\-0\.24\|\-0\.21999999999999997\|\-0\.18999999999999995\|\-0\.13\|\-0\.12\|\-0\.10999999999999999\|\-0\.08999999999999997\|\-0\.06000000000000005\|\-0\.05999999999999994\|\-0\.050000000000000044\|\-0\.030000000000000027\|\-0\.020000000000000018\|\-0\.010000000000000009\|0\|0\.0\|0\.010000000000000009\|0\.020000000000000018\|0\.030000000000000027\|0\.050000000000000044\|0\.05999999999999994\|0\.06000000000000005\|0\.08999999999999997\|0\.10999999999999999\|0\.12\|0\.13\|0\.18999999999999995\|0\.21999999999999997\|0\.24\|0\.25\|0\.38\|0\.43999999999999995\|0\.47\|0\.49\|0\.5\|0\.75\|0\.88\|0\.94\|0\.97\|0\.99\|1\|1\.0 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Services/GameService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LeagueMembership\:\:\$league\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LeaguePromotion\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$rank_position\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Run\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Parameter \#6 \$run of method App\\Services\\LeagueService\:\:createPromotion\(\) expects App\\Models\\Run, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Relation ''league'' is not found in App\\Models\\LeagueMembership model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>league" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/LeagueService.php
+
+		-
+			message: '#^Method App\\Services\\PeriodService\:\:getDayCount\(\) should return int but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/PeriodService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PoidsPlumeResult\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PoidsPlumeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PoidsPlumeService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReplayVerifier.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$gameBuild\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReplayVerifier.php
+
+		-
+			message: '#^Call to an undefined method App\\Contracts\\Reportable&Illuminate\\Database\\Eloquent\\Model\:\:trashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$run\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/RunCommentService.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\RunComment model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/RunCommentService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RunService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/RunService.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: int\<4, max\>$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Services/RunService.php
+
+		-
+			message: '#^Match expression does not handle remaining values\: int\<0, 15\>\|int\<17, 23\>\|int\<25, 31\>\|int\<33, max\>$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Services/RunService.php
+
+		-
+			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ScoreService.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/ScoreService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ScoreService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stars" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ScoreService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>hash" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Support/GameBuilds/GameBuildArchive.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Run\:\:\$data\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/migrations/2026_05_09_152047_move_data_to_score_details_in_runs.php

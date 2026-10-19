@@ -153,6 +153,7 @@ class GameScoreController extends Controller implements HasMiddleware
 
     public function search(Request $request, Game $game, ScoreService $scoreService)
     {
+        Gate::authorize('view', $game);
         $data = $request->validate([
             'period' => 'sometimes|required|integer|min:1|max_digits:6|exists:periods,id',
             'league' => 'sometimes|required|integer|min:1|exists:leagues,id',
@@ -167,11 +168,16 @@ class GameScoreController extends Controller implements HasMiddleware
         $dailyGame = $gameService->getDailyGame();
         Gate::authorize('view', $dailyGame?->game);
 
-        $dailyGameRuns = $dailyGame?->runs()->whereNotNull('score')->orderByDesc('score')->with('user')->limit(10)->get() ?? collect();
-        // hack to disable replay for this specific endpoint
-        $dailyGameRuns->each(function ($run) {
-            $run->replay = null;
-        });
+        // without the replays (the ones of today's daily game are shown the next day), nor their data: the columns read
+        // by RunResource only
+        $dailyGameRuns = $dailyGame?->runs()
+            ->select(['id', 'user_id', 'game_id', 'daily_game_id', 'score', 'contract_score', 'contract_points', 'play_time_seconds', 'period_id', 'league_id', 'completed_at', 'views_count', 'comments_count', 'is_cheat'])
+            ->whereNotNull('score')
+            ->where('is_cheat', false)
+            ->orderByDesc('score')
+            ->with('user')
+            ->limit(10)
+            ->get() ?? collect();
 
         $myPosition = $scoreService->getUserPositionOnDailyGame($dailyGame, Auth::id());
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Games\RelationManagers;
 
+use App\Filament\Resources\Runs\RunDeletionActions;
 use App\Filament\Resources\Runs\RunResource;
 use App\Filament\Resources\Runs\RunVerificationTable;
 use App\Models\Run;
@@ -10,15 +11,9 @@ use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -190,9 +185,7 @@ class RunsRelationManager extends RelationManager
                 RunVerificationTable::replayAction(),
                 RunVerificationTable::action(),
                 DissociateAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                ...RunDeletionActions::recordActions(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -214,9 +207,7 @@ class RunsRelationManager extends RelationManager
                                 ->send();
                         }),
                     DissociateBulkAction::make(),
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    ...RunDeletionActions::bulkActions(),
                 ]),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query

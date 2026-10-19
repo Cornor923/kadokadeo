@@ -12,6 +12,7 @@ use Filament\Widgets\ChartWidget;
 use Filament\Widgets\ChartWidget\Concerns\HasFiltersSchema;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
+use Illuminate\Support\Facades\Cache;
 
 class RunsPlayedChart extends ChartWidget
 {
@@ -19,7 +20,15 @@ class RunsPlayedChart extends ChartWidget
 
     protected ?string $heading = 'Parties jouées';
 
+    // counts over the runs table: computed again at most every 5 minutes by filters, not polled
+    protected ?string $pollingInterval = null;
+
     protected function getData(): array
+    {
+        return Cache::remember('admin.widgets.runs_played.'.md5(json_encode($this->filters)), 300, fn () => $this->computeData());
+    }
+
+    private function computeData(): array
     {
         $startDate = data_get($this->filters, 'startDate');
         $endDate = data_get($this->filters, 'endDate');
@@ -55,20 +64,20 @@ class RunsPlayedChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => 'Parties terminées',
-                    'data' => $dataCompleted->map(fn (TrendValue $value) => $value->aggregate),
+                    'data' => $dataCompleted->map(fn (TrendValue $value) => $value->aggregate)->all(),
                     'borderColor' => '#11AA55',
                 ],
                 [
                     'label' => 'Parties non terminées',
-                    'data' => $dataNotCompleted->map(fn (TrendValue $value) => $value->aggregate),
+                    'data' => $dataNotCompleted->map(fn (TrendValue $value) => $value->aggregate)->all(),
                     'borderColor' => '#AA1155',
                 ],
                 [
                     'label' => 'Total des parties',
-                    'data' => $dataNotCompleted->map(fn (TrendValue $value, $key) => $value->aggregate + ($dataCompleted[$key]?->aggregate ?? 0)),
+                    'data' => $dataNotCompleted->map(fn (TrendValue $value, $key) => $value->aggregate + ($dataCompleted[$key]?->aggregate ?? 0))->all(),
                 ],
             ],
-            'labels' => $dataCompleted->map(fn (TrendValue $value) => $value->date),
+            'labels' => $dataCompleted->map(fn (TrendValue $value) => $value->date)->all(),
         ];
     }
 

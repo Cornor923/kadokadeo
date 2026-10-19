@@ -9,13 +9,15 @@ class RunPolicy
 {
     use HandlesAuthorization;
 
+    public const NO_GAMES_LEFT = 'Vous n\'avez plus de parties aujourd\'hui : revenez demain !';
+
     /**
      * Create a new policy instance.
      */
     public function create(User $user)
     {
         if (config('kado.games_per_day') > 0 && $user->kado_games <= 0) {
-            return $this->deny('Vous n\'avez plus de parties aujourd\'hui : revenez demain !');
+            return $this->deny(self::NO_GAMES_LEFT);
         }
 
         return $this->allow();

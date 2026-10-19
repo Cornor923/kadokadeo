@@ -32,11 +32,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\Concerns\EnablesClans;
+use Tests\Concerns\PlayableGames;
 use Tests\TestCase;
 
 class ClanTest extends TestCase
 {
-    use EnablesClans, RefreshDatabase;
+    use EnablesClans, PlayableGames, RefreshDatabase;
 
     // day 2 of the period
     private function period(): Period
