@@ -7,6 +7,7 @@ use App\Enums\RunFlagRule;
 use App\Models\Run;
 use App\Models\RunFlag;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 /**
  * ANTI CHEAT: a run whose inputs come from the player (its replay gives its score) can still be played with help (a
@@ -41,6 +42,12 @@ class SuspicionService
             'metrics' => $analysis['metrics'] ?? [],
             'reasons' => $analysis['reasons'] ?? [],
         ]);
+    }
+
+    // the verifier could not play the replay of the run (App\Jobs\VerifyRunReplay): its score stays, an admin decides
+    public function recordUnverifiable(Run $run, string $error): void
+    {
+        $this->flag($run, RunFlagRule::REPLAY_UNVERIFIABLE, 2, ['error' => Str::limit($error, 500)]);
     }
 
     private function checkClientDetections(Run $run): void

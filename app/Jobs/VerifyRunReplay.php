@@ -57,6 +57,8 @@ class VerifyRunReplay implements ShouldQueue
         $durationMs = intdiv(hrtime(true) - $start, 1_000_000);
         if (!$result['ok']) {
             $this->finish($run, RunVerification::FAILED, ['error' => $result['error'], 'duration_ms' => $durationMs]);
+            // a replay that makes the game crash proves nothing: in the queue of the suspicious runs
+            $suspicion->recordUnverifiable($run, (string) $result['error']);
             $this->alert($run, "vérification impossible : {$result['error']}", $this->failureKey($result['error']));
 
             return;

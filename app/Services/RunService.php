@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AntiCheatBit;
+use App\Exceptions\RunAlreadyCompletedException;
 use App\Models\GamePeriodStar;
 use App\Models\Run;
 use App\Models\UserPoint;
@@ -72,7 +73,9 @@ class RunService
         return $validator->validated();
     }
 
-    public function confirmRun(Run $run, $decoded)
+    // the run finished with the decoded payload, once: the run is locked, a second request sent meanwhile (the same
+    // payload sent twice at once) waits, then finds it finished (RunAlreadyCompletedException)
+    public function confirmRun(Run $run, $decoded): Run
     {
         if ($run->id !== data_get($decoded, 'run_id')) {
             throw new \Error(sprintf('Run ID mismatch. Expected %s, got %s', $run->id, data_get($decoded, 'run_id')));
@@ -82,40 +85,51 @@ class RunService
         $replay = data_get($decoded, 'replay');
         $data = data_get($decoded, 'data');
         $antiCheat = (int) data_get($decoded, 'ac', 0);
-        $isCheat = AntiCheatBit::hardBits($antiCheat) !== 0 || !$this->hasExpectedRngStir($run, $replay);
 
         $end = Carbon::createFromTimestamp($timestamp);
-        $realEnd = now();
 
         // if ($end->clone()->diffInSeconds($realEnd, true) > 30) {
         //     throw new \Error('Invalid timestamp');
         // }
-        $run->play_time_seconds = (int) $realEnd->diffInSeconds($run->created_at, true);
-        $run->completed_at = $realEnd;
-        $run->score = $score;
-        $run->replay = $replay;
-        $run->score_details = $data;
-        $run->is_cheat = $isCheat;
-        $run->anticheat_flags = $antiCheat;
-        $run->replay_frames = ReplayHeader::parse($replay)?->frames;
-        $run->save();
-        if (!$run->is_cheat && $run->contract_score > 0 && $run->score >= $run->contract_score) {
-            $user = $run->user;
-            $user->kado_points += $run->contract_points;
-            $user->save();
-            $user->userPoints()->create([
-                'period_id' => $run->period_id,
-                'delta' => $run->contract_points,
-                'reason' => 'contract completed',
-                'source_type' => Run::class,
-                'source_id' => $run->id,
-            ]);
-        }
-        if ($run->period_id) {
-            cache()->forget("promotion_scores_{$run->game->id}_{$run->period_id}");
-        }
+        return DB::transaction(function () use ($run, $score, $replay, $data, $antiCheat) {
+            $run = Run::query()->whereKey($run->id)->lockForUpdate()->firstOrFail();
+            if ($run->completed_at !== null) {
+                throw new RunAlreadyCompletedException();
+            }
 
-        return $run;
+            $realEnd = now();
+            $run->play_time_seconds = (int) $realEnd->diffInSeconds($run->created_at, true);
+            $run->completed_at = $realEnd;
+            $run->score = $score;
+            $run->replay = $replay;
+            $run->score_details = $data;
+            $run->is_cheat = AntiCheatBit::hardBits($antiCheat) !== 0 || !$this->hasExpectedRngStir($run, $replay);
+            $run->anticheat_flags = $antiCheat;
+            $run->replay_frames = ReplayHeader::parse($replay)?->frames;
+            $run->save();
+            if (!$run->is_cheat && $run->contract_score > 0 && $run->score >= $run->contract_score) {
+                $user = $run->user;
+                $user->increment('kado_points', $run->contract_points);
+                $user->userPoints()->create([
+                    'period_id' => $run->period_id,
+                    'delta' => $run->contract_points,
+                    'reason' => 'contract completed',
+                    'source_type' => Run::class,
+                    'source_id' => $run->id,
+                ]);
+            }
+
+            return $run;
+        });
+    }
+
+    // the promotions of the leagues of the game in the period of the run (ScoreService::getLeagueScoresForPromotion):
+    // they only change with a new best score of a player, or a run taken out of the leaderboards
+    public function forgetPromotionScores(Run $run): void
+    {
+        if ($run->period_id) {
+            cache()->forget("promotion_scores_{$run->game_id}_{$run->period_id}");
+        }
     }
 
     // a run found cheated after it was rewarded (App\Jobs\VerifyRunReplay): out of the leaderboards, its contract
@@ -137,9 +151,7 @@ class RunService
                 ]);
             }
         });
-        if ($run->period_id) {
-            cache()->forget("promotion_scores_{$run->game_id}_{$run->period_id}");
-        }
+        $this->forgetPromotionScores($run);
     }
 
     public function rewardStars(Run $run)
@@ -158,35 +170,34 @@ class RunService
         if ($gainedStar === -1) {
             return;
         }
-        $gamePeriodStars = $user->gamePeriodStars()
-            ->where('game_id', $game->id)
-            ->where('period_id', $run->period_id)
-            ->get();
-        $userPeriodStars = $user->stars()->where('period_id', $run->period_id)->first();
-        if (!$userPeriodStars) {
-            $userPeriodStars = $user->stars()->create([
-                'period_id' => $run->period_id,
-            ]);
-        }
+        // (createOrFirst when it is missing: two runs at once create it once)
+        $userPeriodStars = $user->stars()->firstOrCreate(['period_id' => $run->period_id]);
 
-        // Reward each star up to the gained star
+        // Reward each star up to the gained star. Each star once (unique index): two runs of the player finished at
+        // once count it once, and the counters are incremented by what was really inserted
+        $now = now();
+        $increments = [];
         for ($i = 0; $i <= $gainedStar; $i++) {
-            if (!$gamePeriodStars->where('star', $i)->first()) {
-                GamePeriodStar::create([
-                    'game_id' => $game->id,
-                    'period_id' => $run->period_id,
-                    'user_id' => $user->id,
-                    'star' => $i,
-                ]);
-                match ($i) {
-                    0 => $userPeriodStars->green_stars += 1,
-                    1 => $userPeriodStars->orange_stars += 1,
-                    2 => $userPeriodStars->red_stars += 1,
-                    3 => $userPeriodStars->purple_stars += 1,
-                };
+            $inserted = GamePeriodStar::query()->insertOrIgnore([
+                'game_id' => $game->id,
+                'period_id' => $run->period_id,
+                'user_id' => $user->id,
+                'star' => $i,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            if ($inserted > 0) {
+                $increments[match ($i) {
+                    0 => 'green_stars',
+                    1 => 'orange_stars',
+                    2 => 'red_stars',
+                    3 => 'purple_stars',
+                }] = 1;
             }
         }
-        $userPeriodStars->save();
+        if ($increments) {
+            $userPeriodStars->newQuery()->whereKey($userPeriodStars->getKey())->incrementEach($increments);
+        }
     }
 
     // apart from the daily game, the game stirs its draws with the frames and the inputs, and the time of the inputs

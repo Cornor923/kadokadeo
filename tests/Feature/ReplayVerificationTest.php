@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RunFlagRule;
 use App\Enums\RunVerification;
 use App\Jobs\VerifyRunReplay;
 use App\Models\ReplayVerification;
 use App\Models\Run;
+use App\Models\RunFlag;
 use App\Models\User;
 use App\Services\ReplayVerifier;
 use App\Services\RunService;
@@ -111,13 +113,17 @@ class ReplayVerificationTest extends TestCase
         $this->assertTrue($run->is_cheat);
     }
 
-    public function test_a_replay_the_verifier_cannot_play_is_not_flagged(): void
+    public function test_a_replay_the_verifier_cannot_play_goes_to_the_suspicious_runs(): void
     {
         $this->fakeVerifier(['ok' => false, 'error' => 'the game crashed']);
         $run = $this->verify($this->rewardedRun(120));
 
         $this->assertSame(RunVerification::FAILED, $run->verification);
+        // not sanctioned: an admin decides
         $this->assertFalse($run->is_cheat);
+        $flag = RunFlag::where('run_id', $run->id)->sole();
+        $this->assertSame(RunFlagRule::REPLAY_UNVERIFIABLE, $flag->rule);
+        $this->assertSame('the game crashed', $flag->details['error']);
     }
 
     public function test_only_the_runs_that_count_are_verified_when_the_verifier_is_on(): void

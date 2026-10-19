@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\RunVerification;
 use App\Jobs\VerifyRunReplay;
 use App\Models\Game;
+use App\Models\GamePeriodStar;
+use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Services\RunService;
@@ -70,6 +72,92 @@ class RunEndTest extends TestCase
 
         $this->assertSame(150, $run->fresh()->score);
         $this->assertSame(5, $user->fresh()->kado_points);
+    }
+
+    public function test_only_the_player_of_a_run_finishes_it(): void
+    {
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 150,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => [],
+            'ac' => 0,
+        ]))->assertNotFound();
+
+        $this->assertNull($run->fresh()->completed_at);
+    }
+
+    public function test_the_players_to_beat_are_the_players_with_a_run_above_the_score(): void
+    {
+        $game = Game::factory()->create();
+        $period = Period::factory()->create();
+        $inPeriod = fn () => Run::factory()->for($game)->state(['period_id' => $period->id]);
+        // a player above with two runs, a player above, a player below, a cheated run above, another period
+        $above = User::factory()->create();
+        $inPeriod()->for($above)->create(['score' => 50]);
+        $inPeriod()->for($above)->create(['score' => 60]);
+        $inPeriod()->create(['score' => 30]);
+        $inPeriod()->create(['score' => 5]);
+        $inPeriod()->create(['score' => 99, 'is_cheat' => true]);
+        Run::factory()->for($game)->create(['score' => 99]);
+        $run = $inPeriod()->create(['score' => null, 'completed_at' => null]);
+
+        Sanctum::actingAs($run->user);
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 10,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => [],
+            'ac' => 0,
+        ]))->assertOk()->assertJsonPath('data.people_to_beat', 2);
+    }
+
+    public function test_a_star_reached_by_two_runs_is_counted_once(): void
+    {
+        $user = User::factory()->create();
+        $game = Game::factory()->create(['stars' => [10, 20, 30, 40]]);
+        $period = Period::factory()->create();
+        $runs = Run::factory()->count(2)->for($user)->for($game)->create(['period_id' => $period->id, 'score' => 25]);
+
+        // (two runs finished at once: each one sees no star yet)
+        $runs->each(fn (Run $run) => app(RunService::class)->rewardStars($run));
+
+        $this->assertSame(2, GamePeriodStar::where('user_id', $user->id)->count());
+        $stars = $user->stars()->where('period_id', $period->id)->sole();
+        $this->assertSame([1, 1, 0, 0], [$stars->green_stars, $stars->orange_stars, $stars->red_stars, $stars->purple_stars]);
+    }
+
+    public function test_the_promotions_are_computed_again_only_after_a_new_best_score(): void
+    {
+        $user = User::factory()->create();
+        $game = Game::factory()->create();
+        $period = Period::factory()->create();
+        Run::factory()->for($user)->for($game)->create(['period_id' => $period->id, 'score' => 100]);
+        $key = "promotion_scores_{$game->id}_{$period->id}";
+        $finish = function (int $score) use ($user, $game, $period) {
+            $run = Run::factory()->for($user)->for($game)->create(['period_id' => $period->id, 'score' => null, 'completed_at' => null]);
+            Sanctum::actingAs($user);
+            $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+                'run_id' => $run->id,
+                'score' => $score,
+                'timestamp' => now()->timestamp,
+                'replay' => null,
+                'data' => [],
+                'ac' => 0,
+            ]))->assertOk();
+        };
+
+        cache()->put($key, 'cached');
+        $finish(50);
+        $this->assertSame('cached', cache()->get($key));
+
+        $finish(150);
+        $this->assertNull(cache()->get($key));
     }
 
     private function finishWithReplay(Run $run, string $replay, int $antiCheat = 0): Run

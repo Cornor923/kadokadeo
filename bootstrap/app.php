@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LoginController;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             EnsureUserIsNotBanned::class,
         ]);
+        // set by the login page (web), read by the API at the end of the login: a random value, compared as it is
+        $middleware->encryptCookies(except: [LoginController::OAUTH_STATE_COOKIE]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontReportDuplicates();

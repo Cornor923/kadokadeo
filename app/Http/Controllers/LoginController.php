@@ -13,9 +13,19 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller implements HasMiddleware
 {
+    // the state of the OAuth login, kept by the browser that began it: a code sent to another browser (a link to the
+    // callback with the code of someone else, to log the victim in their account) is refused
+    public const OAUTH_STATE_COOKIE = 'kado_oauth_state';
+
+    private const OAUTH_STATE_COOKIE_PATH = '/api/oauth';
+
+    // minutes to log in on Eternaltwin
+    private const OAUTH_STATE_MINUTES = 15;
+
     private readonly RfcOauthClient $oauthClient;
 
     private readonly HttpEtwinClient $etwinClient;
@@ -24,6 +34,8 @@ class LoginController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('auth:sanctum', only: ['logout']),
+            // each callback calls Eternaltwin twice
+            new Middleware('throttle:10,1', only: ['loginCallback']),
         ];
     }
 
@@ -40,11 +52,11 @@ class LoginController extends Controller implements HasMiddleware
     }
 
     // Send the user the the Eternal-twin connection form for sign in
-    public function login()
+    public function login(Request $request)
     {
         // "forum:write": the forum of Eternaltwin, as the player (App\Http\Controllers\Api\EtwinForumController)
         $scope = config('services.etwin.scope');
-        $state = 'kadokadeo';
+        $state = Str::random(40);
 
         try {
             $authorizationUri = $this->oauthClient->getAuthorizationUri($scope, $state);
@@ -53,7 +65,17 @@ class LoginController extends Controller implements HasMiddleware
             return $e->getMessage();
         }
 
-        return redirect()->away($authorizationUri);
+        return redirect()->away($authorizationUri)->withCookie(cookie(
+            self::OAUTH_STATE_COOKIE,
+            $state,
+            self::OAUTH_STATE_MINUTES,
+            self::OAUTH_STATE_COOKIE_PATH,
+            null,
+            $request->isSecure(),
+            true,
+            false,
+            'lax',
+        ));
     }
 
     public function logout(Request $request)
@@ -68,8 +90,14 @@ class LoginController extends Controller implements HasMiddleware
     {
         $data = $request->validate([
             'code' => 'required|string',
-            // 'state' => 'required|string',
+            'state' => 'required|string',
         ]);
+        $expectedState = $request->cookie(self::OAUTH_STATE_COOKIE);
+        if (!is_string($expectedState) || !hash_equals($expectedState, $data['state'])) {
+            return response()->json([
+                'message' => 'La connexion a expiré ou a été commencée dans un autre navigateur. Reconnectez-vous.',
+            ], 422)->withoutCookie(self::OAUTH_STATE_COOKIE, self::OAUTH_STATE_COOKIE_PATH);
+        }
 
         $accessToken = $this->oauthClient->getAccessTokenSync($data['code']);
         $self = $this->etwinClient->getSelf(EtwinAuth::fromToken($accessToken->getAccessToken()));
@@ -109,7 +137,7 @@ class LoginController extends Controller implements HasMiddleware
         return response()->json([
             'token' => $token,
             'user' => UserResource::make($dbUser),
-        ]);
+        ])->withoutCookie(self::OAUTH_STATE_COOKIE, self::OAUTH_STATE_COOKIE_PATH);
     }
 
     // what the token allows ({"base": true, "forum_read": true, "forum_write": true, ...}): the player may have allowed

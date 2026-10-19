@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Achievements\Events\GameRunCompleted;
 use App\Enums\RunVerification;
+use App\Exceptions\RunAlreadyCompletedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RunEndRequest;
 use App\Http\Requests\RunStartRequest;
@@ -108,9 +109,12 @@ class RunController extends Controller implements HasMiddleware
 
     public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService)
     {
-        // a run sent again (offline retry, lost response) must not be rewarded twice
+        // only the player of the run finishes it
+        abort_unless((int) $run->user_id === (int) $request->user()->id, 404);
+        // a run sent again (offline retry, lost response) must not be rewarded twice (checked again under a lock by
+        // RunService::confirmRun, for two requests sent at once)
         if ($run->completed_at !== null) {
-            abort(409, 'Partie déjà terminée.');
+            throw new RunAlreadyCompletedException();
         }
 
         $user = $request->user();
@@ -136,6 +140,8 @@ class RunController extends Controller implements HasMiddleware
             } else {
                 $achievementUpdates = [];
             }
+        } catch (RunAlreadyCompletedException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             info(sprintf('RunController@end: user %d run end failed: %s', Auth::id(), $e->getMessage()));
             throw new BadRequestException($e->getMessage());
@@ -164,8 +170,12 @@ class RunController extends Controller implements HasMiddleware
             EvaluateRunSuspicion::dispatch($run->id);
         }
 
-        $leaderBoardQuery = $scoreService->getLeaderBoard($run->game, $periodId, $run->league_id);
-        $toBeatCount = $leaderBoardQuery->where('runs.score', '>', $run->score)->count();
+        // a new best score of the player: the promotions of the leagues may change (cached otherwise)
+        if (!$run->is_cheat && $run->score >= $previousBestScore) {
+            $runService->forgetPromotionScores($run);
+        }
+
+        $toBeatCount = $scoreService->countPlayersAbove($run->game, $periodId, $run->league_id, $run->score);
         $previousStar = $run->game->getStarFromScore($previousBestScore);
 
         return [

@@ -22,6 +22,9 @@ enum RunFlagRule: string implements HasLabel
     case CLIENT_DETECTION = 'client_detection';
     // the analyzer of the game found the moves suspicious (resources/js/replay-verifier/analyzers)
     case GAME_ANALYSIS = 'game_analysis';
+    // the verifier could not play the replay to its end (the game crashed, the replay never ends, timeout...): its score
+    // is not proven (a forged replay can make the game crash), an admin decides (App\Jobs\VerifyRunReplay)
+    case REPLAY_UNVERIFIABLE = 'replay_unverifiable';
 
     public function getLabel(): string
     {
@@ -33,6 +36,7 @@ enum RunFlagRule: string implements HasLabel
             self::SLOW_MOTION => 'Partie ralentie',
             self::CLIENT_DETECTION => 'Détection du client',
             self::GAME_ANALYSIS => 'Analyse des coups',
+            self::REPLAY_UNVERIFIABLE => 'Replay impossible à vérifier',
         };
     }
 
@@ -49,6 +53,7 @@ enum RunFlagRule: string implements HasLabel
             self::FASTER_THAN_REAL_TIME, self::SLOW_MOTION => sprintf('Durée du replay : %s s, temps réel : %s s', $n($details['game_seconds'] ?? null), $n($details['real_seconds'] ?? null)),
             self::CLIENT_DETECTION => AntiCheatBit::describe((int) ($details['bits'] ?? 0)),
             self::GAME_ANALYSIS => implode(' ; ', $details['reasons'] ?? []) ?: 'Coups suspects',
+            self::REPLAY_UNVERIFIABLE => sprintf('Erreur du vérificateur : %s', $details['error'] ?? '?'),
         };
     }
 }

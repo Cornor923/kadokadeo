@@ -45,6 +45,20 @@ class ScoreService
             ->orderBy('runs.id');
     }
 
+    // the players of the leaderboard (getLeaderBoard) above a score: those with a run above it, without ranking the runs
+    public function countPlayersAbove(Game $game, ?int $periodId, ?int $leagueId, int $score): int
+    {
+        return Run::query()
+            ->where('game_id', $game->id)
+            ->when($periodId, fn ($query) => $query->where('period_id', $periodId))
+            ->when($leagueId, fn ($query) => $query->where('league_id', $leagueId))
+            ->whereNotNull('score')
+            ->where('is_cheat', false)
+            ->where('score', '>', $score)
+            ->distinct()
+            ->count('user_id');
+    }
+
     public function getUserBestScore(Game $game, ?int $userId, ?int $periodId = null): ?Run
     {
         return $game->runs()

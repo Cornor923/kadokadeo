@@ -56,48 +56,6 @@ class MaintenanceActions extends Widget
         }
     }
 
-    public function migrate(): void
-    {
-        try {
-            Artisan::call('migrate', ['--force' => true]);
-
-            Notification::make()
-                ->title('OK!')
-                ->body(Artisan::output())
-                ->success()
-                ->send();
-        } catch (Throwable $exception) {
-            report($exception);
-
-            Notification::make()
-                ->title('Unable to migrate.')
-                ->body(Artisan::output())
-                ->danger()
-                ->send();
-        }
-    }
-
-    public function migrateRollback(): void
-    {
-        try {
-            Artisan::call('migrate:rollback', ['--force' => true]);
-
-            Notification::make()
-                ->title('OK!')
-                ->body(Artisan::output())
-                ->success()
-                ->send();
-        } catch (Throwable $exception) {
-            report($exception);
-
-            Notification::make()
-                ->title('Unable to rollback migration.')
-                ->body(Artisan::output())
-                ->danger()
-                ->send();
-        }
-    }
-
     public function deleteAchievements(): void
     {
         try {
@@ -105,15 +63,15 @@ class MaintenanceActions extends Widget
             Artisan::call('db:seed', ['--force' => true, '--class' => 'AchievementsSeeder']);
 
             Notification::make()
-                ->title('OK!')
+                ->title('Succès supprimés et recréés.')
                 ->success()
                 ->send();
         } catch (Throwable $exception) {
             report($exception);
 
             Notification::make()
-                ->title('Unable to delete achievements.')
-                ->body('Check logs for details and try again.')
+                ->title('Impossible de supprimer les succès.')
+                ->body('Consultez les logs pour plus de détails, puis réessayez.')
                 ->danger()
                 ->send();
         }
