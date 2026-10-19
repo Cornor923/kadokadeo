@@ -12,6 +12,7 @@ class PoidsPlumeResult extends Model
         'game_ids',
         'feathers_count',
         'jackpot_total',
+        'shared_pool_total',
         'reward',
         'user_point_id',
     ];
@@ -20,6 +21,7 @@ class PoidsPlumeResult extends Model
         'game_ids' => 'array',
         'feathers_count' => 'integer',
         'jackpot_total' => 'integer',
+        'shared_pool_total' => 'integer',
         'reward' => 'integer',
     ];
 

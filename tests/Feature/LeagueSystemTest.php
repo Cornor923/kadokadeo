@@ -12,6 +12,7 @@ use App\Models\Run;
 use App\Models\User;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -266,7 +267,7 @@ class LeagueSystemTest extends TestCase
 
     public function test_poids_plume_rewards_are_shared_between_tied_feather_leaders(): void
     {
-        config(['kado.poids_plume.jackpot' => 101]);
+        $this->setPoidsPlumeRewards(101, 1000);
 
         $leagueService = app(LeagueService::class);
         $period = Period::factory()->create();
@@ -341,5 +342,94 @@ class LeagueSystemTest extends TestCase
             ->assertJsonPath('0.feathers_count', 2)
             ->assertJsonPath('1.user.display_name', 'feather-player-b')
             ->assertJsonPath('1.feathers_count', 1);
+    }
+
+    public function test_poids_plume_shared_pool_is_split_equally_between_non_winners_with_two_feathers(): void
+    {
+        $this->setPoidsPlumeRewards(1000, 301);
+
+        $leagueService = app(LeagueService::class);
+        $period = Period::factory()->create();
+        $paradise = $leagueService->getParadiseLeague();
+        $games = Game::factory()->count(8)->sequence(fn ($sequence) => ['name' => 'Shared Pool Game '.$sequence->index])->create();
+        $winner = User::factory()->create(['display_name' => 'winner']);
+        $secondA = User::factory()->create(['display_name' => 'second-a']);
+        $secondB = User::factory()->create(['display_name' => 'second-b']);
+        $single = User::factory()->create(['display_name' => 'single']);
+
+        foreach ([$winner, $winner, $winner, $secondA, $secondA, $secondB, $secondB, $single] as $index => $player) {
+            Run::factory()->for($period)->for($games[$index])->for($player)->for($paradise, 'league')->create(['score' => 100]);
+        }
+
+        app(PoidsPlumeService::class)->closePeriod($period);
+        app(PoidsPlumeService::class)->closePeriod($period);
+
+        $this->assertSame(1000, $winner->fresh()->kado_points);
+        $this->assertSame(150, $secondA->fresh()->kado_points);
+        $this->assertSame(150, $secondB->fresh()->kado_points);
+        $this->assertSame(0, $single->fresh()->kado_points);
+        $this->assertDatabaseCount('poids_plume_results', 4);
+        $this->assertDatabaseCount('user_points', 3);
+        $this->assertDatabaseHas('user_points', ['user_id' => $winner->id, 'delta' => 1000, 'reason' => 'poids plume jackpot']);
+        $this->assertDatabaseHas('user_points', ['user_id' => $secondA->id, 'delta' => 150, 'reason' => 'poids plume shared pool']);
+        $this->assertDatabaseHas('poids_plume_results', ['user_id' => $single->id, 'reward' => 0, 'shared_pool_total' => 301]);
+    }
+
+    public function test_feather_leaderboard_shows_potential_rewards_and_paid_rewards_of_previous_periods(): void
+    {
+        $this->setPoidsPlumeRewards(1000, 500);
+
+        $leagueService = app(LeagueService::class);
+        $paradise = $leagueService->getParadiseLeague();
+        $previousPeriod = Period::factory()->create([
+            'start_at' => now()->subDays(15),
+            'end_at' => now()->subDays(2),
+        ]);
+        $currentPeriod = Period::factory()->create([
+            'start_at' => now()->subDays(2),
+            'end_at' => now()->addDays(11),
+        ]);
+        $games = Game::factory()->count(5)->sequence(fn ($sequence) => ['name' => 'Leaderboard Game '.$sequence->index])->create();
+        $playerA = User::factory()->create(['display_name' => 'reward-player-a']);
+        $playerB = User::factory()->create(['display_name' => 'reward-player-b']);
+
+        foreach ([$playerA, $playerA, $playerA, $playerB, $playerB] as $index => $player) {
+            Run::factory()->for($currentPeriod)->for($games[$index])->for($player)->for($paradise, 'league')->create(['score' => 100]);
+        }
+        Run::factory()->for($previousPeriod)->for($games[0])->for($playerB)->for($paradise, 'league')->create(['score' => 100]);
+        app(PoidsPlumeService::class)->closePeriod($previousPeriod);
+        // the rewards of a closed period are the ones paid, whatever the settings say now
+        $this->setPoidsPlumeRewards(5, 5);
+
+        $this->actingAs($playerA, 'sanctum')
+            ->getJson('/api/competition/poids-plumes?period='.$previousPeriod->id)
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.user.display_name', 'reward-player-b')
+            ->assertJsonPath('0.reward', 1000)
+            ->assertJsonPath('0.is_jackpot_winner', true);
+
+        $this->actingAs($playerA, 'sanctum')
+            ->getJson('/api/competition/poids-plumes')
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonPath('0.user.display_name', 'reward-player-a')
+            ->assertJsonPath('0.reward', 5)
+            ->assertJsonPath('0.is_jackpot_winner', true)
+            ->assertJsonPath('1.user.display_name', 'reward-player-b')
+            ->assertJsonPath('1.reward', 5)
+            ->assertJsonPath('1.is_jackpot_winner', false);
+
+        $this->actingAs($playerA, 'sanctum')
+            ->getJson('/api/competition/poids-plumes?period=999999')
+            ->assertUnprocessable();
+    }
+
+    private function setPoidsPlumeRewards(int $jackpot, int $sharedPool): void
+    {
+        $settings = app(SiteSettings::class);
+        $settings->poids_plume_jackpot = $jackpot;
+        $settings->poids_plume_shared_pool = $sharedPool;
+        $settings->save();
     }
 }

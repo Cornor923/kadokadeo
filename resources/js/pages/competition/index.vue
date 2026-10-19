@@ -1,4 +1,6 @@
 <script setup>
+import KadoPoints from '@svg/k.svg'
+
 const { isLoading: isRankingV1Loading, error: leaderboardError, get: getLeaderboard } = useApi()
 const { isLoading: isFeathersLoading, error: feathersError, get: getFeathersLeaderboard } = useApi()
 const { isLoading: isGamesLoading, error: gamesError, fetchGames } = useGames()
@@ -7,14 +9,17 @@ const feathersLeaderboard = ref([])
 const games = ref([])
 const selectedGameId = ref('')
 const scoreInput = ref('')
-const currentPeriod = ref(null)
+// shared by both tabs, null: the current period
 const selectedPeriod = ref(null)
 const selectedPlayerId = ref(null)
 const periodStore = usePeriodStore()
 
+const currentPeriod = computed(() => periodStore.period?.id ?? null)
 const isCurrentPeriod = computed(() => selectedPeriod.value === null)
 const displayedPeriod = computed(() => selectedPeriod.value ?? currentPeriod.value)
 const canGoPrevious = computed(() => displayedPeriod.value !== null && displayedPeriod.value > 1)
+const periodLabel = computed(() => (isCurrentPeriod.value ? 'Période courante' : `Période ${selectedPeriod.value}`))
+const periodQuery = computed(() => (isCurrentPeriod.value ? '' : `?period=${selectedPeriod.value}`))
 const selectedPlayer = computed(() => leaderboard.value.find((player) => player.user.etwin_id === selectedPlayerId.value) ?? null)
 
 function togglePlayerDetails(event) {
@@ -22,17 +27,18 @@ function togglePlayerDetails(event) {
   selectedPlayerId.value = selectedPlayerId.value === playerId ? null : playerId
 }
 
-function loadLeaderboard() {
-  const url = isCurrentPeriod.value ? '/competition' : `/competition?period=${selectedPeriod.value}`
+function loadLeaderboards() {
   selectedPlayerId.value = null
 
-  getLeaderboard(url)
+  getLeaderboard(`/competition${periodQuery.value}`)
     .then((response) => {
       leaderboard.value = response.data
+    })
+    .catch(() => null)
 
-      if (isCurrentPeriod.value) {
-        currentPeriod.value = periodStore?.period?.id || null
-      }
+  getFeathersLeaderboard(`/competition/poids-plumes${periodQuery.value}`)
+    .then((response) => {
+      feathersLeaderboard.value = response.data
     })
     .catch(() => null)
 }
@@ -40,24 +46,18 @@ function loadLeaderboard() {
 function goPrevious() {
   if (!canGoPrevious.value) return
   selectedPeriod.value = displayedPeriod.value - 1
-  loadLeaderboard()
+  loadLeaderboards()
 }
 
 function goNext() {
   if (isCurrentPeriod.value) return
   const next = selectedPeriod.value + 1
   // Si on atteint la période courante, on repasse en mode "courante"
-  selectedPeriod.value = next >= currentPeriod.value ? null : next
-  loadLeaderboard()
+  selectedPeriod.value = currentPeriod.value === null || next >= currentPeriod.value ? null : next
+  loadLeaderboards()
 }
 
-loadLeaderboard()
-
-getFeathersLeaderboard('/competition/poids-plumes')
-  .then((response) => {
-    feathersLeaderboard.value = response.data
-  })
-  .catch(() => null)
+loadLeaderboards()
 
 fetchGames()
   .then((response) => {
@@ -101,28 +101,14 @@ const scoreOn1500 = computed(() => {
       <div v-if="item.value === 'rankingv1'">
         <h1 class="mt-0 text-center">Le classement V1</h1>
 
-        <div class="mx-2 mb-4 flex items-center justify-center gap-4">
-          <input
-            type="button"
-            value="Période précédente"
-            class="pinkButton h-6 w-auto pt-px"
-            :disabled="!canGoPrevious || isRankingV1Loading"
-            @click="goPrevious"
-          />
-
-          <span class="font-bold">
-            {{ isCurrentPeriod ? 'Période courante' : `Période ${selectedPeriod}` }}
-          </span>
-
-          <input
-            v-if="!isCurrentPeriod"
-            type="button"
-            value="Période suivante"
-            class="h-6 w-auto pt-px ml-4"
-            :disabled="isRankingV1Loading"
-            @click="goNext"
-          />
-        </div>
+        <CompetitionPeriodNavigator
+          :label="periodLabel"
+          :can-go-previous="canGoPrevious"
+          :can-go-next="!isCurrentPeriod"
+          :disabled="isRankingV1Loading"
+          @previous="goPrevious"
+          @next="goNext"
+        />
 
         <section class="mx-2 mb-4 grid gap-3 border border-kado-cyan-800 p-3 md:grid-cols-3">
           <h2 class="col-span-full">Calculateur 1500</h2>
@@ -214,7 +200,19 @@ const scoreOn1500 = computed(() => {
 
       <div v-else>
         <h1 class="mt-0 text-center">Poids plumes</h1>
-        <p class="mb-4 text-center">Période courante</p>
+        <CompetitionPeriodNavigator
+          :label="periodLabel"
+          :can-go-previous="canGoPrevious"
+          :can-go-next="!isCurrentPeriod"
+          :disabled="isFeathersLoading"
+          @previous="goPrevious"
+          @next="goNext"
+        />
+        <p class="mx-2 mb-4 text-center text-sm">
+          Les joueurs ayant le plus de plumes se partagent le jackpot. Les autres joueurs ayant au moins 2 plumes se partagent
+          à parts égales une récompense supplémentaire.
+          <template v-if="isCurrentPeriod">Les récompenses de la période courante sont potentielles, elles sont versées à sa clôture.</template>
+        </p>
 
         <Loader v-if="isFeathersLoading">Chargement du classement...</Loader>
         <MessageError v-else-if="feathersError">Error: {{ feathersError }}</MessageError>
@@ -225,6 +223,7 @@ const scoreOn1500 = computed(() => {
                 <th>Rang</th>
                 <th class="text-left">Joueur</th>
                 <th>Plumes</th>
+                <th>{{ isCurrentPeriod ? 'Récompense potentielle' : 'Récompense' }}</th>
               </tr>
             </thead>
             <tbody>
@@ -248,6 +247,12 @@ const scoreOn1500 = computed(() => {
                     />
                     <span class="sr-only">{{ player.feathers_count }} plume(s)</span>
                   </span>
+                </td>
+                <td class="text-right whitespace-nowrap">
+                  <template v-if="player.reward > 0">
+                    <Number :value="player.reward" color="green" />
+                    <KadoPoints class="inline size-[17px]" />
+                  </template>
                 </td>
               </tr>
             </tbody>

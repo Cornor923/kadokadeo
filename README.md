@@ -26,7 +26,6 @@ Here are the configuration variables specific to the project (the standard Larav
 | `SELF_URL`                  | Public URL of the site (Laravel `app.url`)                                          | `http://localhost`      |
 | `KADO_GAMES_PER_DAY`        | Games allowed to play per user per day (`-1`: unlimited)                            | 100                     |
 | `KADO_RUNS_MAX_CONCURRENCY` | Maximum amount of games a user can play in parallel before being throttled          | 50                      |
-| `KADO_POIDS_PLUME_JACKPOT`  | Jackpot in Kado point earnt when having the maximum amount of feathers              | 0                       |
 | `KADO_ACHIEVEMENTS_ENABLED` | Achievements. Off: nothing is evaluated nor shown to the players (the admin stays) | `false`                 |
 | `KADO_GAME_BUILDS_ENABLED`  | Replays played by the version of the game they were recorded with (archive of the old bundles). Off for now: the production wipes `storage/` at each deploy, so every replay is played by the current bundle | `false` |
 | `KADO_GAME_BUILDS_PATH`     | Folder of the archive of the old game bundles (written by `build-games.mjs`)        | `storage/app/game-builds` |

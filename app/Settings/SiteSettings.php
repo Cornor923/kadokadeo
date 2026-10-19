@@ -13,6 +13,12 @@ class SiteSettings extends Settings
 
     public ?string $announcement_content;
 
+    // kado points of the players with the most feathers of a period (shared between the tied ones)
+    public int $poids_plume_jackpot;
+
+    // kado points shared equally between the other players with at least 2 feathers
+    public int $poids_plume_shared_pool;
+
     public static function group(): string
     {
         return 'site';

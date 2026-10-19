@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Settings\SiteSettings;
 use BackedEnum;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
@@ -46,6 +47,26 @@ class ManageSiteSettings extends SettingsPage
                             ->helperText('Markdown inline : **gras**, *italique*, [lien](https://...). Les retours à la ligne sont conservés.')
                             ->rows(4)
                             ->maxLength(2000),
+                    ]),
+                Section::make('Poids plume')
+                    ->description('Récompenses versées à la clôture de chaque période aux joueurs ayant des plumes (une plume par jeu dominé en ligue Paradis).')
+                    ->schema([
+                        TextInput::make('poids_plume_jackpot')
+                            ->label('Jackpot')
+                            ->helperText('Partagé à parts égales entre les joueurs ayant le plus de plumes.')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->required()
+                            ->suffix('points kado'),
+                        TextInput::make('poids_plume_shared_pool')
+                            ->label('Récompense partagée')
+                            ->helperText('Partagée à parts égales entre les autres joueurs ayant au moins 2 plumes (hors gagnants du jackpot).')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->required()
+                            ->suffix('points kado'),
                     ]),
             ]);
     }
