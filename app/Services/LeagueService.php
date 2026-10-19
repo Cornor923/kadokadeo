@@ -251,16 +251,18 @@ class LeagueService
 
     private function storeHighestMembership(int $userId, int $gameId, int $periodId, League $league): LeagueMembership
     {
-        $membership = LeagueMembership::query()->firstOrNew([
+        $attributes = [
             'user_id' => $userId,
             'period_id' => $periodId,
             'game_id' => $gameId,
-        ]);
+        ];
 
-        if (!$membership->exists) {
-            $membership->league_id = $league->id;
-            $membership->save();
+        // created by a concurrent request (two runs started at once, or the period close) between the read and the insert:
+        // createOrFirst reads it again instead of failing on the unique key (in a savepoint inside a transaction)
+        $membership = LeagueMembership::query()->where($attributes)->first()
+            ?? LeagueMembership::query()->createOrFirst($attributes, ['league_id' => $league->id]);
 
+        if ($membership->wasRecentlyCreated) {
             return $membership;
         }
 
