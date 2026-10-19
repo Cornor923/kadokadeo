@@ -1,0 +1,172 @@
+{
+ "ark-league-0": {
+  "file": "ark-league-0.png",
+  "height": 30,
+  "width": 28
+ },
+ "ark-pk": {
+  "file": "ark-pk.png",
+  "height": 15,
+  "width": 14
+ },
+ "ark-token": {
+  "file": "ark-token.png",
+  "height": 15,
+  "width": 14
+ },
+ "chaussette": {
+  "file": "chaussette.gif",
+  "height": 16,
+  "width": 16
+ },
+ "kk": {
+  "file": "kk.png",
+  "height": 16,
+  "width": 16
+ },
+ "kk-atk": {
+  "file": "kk-atk.gif",
+  "height": 18,
+  "width": 18
+ },
+ "kk-classement-down": {
+  "file": "kk-classement-down.gif",
+  "height": 17,
+  "width": 19
+ },
+ "kk-classement-up": {
+  "file": "kk-classement-up.gif",
+  "height": 17,
+  "width": 19
+ },
+ "kk-def": {
+  "file": "kk-def.gif",
+  "height": 18,
+  "width": 18
+ },
+ "kk-dislike": {
+  "file": "kk-dislike.gif",
+  "height": 14,
+  "width": 18
+ },
+ "kk-etoile-orange": {
+  "file": "kk-etoile-orange.gif",
+  "height": 17,
+  "width": 18
+ },
+ "kk-etoile-rouge": {
+  "file": "kk-etoile-rouge.gif",
+  "height": 17,
+  "width": 18
+ },
+ "kk-etoile-verte": {
+  "file": "kk-etoile-verte.gif",
+  "height": 17,
+  "width": 18
+ },
+ "kk-game": {
+  "file": "kk-game.gif",
+  "height": 17,
+  "width": 19
+ },
+ "kk-gemme-orange": {
+  "file": "kk-gemme-orange.gif",
+  "height": 17,
+  "width": 17
+ },
+ "kk-gemme-verte": {
+  "file": "kk-gemme-verte.gif",
+  "height": 17,
+  "width": 17
+ },
+ "kk-kanji": {
+  "file": "kk-kanji.gif",
+  "height": 21,
+  "width": 20
+ },
+ "kk-level0": {
+  "file": "kk-level0.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level1": {
+  "file": "kk-level1.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level2": {
+  "file": "kk-level2.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level3": {
+  "file": "kk-level3.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level4": {
+  "file": "kk-level4.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level5": {
+  "file": "kk-level5.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level6": {
+  "file": "kk-level6.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level7": {
+  "file": "kk-level7.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-level8": {
+  "file": "kk-level8.gif",
+  "height": 18,
+  "width": 21
+ },
+ "kk-like": {
+  "file": "kk-like.gif",
+  "height": 14,
+  "width": 18
+ },
+ "kk-lili": {
+  "file": "kk-lili.gif",
+  "height": 21,
+  "width": 20
+ },
+ "kk-no-star": {
+  "file": "kk-no-star.gif",
+  "height": 17,
+  "width": 18
+ },
+ "kk-piou": {
+  "file": "kk-piou.gif",
+  "height": 21,
+  "width": 20
+ },
+ "kk-points-kado": {
+  "file": "kk-points-kado.gif",
+  "height": 17,
+  "width": 17
+ },
+ "kk-score": {
+  "file": "kk-score.gif",
+  "height": 18,
+  "width": 18
+ },
+ "kk-there": {
+  "file": "kk-there.gif",
+  "height": 17,
+  "width": 15
+ },
+ "xmas": {
+  "file": "xmas.gif",
+  "height": 19,
+  "width": 19
+ }
+}

@@ -8,9 +8,11 @@ use App\Models\LeagueMembership;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use App\Services\ClanPeriodService;
 use App\Services\LeagueService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PeriodCloseConcurrencyTest extends TestCase
@@ -73,6 +75,36 @@ class PeriodCloseConcurrencyTest extends TestCase
         $this->assertSame([$period->id], Period::query()->pluck('id')->all());
     }
 
+    // the rewards of the closed period (feathers, clans) come after the commit of the new period: a failure there leaves it
+    public function test_new_period_stays_when_the_rewards_of_the_closed_period_fail(): void
+    {
+        $this->travelTo(now()->next('Monday')->startOfDay()->addSeconds(5));
+        $beginner = app(LeagueService::class)->getBeginnerLeague();
+        $period = Period::factory()->create([
+            'start_at' => now()->subDays(14),
+            'end_at' => now()->subSecond(),
+        ]);
+        $game = Game::factory()->create(['name' => 'Kaskade']);
+        $user = User::factory()->create();
+        LeagueMembership::factory()->for($user)->for($period)->for($game)->for($beginner, 'league')->create();
+
+        $this->mock(ClanPeriodService::class)
+            ->shouldReceive('closePeriod')
+            ->once()
+            ->andThrow(new \RuntimeException('close failed'));
+
+        try {
+            $this->artisan('kado:prepare-new-period')->run();
+            $this->fail('The close should fail.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('close failed', $e->getMessage());
+        }
+
+        $newPeriod = Period::current()->firstOrFail();
+        $this->assertNotSame($period->id, $newPeriod->id);
+        $this->assertDatabaseHas('league_memberships', ['user_id' => $user->id, 'period_id' => $newPeriod->id]);
+    }
+
     public function test_middle_of_period_monday_does_not_close_the_previous_period_again(): void
     {
         $this->travelTo(now()->next('Monday')->startOfDay()->addSeconds(5));
@@ -96,6 +128,22 @@ class PeriodCloseConcurrencyTest extends TestCase
         $this->assertSame([$previousPeriod->id, $period->id], Period::query()->orderBy('id')->pluck('id')->all());
         $this->assertDatabaseCount('league_promotions', 0);
         $this->assertDatabaseMissing('league_memberships', ['period_id' => $period->id]);
+    }
+
+    // during the close the new period is not committed yet: a run started then does not wait, it is outside of any period
+    public function test_a_run_started_during_the_close_is_outside_of_any_period(): void
+    {
+        $this->travelTo(now()->next('Monday')->startOfDay()->addSeconds(5));
+        Period::factory()->create([
+            'start_at' => now()->subDays(14),
+            'end_at' => now()->subSecond(),
+        ]);
+        $game = Game::factory()->create(['name' => 'Kaskade']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson("/api/runs/games/{$game->id}")->assertSuccessful();
+
+        $this->assertNull(Run::query()->sole()->period_id);
     }
 
     public function test_new_period_starts_with_the_carried_memberships(): void

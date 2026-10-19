@@ -77,17 +77,16 @@ class KadoRunFlow {
 	}
 	#end
 
-	public function requestContract(onSuccess:RunStartContext->Void, onError:String->Void):Void {
-		Api.askContract({daily: params.isDaily, gameId: params.gameId, build: params.build}, (data:Dto.ApiResponse<Dto.RunDTO>) -> {
+	public function requestContract(onSuccess:RunStartContext->Void, onError:Dto.ApiError->Void):Void {
+		Api.askContract({daily: params.isDaily, gameId: params.gameId, build: params.build}).then((data:Dto.ApiResponse<Dto.RunDTO>) -> {
 			currentContext = {
 				runDetails: data.data,
 				seedHash: hashFNV1a(data.data.seed),
 				diffWithServerTime: Std.int(Date.now().getTime() / 1000) - data.data.server_time,
 			};
 			onSuccess(currentContext);
-		}, (error) -> {
-			var message:String = Reflect.hasField(error, "message") ? Std.string(Reflect.field(error, "message")) : Std.string(error);
-			onError(message);
+		}, (error:Dynamic) -> {
+			onError(Api.toError(error));
 		});
 	}
 

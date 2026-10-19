@@ -49,6 +49,10 @@ class RunResource extends JsonResource
                 fn () => app(GameBuildArchive::class)->gamedataFor($this->game, $this->gameBuild),
             ),
             'completed_at' => $this->completed_at,
+            // the length of the replay in frames (null for the older replays): known before the game is loaded
+            'replay_frames' => $this->when($this->withReplay, fn () => $this->replay_frames),
+            'views_count' => $this->views_count,
+            'comments_count' => $this->comments_count,
             'is_cheat' => $this->when($isAdmin, $this->is_cheat),
         ];
     }

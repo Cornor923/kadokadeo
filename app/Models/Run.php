@@ -26,6 +26,8 @@ class Run extends Model
         'verified_at' => 'datetime',
         'anticheat_flags' => 'integer',
         'replay_frames' => 'integer',
+        'views_count' => 'integer',
+        'comments_count' => 'integer',
     ];
 
     public function game()
@@ -58,6 +60,12 @@ class Run extends Model
     public function flags()
     {
         return $this->hasMany(RunFlag::class);
+    }
+
+    // the comments of its replay and their answers (App\Services\RunCommentService)
+    public function comments()
+    {
+        return $this->hasMany(RunComment::class);
     }
 
     public function getHasReplayAttribute()

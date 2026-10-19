@@ -95,7 +95,7 @@ class RunFlagsTable
                     Action::make('openRun')
                         ->label('Voir la partie')
                         ->icon(Heroicon::OutlinedEye)
-                        ->url(fn (RunFlag $record) => RunResource::getUrl('edit', ['record' => $record->run_id])),
+                        ->url(fn (RunFlag $record) => RunResource::getUrl('view', ['record' => $record->run_id])),
                     RunVerificationTable::action(fn (RunFlag $record) => $record->run),
                     self::dismissAction(),
                     self::confirmAction(),

@@ -17,9 +17,9 @@ class RunFlagResource extends Resource
 {
     protected static ?string $model = RunFlag::class;
 
-    protected static ?string $modelLabel = 'signalement';
+    protected static ?string $modelLabel = 'run suspecte';
 
-    protected static ?string $pluralModelLabel = 'signalements';
+    protected static ?string $pluralModelLabel = 'runs suspectes';
 
     protected static ?string $navigationLabel = 'Runs suspectes';
 

@@ -18,6 +18,17 @@ typedef ReplayHudHost = {
 	var setSpeed:Float->Void;
 	// one frame forward (1) or back (-1), the replay being paused
 	var step:Int->Void;
+	// the pointer is over a mark of the progress bar (its index in setMarkers), -1 when it leaves it
+	@:optional var markerHover:Int->Void;
+}
+
+// a comment of the replay page shown in the game (setComment): its moment ("mm:ss"), its author, its text, the comments
+// waiting after it
+typedef ReplayHudComment = {
+	var time:String;
+	var author:String;
+	var text:String;
+	var more:Int;
 }
 
 private typedef HudButton = {
@@ -40,7 +51,9 @@ private typedef KeyCap = {
 // progress bar (click or drag it to go to any moment, backwards too), play / pause, back to the start, -10 s / +10 s,
 // time, speed, keys pressed by the player, keyboard shortcuts. They hide while the replay plays and the pointer stays
 // still, and come back when it moves (a thin progress line stays). A click on the game plays / pauses (a tap shows /
-// hides the controls on a touch screen). Nothing is drawn again unless it changed.
+// hides the controls on a touch screen). Marks in the bar (setMarkers: the comments of the replay page) show moments of
+// the replay, the comment reached is shown on one line above the controls and the keys (setComment); C hides / shows
+// them. Nothing is drawn again unless it changed.
 class ReplayHud extends Container {
 	public static var SPEEDS:Array<Float> = [0.1, 0.25, 0.5, 1, 1.5, 2, 4, 8];
 
@@ -66,6 +79,13 @@ class ReplayHud extends Container {
 	static inline var CAP = 22;
 	static inline var CAP_GAP = 3;
 	static inline var PREF_KEYS = "kadokadeo.replay.keys";
+	static inline var PREF_COMMENTS = "kadokadeo.replay.comments";
+	// a comment stays this long on the screen (resources/js/components/runs/comments/Overlay.vue): its mark covers it
+	static inline var COMMENT_SECONDS = 3;
+	// the narrowest mark, in pixels of the screen
+	static inline var MARK_MIN_PX = 3;
+	static inline var COMMENT_MARGIN = 10;
+	static inline var COMMENT_H = 26;
 	static inline var FONT = "Fredoka Bold, Arial, sans-serif";
 
 	var canvas:CanvasElement;
@@ -103,6 +123,28 @@ class ReplayHud extends Container {
 	var help:Container;
 	// seek being computed: since when
 	var seekSince:Float = -1;
+
+	// marks of the bar (frames), the one under the pointer; their version is in the keys of the drawings
+	var markers:Array<Int> = [];
+	var hoverMarker:Int = -1;
+	var marksVersion:Int = 0;
+	// one pixel of the screen in pixels of the game (-1: to measure)
+	var pixel:Float = -1;
+
+	// the comment shown (C: hidden with the marks)
+	var commentsOn:Bool = true;
+	var comment:ReplayHudComment = null;
+	var commentKey:String = "";
+	var commentBox:Container;
+	var commentBg:Graphics;
+	var commentTime:Text;
+	var commentAuthor:Text;
+	var commentText:Text;
+	var commentMore:Text;
+	var toast:Container;
+	var toastBg:Graphics;
+	var toastText:Text;
+	var toastUntil:Float = 0;
 
 	// keys of the player
 	var keysPanel:Container;
@@ -154,7 +196,8 @@ class ReplayHud extends Container {
 		this.host = host;
 		lastActivity = now();
 		lastMs = lastActivity;
-		keysOn = readPref();
+		keysOn = readPref(PREF_KEYS, false);
+		commentsOn = readPref(PREF_COMMENTS, true);
 
 		cursorMark = new Graphics();
 		addChild(cursorMark);
@@ -189,6 +232,7 @@ class ReplayHud extends Container {
 		buttonTipText = cast buttonTip.getChildAt(1);
 		controls.addChild(buttonTip);
 
+		initComment();
 		initSpeedMenu();
 		initHelp();
 
@@ -198,6 +242,7 @@ class ReplayHud extends Container {
 		Browser.window.addEventListener("pointerup", onPointerUp);
 		Browser.window.addEventListener("pointercancel", onPointerUp);
 		Browser.window.addEventListener("keydown", onKeyDown);
+		Browser.window.addEventListener("resize", onResize);
 	}
 
 	public function dispose():Void {
@@ -207,6 +252,7 @@ class ReplayHud extends Container {
 		Browser.window.removeEventListener("pointerup", onPointerUp);
 		Browser.window.removeEventListener("pointercancel", onPointerUp);
 		Browser.window.removeEventListener("keydown", onKeyDown);
+		Browser.window.removeEventListener("resize", onResize);
 		setCursor("");
 	}
 
@@ -251,9 +297,79 @@ class ReplayHud extends Container {
 		}
 		drawMiniBar();
 		updateKeys();
+		updateComment(dt, t);
 	}
 
 	// BAR
+
+	// marks in the bar at these frames (the comments of the replay page): replaced each time
+	public function setMarkers(frames:Array<Int>):Void {
+		markers = frames == null ? [] : frames.copy();
+		setHoverMarker(-1);
+		marksVersion++;
+	}
+
+	// the marks are as wide as one frame on the bar, at least one pixel of the screen
+	function onResize(_):Void {
+		pixel = -1;
+		marksVersion++;
+	}
+
+	// one pixel of the screen, in pixels of the game (measured again when the window changes size)
+	function screenPixel():Float {
+		if (pixel > 0)
+			return pixel;
+		var w = canvas.clientWidth;
+		var screen = KadoKadeoManager.kkm != null ? KadoKadeoManager.kkm.screen : null;
+		if (w <= 0 || screen == null)
+			return 1;
+		pixel = screen.width / w;
+		return pixel;
+	}
+
+	// a mark covers the time its comment stays on the screen, at least MARK_MIN_PX pixels of the screen
+	function markWidth(x0:Float, x1:Float):Float {
+		return Math.max(MARK_MIN_PX * screenPixel(), (x1 - x0) * COMMENT_SECONDS * 1000 / frameMs / total);
+	}
+
+	// the marks from x0 to x1 (pixels of the game), h high around y
+	function drawMarks(g:Graphics, x0:Float, x1:Float, y:Float, h:Float, alpha:Float, hovered:Int):Void {
+		if (markers.length == 0 || !commentsOn)
+			return;
+		var w = markWidth(x0, x1);
+		for (i in 0...markers.length) {
+			var x = x0 + (x1 - x0) * Math.max(0, Math.min(1, markers[i] / total));
+			var on = i == hovered;
+			g.beginFill(on ? 0xFFFFFF : ORANGE, alpha);
+			g.drawRect(Math.min(x, x1 - w), y - (on ? h * 0.5 + 2 : h * 0.5), w, on ? h + 4 : h);
+			g.endFill();
+		}
+	}
+
+	// the mark under the pointer (x: pixels of the game), -1 if none: the one whose middle is the nearest
+	function markerAt(x:Float):Int {
+		if (!commentsOn)
+			return -1;
+		var best = -1;
+		var w = markWidth(BAR_X0, BAR_X1);
+		var reach = Math.max(4, w * 0.5 + 2);
+		for (i in 0...markers.length) {
+			var d = Math.abs(Math.min(barX(markers[i]), BAR_X1 - w) + w * 0.5 - x);
+			if (d <= reach) {
+				reach = d;
+				best = i;
+			}
+		}
+		return best;
+	}
+
+	function setHoverMarker(i:Int):Void {
+		if (i == hoverMarker)
+			return;
+		hoverMarker = i;
+		if (host.markerHover != null)
+			host.markerHover(i);
+	}
 
 	function shownFrame():Float {
 		if (dragging)
@@ -267,7 +383,8 @@ class ReplayHud extends Container {
 		// long seek: filled up to the frame computed so far, lighter up to the wanted one
 		var fx = seekSince >= 0 && now() - seekSince >= SEEK_PROGRESS_DELAY_MS ? Math.min(px, barX(frame)) : px;
 		var hx = hoverBar || dragging ? Math.round(Math.max(BAR_X0, Math.min(BAR_X1, pointerX))) : -1;
-		var key = Math.round(px * 2) + "," + Math.round(fx * 2) + "," + hx + "," + Math.round(grow * 20);
+		var key = Math.round(px * 2) + "," + Math.round(fx * 2) + "," + hx + "," + Math.round(grow * 20) + "," + marksVersion + ","
+			+ hoverMarker + "," + total;
 		if (key == drawnBar)
 			return;
 		drawnBar = key;
@@ -285,6 +402,7 @@ class ReplayHud extends Container {
 		b.beginFill(CYAN);
 		b.drawRect(BAR_X0, BAR_Y - h * 0.5, fx - BAR_X0, h);
 		b.endFill();
+		drawMarks(b, BAR_X0, BAR_X1, BAR_Y, h + 4, 0.95, hoverMarker);
 		var r = 4 + 3 * grow;
 		b.lineStyle(1.5, 0xFFFFFF, 0.9);
 		b.beginFill(ORANGE);
@@ -301,7 +419,8 @@ class ReplayHud extends Container {
 	function drawMiniBar():Void {
 		var a = 1 - shown;
 		var px = barX(shownFrame());
-		var key = a < 0.02 ? "" : Math.round((px - BAR_X0) / (BAR_X1 - BAR_X0) * W * 2) + "," + Math.round(a * 20);
+		var key = a < 0.02 ? "" : Math.round((px - BAR_X0) / (BAR_X1 - BAR_X0) * W * 2) + "," + Math.round(a * 20) + "," + marksVersion + ","
+			+ total;
 		if (key == drawnMini)
 			return;
 		drawnMini = key;
@@ -315,6 +434,7 @@ class ReplayHud extends Container {
 		miniBar.beginFill(CYAN, 0.95 * a);
 		miniBar.drawRect(0, BOTTOM - 3, p, 3);
 		miniBar.endFill();
+		drawMarks(miniBar, 0, W, BOTTOM - 1.5, 3, 0.95 * a, -1);
 	}
 
 	inline function barX(f:Float):Float {
@@ -338,6 +458,116 @@ class ReplayHud extends Container {
 			drawnTime = s;
 			timeText.text = s;
 		}
+	}
+
+	// COMMENT
+
+	function initComment():Void {
+		commentBox = new Container();
+		commentBg = new Graphics();
+		commentBox.addChild(commentBg);
+		commentTime = text("", 12, ORANGE);
+		commentAuthor = text("", 13, 0xFFFFFF);
+		commentText = text("", 13, 0xD9F4FA, false);
+		commentMore = text("", 12, 0x9FB8BE, false);
+		for (t in [commentTime, commentAuthor, commentText, commentMore]) {
+			t.anchor.set(0, 0.5);
+			t.y = COMMENT_H * 0.5;
+			commentBox.addChild(t);
+		}
+		commentBox.x = COMMENT_MARGIN;
+		commentBox.visible = false;
+		commentBox.alpha = 0;
+		addChild(commentBox);
+
+		toast = tipBox();
+		toastBg = cast toast.getChildAt(0);
+		toastText = cast toast.getChildAt(1);
+		addChild(toast);
+	}
+
+	// the comment reached by the replay (null: none), on one line as wide as the game at most
+	public function setComment(c:ReplayHudComment):Void {
+		var key = c == null ? "" : c.time + "|" + c.author + "|" + c.text + "|" + c.more;
+		if (key == commentKey)
+			return;
+		var fresh = comment == null || c == null || comment.text != c.text || comment.author != c.author;
+		commentKey = key;
+		comment = c;
+		if (c == null)
+			return;
+		if (fresh)
+			commentBox.alpha = 0;
+		var pad = 10;
+		var gap = 8;
+		commentTime.text = c.time;
+		commentAuthor.text = c.author;
+		commentMore.text = c.more > 0 ? "+" + c.more : "";
+		var max = W - COMMENT_MARGIN * 2;
+		commentTime.x = pad + 3;
+		commentAuthor.x = commentTime.x + commentTime.width + gap;
+		commentText.x = commentAuthor.x + commentAuthor.width + gap;
+		var room = max - commentText.x - pad - (c.more > 0 ? commentMore.width + gap : 0);
+		fit(commentText, c.text, Math.max(0, room));
+		var w = Math.min(max, commentText.x + commentText.width + (c.more > 0 ? gap + commentMore.width : 0) + pad);
+		commentMore.x = w - pad - commentMore.width;
+		commentBg.clear();
+		commentBg.beginFill(DARK, 0.88);
+		commentBg.drawRoundedRect(0, 0, w, COMMENT_H, 8);
+		commentBg.endFill();
+		commentBg.beginFill(ORANGE);
+		commentBg.drawRoundedRect(0, 0, 4, COMMENT_H, 2);
+		commentBg.endFill();
+	}
+
+	public function areCommentsShown():Bool {
+		return commentsOn;
+	}
+
+	function toggleComments():Void {
+		commentsOn = !commentsOn;
+		writePref(PREF_COMMENTS, commentsOn);
+		marksVersion++;
+		setHoverMarker(-1);
+		showTip(toast, toastBg, toastText, commentsOn ? "Commentaires affichés" : "Commentaires masqués", W * 0.5, 40);
+		toastUntil = now() + 1200;
+	}
+
+	// above the controls when they show, and above the keys of the player when they are shown
+	function updateComment(dt:Float, t:Float):Void {
+		if (toast.visible && t > toastUntil)
+			toast.visible = false;
+		var on = commentsOn && comment != null;
+		commentBox.visible = on;
+		if (!on)
+			return;
+		commentBox.alpha = approach(commentBox.alpha, 1, dt / 150);
+		var bottom = BOTTOM - 8 - (PANEL_H - 22) * shown;
+		if (keysOn && hasKeys())
+			bottom = BOTTOM - 14 - keysH - (PANEL_H - 22) * shown - 6;
+		commentBox.y = Math.round(bottom - 6 - COMMENT_H);
+	}
+
+	// s in t, cut with "…" to fit in max pixels
+	static function fit(t:Text, s:String, max:Float):Void {
+		t.text = s;
+		if (t.width <= max)
+			return;
+		var lo = 0;
+		var hi = s.length;
+		while (lo < hi) {
+			var mid = (lo + hi + 1) >> 1;
+			t.text = s.substr(0, mid) + "…";
+			if (t.width <= max)
+				lo = mid;
+			else
+				hi = mid - 1;
+		}
+		// not in the middle of an emoji (a pair of UTF-16 units)
+		var code = lo > 0 ? s.charCodeAt(lo - 1) : null;
+		if (code != null && code >= 0xD800 && code <= 0xDBFF)
+			lo--;
+		t.text = s.substr(0, lo) + "…";
 	}
 
 	// BUTTONS
@@ -678,6 +908,7 @@ class ReplayHud extends Container {
 			["0 à 9", "Aller de 0 à 90 %"],
 			["Début / Fin", "Début / fin du replay"],
 			["I", "Touches du joueur"],
+			["C", "Commentaires"],
 			["H", "Cette aide"],
 		];
 		var w = 380;
@@ -906,7 +1137,7 @@ class ReplayHud extends Container {
 	function toggleKeys():Void {
 		keysOn = !keysOn;
 		keysMask = -1;
-		writePref(keysOn);
+		writePref(PREF_KEYS, keysOn);
 		drawnButtons = "";
 	}
 
@@ -1028,8 +1259,10 @@ class ReplayHud extends Container {
 			return;
 		var inside = p.x >= 0 && p.x <= W && p.y >= 0 && p.y < BOTTOM;
 		if (dragging) {
-			if (e.pointerId == dragPointer)
+			if (e.pointerId == dragPointer) {
 				pointerX = Math.max(BAR_X0, Math.min(BAR_X1, p.x));
+				setHoverMarker(markerAt(pointerX));
+			}
 			return;
 		}
 		if (e.pointerType == "touch")
@@ -1067,7 +1300,11 @@ class ReplayHud extends Container {
 			pointerX = Math.max(BAR_X0, Math.min(BAR_X1, p.x));
 		lastActivity = now();
 		hoverBar = e.pointerType != "touch" && p != null && onBar(p.x, p.y);
-		host.seek(frameAt(pointerX));
+		// on a mark: exactly at its frame
+		var mark = markerAt(pointerX);
+		host.seek(mark >= 0 ? markers[mark] : frameAt(pointerX));
+		if (!hoverBar)
+			setHoverMarker(-1);
 	}
 
 	function setHover(button:String, bar:Bool):Void {
@@ -1077,6 +1314,7 @@ class ReplayHud extends Container {
 			buttonTip.visible = false;
 		}
 		hoverBar = bar;
+		setHoverMarker(bar && controls.visible ? markerAt(pointerX) : -1);
 		setCursor(button != null || bar || inMenu(pointerX, pointerY) ? "pointer" : "");
 	}
 
@@ -1119,6 +1357,8 @@ class ReplayHud extends Container {
 				changeSpeed(1);
 			case "i" | "I":
 				toggleKeys();
+			case "c" | "C":
+				toggleComments();
 			case "h" | "H" | "?":
 				toggleHelp();
 			case "Escape":
@@ -1218,17 +1458,18 @@ class ReplayHud extends Container {
 		return Browser.window.performance.now();
 	}
 
-	static function readPref():Bool {
+	static function readPref(key:String, byDefault:Bool):Bool {
 		try {
-			return Browser.window.localStorage.getItem(PREF_KEYS) == "1";
+			var value = Browser.window.localStorage.getItem(key);
+			return value == null ? byDefault : value == "1";
 		} catch (_:Dynamic) {
-			return false;
+			return byDefault;
 		}
 	}
 
-	static function writePref(on:Bool):Void {
+	static function writePref(key:String, on:Bool):Void {
 		try {
-			Browser.window.localStorage.setItem(PREF_KEYS, on ? "1" : "0");
+			Browser.window.localStorage.setItem(key, on ? "1" : "0");
 		} catch (_:Dynamic) {}
 	}
 }

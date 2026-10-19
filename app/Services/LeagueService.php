@@ -129,24 +129,28 @@ class LeagueService
         });
     }
 
+    // the next period was just created in the transaction of the close (PrepareNewPeriod) and the runs started meanwhile
+    // are outside of any period: it has no membership yet, they are inserted by batches. One createOrFirst by membership
+    // (storeHighestMembership) made a savepoint each, and PostgreSQL keeps a lock by savepoint until the end of the
+    // transaction: 14 000 memberships filled its lock table (out of shared memory, max_locks_per_transaction)
     private function carryMembershipsToNextPeriod(Period $period, Period $nextPeriod): void
     {
-        LeagueMembership::query()
-            ->where('period_id', $period->id)
-            ->with('league')
-            ->chunkById(500, function ($memberships) use ($nextPeriod) {
-                foreach ($memberships as $membership) {
-                    if (!$membership->league) {
-                        continue;
-                    }
+        $now = now();
 
-                    $this->storeHighestMembership(
-                        $membership->user_id,
-                        $membership->game_id,
-                        $nextPeriod->id,
-                        $membership->league
-                    );
-                }
+        LeagueMembership::query()
+            ->toBase()
+            ->select('id', 'user_id', 'game_id', 'league_id')
+            ->where('period_id', $period->id)
+            ->whereIn('league_id', League::query()->select('id'))
+            ->chunkById(1000, function ($memberships) use ($nextPeriod, $now) {
+                LeagueMembership::query()->insertOrIgnore($memberships->map(fn ($membership) => [
+                    'user_id' => $membership->user_id,
+                    'period_id' => $nextPeriod->id,
+                    'game_id' => $membership->game_id,
+                    'league_id' => $membership->league_id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->all());
             });
     }
 
@@ -196,27 +200,29 @@ class LeagueService
         }
     }
 
+    // only the close creates the promotions (unique on period, game, user): no firstOrCreate, it makes a savepoint
+    // (createOrFirst) kept with its lock until the end of the transaction of the close
     private function createPromotion(Period $period, Period $nextPeriod, Game $game, League $fromLeague, League $toLeague, Run $run, int $promotionSlots, int $activePlayersCount): LeaguePromotion
     {
-        return LeaguePromotion::query()->firstOrCreate(
-            [
-                'period_id' => $period->id,
-                'game_id' => $game->id,
-                'user_id' => $run->user_id,
-            ],
-            [
-                'next_period_id' => $nextPeriod->id,
-                'from_league_id' => $fromLeague->id,
-                'to_league_id' => $toLeague->id,
-                'run_id' => $run->id,
-                'rank_position' => $run->rank_position,
-                'score' => $run->score,
-                'play_time_seconds' => $run->play_time_seconds,
-                'promotion_slots' => $promotionSlots,
-                'active_players_count' => $activePlayersCount,
-                'promotion_reward' => $fromLeague->promotion_reward ?? 0,
-            ]
-        );
+        $attributes = [
+            'period_id' => $period->id,
+            'game_id' => $game->id,
+            'user_id' => $run->user_id,
+        ];
+
+        return LeaguePromotion::query()->where($attributes)->first() ?? LeaguePromotion::query()->create([
+            ...$attributes,
+            'next_period_id' => $nextPeriod->id,
+            'from_league_id' => $fromLeague->id,
+            'to_league_id' => $toLeague->id,
+            'run_id' => $run->id,
+            'rank_position' => $run->rank_position,
+            'score' => $run->score,
+            'play_time_seconds' => $run->play_time_seconds,
+            'promotion_slots' => $promotionSlots,
+            'active_players_count' => $activePlayersCount,
+            'promotion_reward' => $fromLeague->promotion_reward ?? 0,
+        ]);
     }
 
     private function rewardPromotion(LeaguePromotion $promotion): void

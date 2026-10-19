@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    // the page reads the settings (ClanSettings::$enabled)
+    use RefreshDatabase;
+
     /**
      * A basic test example.
      */

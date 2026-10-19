@@ -199,5 +199,7 @@ export function useGame(game) {
     invalidate,
     crash,
     clearCrash,
+    // the game (KadoKadeoManager), null until it is mounted: the replay page follows and drives its replay
+    getInstance: () => gameInstance,
   }
 }

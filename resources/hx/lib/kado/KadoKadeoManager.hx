@@ -55,6 +55,9 @@ class KadoKadeoManager extends Application {
 	var simulationTimeMs:Float = mt.Timer.oldTime;
 	var replaySpeed:Float = 1;
 	var replayPaused:Bool = false;
+	// the marks of the progress bar of the replay (setReplayMarkers): kept when its controls are made again
+	var replayMarkers:Array<Int> = [];
+	var replayComment:ReplayHud.ReplayHudComment = null;
 
 	// replay seeking: the game is restarted when going back, then simulated without waiting up to the wanted frame.
 	// Meanwhile the last picture stays on screen and the game is not drawn (nor interpolated): all the time of
@@ -365,9 +368,14 @@ class KadoKadeoManager extends Application {
 				startScene.interactive = true;
 			}
 			runFlow.transition(ReadyToStart, "contract-received");
-		}, (message) -> {
+		}, (error) -> {
 			runFlow.transition(Intro, "contract-failed");
-			trace('Contract failed: ' + message);
+			trace('Contract failed: ' + error.status + ' ' + error.message);
+			// (a click asks again)
+			if (startScene != null) {
+				startScene.showError(error);
+				startScene.interactive = true;
+			}
 		});
 	}
 
@@ -444,8 +452,11 @@ class KadoKadeoManager extends Application {
 					seek: seekReplay,
 					setPaused: setReplayPaused,
 					setSpeed: setReplaySpeed,
-					step: stepReplay
+					step: stepReplay,
+					markerHover: i -> emitWindowEvent("replayMarker", {index: i})
 				});
+				this.replayHud.setMarkers(replayMarkers);
+				this.replayHud.setComment(replayComment);
 			}
 			this.stage.addChild(this.replayHud);
 		} else {
@@ -867,6 +878,44 @@ class KadoKadeoManager extends Application {
 			replayHud.destroy({children: true});
 			replayHud = null;
 		}
+	}
+
+	// API OF THE REPLAY PAGE (resources/js/composables/useReplayClock.js): the comments of the replay as marks of the
+	// progress bar (frames; the pointer over one sends the window event "replayMarker" {index}, -1 when it leaves it), the
+	// comment reached shown in the game (null: none; C hides them), the frame shown (-1 out of a replay)
+	public function setReplayMarkers(frames:Array<Int>):Void {
+		replayMarkers = frames == null ? [] : [for (f in frames) Std.int(f)];
+		if (replayHud != null) {
+			replayHud.setMarkers(replayMarkers);
+		}
+	}
+
+	public function setReplayComment(comment:ReplayHud.ReplayHudComment):Void {
+		replayComment = comment;
+		if (replayHud != null) {
+			replayHud.setComment(comment);
+		}
+	}
+
+	public function areReplayCommentsShown():Bool {
+		return replayHud == null || replayHud.areCommentsShown();
+	}
+
+	public function getReplayFrame():Int {
+		if (params == null || params.replayData == null || game == null || replayHud == null) {
+			return -1;
+		}
+		var ended = gameOverScreen != null || !replay.isPlayingReplay();
+		return ended ? getReplayLength() : replay.getCurrentFrame();
+	}
+
+	public function isReplayPaused():Bool {
+		return replayPaused;
+	}
+
+	// a seek is being computed (the frame jumps)
+	public function isReplaySeeking():Bool {
+		return seekTarget != null;
 	}
 
 	public function setReplaySpeed(speed:Float):Void {

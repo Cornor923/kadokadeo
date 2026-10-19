@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Games\RelationManagers;
 
+use App\Filament\Resources\Runs\RunResource;
 use App\Filament\Resources\Runs\RunVerificationTable;
 use App\Models\Run;
+use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -177,7 +179,13 @@ class RunsRelationManager extends RelationManager
                 CreateAction::make(),
                 AssociateAction::make(),
             ])
+            ->recordUrl(fn (Run $record) => RunResource::getUrl('view', ['record' => $record]))
             ->recordActions([
+                Action::make('view')
+                    ->label('Voir')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->color('gray')
+                    ->url(fn (Run $record) => RunResource::getUrl('view', ['record' => $record])),
                 EditAction::make(),
                 RunVerificationTable::replayAction(),
                 RunVerificationTable::action(),

@@ -5,6 +5,9 @@ namespace App\Filament\Resources\Runs;
 use App\Enums\AntiCheatBit;
 use App\Filament\Resources\Runs\Pages\EditRun;
 use App\Filament\Resources\Runs\Pages\ListRuns;
+use App\Filament\Resources\Runs\Pages\ViewRun;
+use App\Filament\Resources\Runs\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\Runs\Schemas\RunInfolist;
 use App\Models\Run;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DateTimePicker;
@@ -12,6 +15,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RunResource extends Resource
 {
@@ -60,10 +66,35 @@ class RunResource extends Resource
         ]);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return RunInfolist::configure($schema);
+    }
+
+    // the admin reads every run: RunPolicy::view (the replay page of the site) refuses the runs without replay
+    public static function canView(Model $record): bool
+    {
+        return true;
+    }
+
+    // the deleted runs too (their comments, their replay)
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            'comments' => CommentsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListRuns::route('/'),
+            'view' => ViewRun::route('/{record}'),
             'edit' => EditRun::route('/{record}/edit'),
         ];
     }

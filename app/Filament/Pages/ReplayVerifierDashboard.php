@@ -113,7 +113,7 @@ class ReplayVerifierDashboard extends Page implements HasTable
                     ->label('Partie')
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
                     ->color('gray')
-                    ->url(fn (ReplayVerification $record) => RunResource::getUrl('edit', ['record' => $record->run_id])),
+                    ->url(fn (ReplayVerification $record) => RunResource::getUrl('view', ['record' => $record->run_id])),
                 RunVerificationTable::action($run),
             ]);
     }

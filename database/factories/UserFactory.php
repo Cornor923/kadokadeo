@@ -28,6 +28,7 @@ class UserFactory extends Factory
             'display_name' => fake()->unique()->userName(),
             'kado_points' => 0,
             'kado_games' => config('kado.games_per_day'),
+            'clan_attack_games' => 10,
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

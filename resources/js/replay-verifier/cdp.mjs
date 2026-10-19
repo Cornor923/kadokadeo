@@ -8,9 +8,28 @@ import { join } from 'node:path'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// the browsers still open: killed when this process ends in any way (an error, process.exit, the timeout of
+// App\Services\ReplayVerifier...). Left alone, a browser outlives it with the game running (100% of a CPU)
+const open = new Set()
+process.on('exit', () => { for (const kill of open) kill() })
+for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
+  process.on(signal, () => process.exit(1))
+}
+
+// a timeout for the whole script (env KADO_VERIFIER_TIMEOUT, seconds): it prints its result (one JSON line) and quits
+export function deadline(result) {
+  const seconds = +process.env.KADO_VERIFIER_TIMEOUT
+  if (!(seconds > 0)) return
+  setTimeout(() => {
+    console.log(JSON.stringify(result(seconds)))
+    process.exit(0)
+  }, seconds * 1000).unref()
+}
+
 export async function launch(browser) {
   if (typeof WebSocket === 'undefined') throw new Error('no global WebSocket: Node 22+ is needed')
 
+  // in the command line of all the processes of the browser: php artisan kado:replay-verifier:reap finds them by it
   const profile = mkdtempSync(join(tmpdir(), 'kado-verifier-'))
   const proc = spawn(browser, [
     '--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + profile,
@@ -27,7 +46,13 @@ export async function launch(browser) {
     // Chrome writes in HOME (the worker of the queue may run with the HOME of another user): its temporary profile
     env: { ...process.env, HOME: profile },
     stdio: ['ignore', 'ignore', 'pipe'],
+    // a process group of its own: killed with all its processes (renderer, GPU...)
+    detached: process.platform !== 'win32',
   })
+  const kill = () => {
+    try { process.kill(process.platform === 'win32' ? proc.pid : -proc.pid, 'SIGKILL') } catch { /* already gone */ }
+  }
+  open.add(kill)
   // the end of its error output: why it did not start
   let stderr = ''
   proc.stderr.on('data', (chunk) => { stderr = (stderr + chunk).slice(-2000) })
@@ -38,7 +63,9 @@ export async function launch(browser) {
       try { await send('Browser.close', {}, 3000) } catch { /* already quitting */ }
       await Promise.race([exited, sleep(3000)])
     }
-    if (proc.exitCode === null) proc.kill('SIGKILL')
+    // what is left of it (its processes do not always end with it)
+    kill()
+    open.delete(kill)
     try { rmSync(profile, { recursive: true, force: true }) } catch { /* already gone */ }
   }
 

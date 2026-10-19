@@ -9,7 +9,7 @@
 //   output (stdout, one JSON line): { ok: true, score, frames, analysis? } or { ok: false, error }
 //            analysis: { analyzer, version, metrics, suspicious, reasons } or { analyzer, error } (never fails the run)
 //   env: BROWSER (Chrome / Chromium, see browser.mjs), KADO_VERIFIER_CACHE (cache of PIXI and of the downloaded browser,
-//        default storage/app/replay-verifier)
+//        default storage/app/replay-verifier), KADO_VERIFIER_TIMEOUT (seconds: then it fails, its browser killed)
 // The game runs like on the site (same PIXI from the same CDN, pixi-tween, fonts), the physics is stepped by hand.
 // Needs Node 22+ and Chrome / Chromium (downloaded when there is none: package @puppeteer/browsers).
 import { existsSync } from 'node:fs'
@@ -19,7 +19,7 @@ import { basename, dirname, extname, join, normalize, resolve, sep } from 'node:
 import { fileURLToPath } from 'node:url'
 
 import { findBrowser } from './browser.mjs'
-import { launch } from './cdp.mjs'
+import { deadline, launch } from './cdp.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const PUBLIC = join(ROOT, 'public')
@@ -213,6 +213,7 @@ async function verify(input) {
   }
 }
 
+deadline((seconds) => ({ ok: false, error: `the verification took more than ${seconds} s` }))
 try {
   const input = JSON.parse(await readFile(process.argv[2], 'utf8'))
   console.log(JSON.stringify(await verify(input)))

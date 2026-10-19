@@ -20,3 +20,6 @@ if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
 	done
 	echo "Multiple databases created"
 fi
+
+# Database of the upstream Eternaltwin (eternaltwin/eternaltwin.toml), "etwin.dev" is the one of the legacy CLI
+create_user_and_database "etwin_main.dev"

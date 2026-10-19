@@ -22,6 +22,8 @@ class User extends Authenticatable implements FilamentUser
 
     protected $hidden = [
         'password',
+        'etwin_access_token',
+        'etwin_scopes',
     ];
 
     protected $guarded = [
@@ -40,7 +42,17 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'banned_at' => 'datetime',
             'ban_reason' => BanReason::class,
+            'unlocked_themes' => 'array',
+            // the access token of Eternaltwin (its forum is called as the player) and what it allows
+            'etwin_access_token' => 'encrypted',
+            'etwin_scopes' => 'array',
         ];
+    }
+
+    // the token of Eternaltwin may write in its forum (scope forum:write, App\Http\Controllers\Api\EtwinForumController)
+    public function canWriteEtwinForum(): bool
+    {
+        return $this->etwin_access_token !== null && ($this->etwin_scopes['forum_write'] ?? false) === true;
     }
 
     public function userPoints()
@@ -86,6 +98,17 @@ class User extends Authenticatable implements FilamentUser
     public function favorite()
     {
         return $this->hasMany(UserFavoriteGame::class);
+    }
+
+    public function clanMember()
+    {
+        return $this->hasOne(ClanMember::class);
+    }
+
+    // the themes of the site he can use (kado.themes): the free ones and the ones he bought
+    public function hasTheme(string $theme): bool
+    {
+        return (int) config("kado.themes.{$theme}.price", -1) === 0 || in_array($theme, $this->unlocked_themes ?? [], true);
     }
 
     //

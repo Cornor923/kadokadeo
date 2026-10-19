@@ -15,6 +15,9 @@ use Symfony\Component\Process\Process;
  */
 class ReplayVerifier
 {
+    // a script of the verifier still running that long after its own timeout is killed
+    public const KILL_AFTER_SECONDS = 30;
+
     public function __construct(private readonly GameBuildArchive $archive) {}
 
     public function enabled(): bool
@@ -131,9 +134,12 @@ class ReplayVerifier
         $process = new Process(
             [config('kado.replay_verifier.node'), ...$args],
             base_path(),
-            array_filter(['BROWSER' => config('kado.replay_verifier.browser')]),
+            // the script ends itself after $timeout, its browser killed (cdp.mjs)
+            array_filter(['BROWSER' => config('kado.replay_verifier.browser'), 'KADO_VERIFIER_TIMEOUT' => $timeout]),
         );
-        $process->setTimeout($timeout);
+        // only when the script is stuck: Process kills it at once, its browser is left running (until
+        // kado:replay-verifier:reap)
+        $process->setTimeout($timeout + self::KILL_AFTER_SECONDS);
         $process->run();
 
         $lines = array_filter(explode("\n", trim($process->getOutput())));

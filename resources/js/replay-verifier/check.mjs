@@ -3,13 +3,13 @@
 // start of it with WebGL and fonts (PIXI needs both: without any font, measuring a text throws).
 //   usage: node check.mjs [--install]
 //   output (stdout, one JSON line)
-//   env: BROWSER, KADO_VERIFIER_CACHE (see verify.mjs)
+//   env: BROWSER, KADO_VERIFIER_CACHE, KADO_VERIFIER_TIMEOUT (see verify.mjs)
 import { userInfo } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { findBrowser, missingLibraries } from './browser.mjs'
-import { launch } from './cdp.mjs'
+import { deadline, launch } from './cdp.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const CACHE = process.env.KADO_VERIFIER_CACHE || join(ROOT, 'storage/app/replay-verifier')
@@ -23,6 +23,7 @@ const report = {
   launch: null,
 }
 const message = (e) => String(e?.message || e).slice(0, 1000)
+deadline((seconds) => ({ ...report, error: `the check took more than ${seconds} s` }))
 
 try {
   report.browser = await findBrowser({ cacheDir: join(CACHE, 'browser'), install: process.argv.includes('--install') })

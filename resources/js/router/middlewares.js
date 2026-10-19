@@ -1,6 +1,7 @@
 import { registerMiddleware } from '@yazida/vue-router-middleware'
 
 import { useAuthStore } from '@/stores/auth'
+import { useClanStore } from '@/stores/clan'
 
 registerMiddleware('auth', ({ next }) => {
   const authStore = useAuthStore()
@@ -22,4 +23,12 @@ registerMiddleware('auth', ({ next }) => {
   } else {
     next()
   }
+})
+
+// the pages of the clans, closed while the clans are turned off in the admin
+registerMiddleware('clans', ({ next }) => {
+  if (!useClanStore().enabled) {
+    return next({ name: 'games.index' })
+  }
+  next()
 })

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Settings\ClanSettings;
 use Eternaltwin\Client\Auth as EtwinAuth;
 use Eternaltwin\Client\HttpEtwinClient;
 use Eternaltwin\OauthClient\RfcOauthClient;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class LoginController extends Controller implements HasMiddleware
 {
@@ -40,7 +42,8 @@ class LoginController extends Controller implements HasMiddleware
     // Send the user the the Eternal-twin connection form for sign in
     public function login()
     {
-        $scope = 'base';
+        // "forum:write": the forum of Eternaltwin, as the player (App\Http\Controllers\Api\EtwinForumController)
+        $scope = config('services.etwin.scope');
         $state = 'kadokadeo';
 
         try {
@@ -78,6 +81,9 @@ class LoginController extends Controller implements HasMiddleware
             'etwin_id' => $userUuid->toString(),
             'display_name' => $userDisplayName->toString(),
             'last_seen_at' => now(),
+            // kept to call the forum of Eternaltwin as the player, with what the player allowed
+            'etwin_access_token' => $accessToken->getAccessToken(),
+            'etwin_scopes' => $this->scopesOf($accessToken->getAccessToken()),
         ];
 
         // Check if the user already exists in the database
@@ -93,6 +99,7 @@ class LoginController extends Controller implements HasMiddleware
         } else {
             $dbUser = new User($attrs);
             $dbUser->kado_games = config('kado.games_per_day');
+            $dbUser->clan_attack_games = app(ClanSettings::class)->attack_games_per_day;
         }
         $dbUser->save();
         Auth::login($dbUser, true);
@@ -103,5 +110,20 @@ class LoginController extends Controller implements HasMiddleware
             'token' => $token,
             'user' => UserResource::make($dbUser),
         ]);
+    }
+
+    // what the token allows ({"base": true, "forum_read": true, "forum_write": true, ...}): the player may have allowed
+    // less than asked (null: an Eternaltwin without scopes)
+    private function scopesOf(string $accessToken): ?array
+    {
+        try {
+            return Http::withToken($accessToken)
+                ->acceptJson()
+                ->timeout(10)
+                ->get(rtrim(config('services.etwin.eternaltwinUrl'), '/').'/api/v1/auth/self')
+                ->json('scopes');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

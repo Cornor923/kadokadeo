@@ -5,8 +5,12 @@ const props = defineProps({
   canvasStyle: { type: Object, default: () => ({}) },
 })
 
+const emit = defineEmits(['mounted'])
+
 const canvas = ref(null)
-const { mount, destroy, invalidate, crash } = useGame(() => props.game)
+const { mount, destroy, invalidate, crash, getInstance } = useGame(() => props.game)
+// the replay page follows the replay (useReplayClock)
+defineExpose({ getInstance })
 const showTechnicalDetails = ref(false)
 const copyFeedback = ref('')
 
@@ -76,6 +80,7 @@ async function mountGame() {
 onMounted(async() => {
   document.documentElement.classList.add('kado-game-mounted')
   await mountGame()
+  emit('mounted')
 })
 
 onBeforeUnmount(() => {

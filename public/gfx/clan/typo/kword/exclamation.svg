@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 32" width="15.99" height="32">
+<defs>
+<path id="g" d="M230 354q0 -23 -8 -41t-21.5 -30.5t-31 -19t-35.5 -6.5q-39 0 -68 25.5t-29 71.5v253q0 48 29 72.5t68 24.5q40 0 68 -24.5t28 -72.5v-253zM233 94q0 -20 -7.5 -37.5t-21 -31t-31 -21.5t-37.5 -8t-37.5 8t-31 21.5t-21 31t-7.5 37.5q0 19 7.5 37t21 31.5t31 21.5t37.5 8 t37.5 -8t31 -21.5t21 -31.5t7.5 -37z"/>
+<clipPath id="c"><use href="#g"/></clipPath>
+<linearGradient id="f" gradientUnits="userSpaceOnUse" x1="0" y1="704" x2="0" y2="0">
+<stop offset="0" stop-color="#fff"/><stop offset=".21" stop-color="#fff"/><stop offset=".63" stop-color="#e3fbff"/>
+<stop offset=".635" stop-color="#84e2f3"/><stop offset=".68" stop-color="#79e0f3"/><stop offset="1" stop-color="#c1f4fe"/>
+</linearGradient>
+<filter id="h" x="-.5" y="-.5" width="2" height="2"><feGaussianBlur stdDeviation="16.37"/></filter>
+</defs>
+<g transform="translate(3.87 26.5) scale(0.03054 -0.03054)" stroke-linejoin="round">
+<use href="#g" fill="#fff" stroke="#fff" stroke-width="343.81" filter="url(#h)"/>
+<use href="#g" fill="#1f6776" stroke="#1f6776" stroke-width="157.17"/>
+<use href="#g" fill="#5babbb" stroke="#5babbb" stroke-width="65.49"/>
+<use href="#g" fill="url(#f)"/>
+<use href="#g" fill="none" stroke="#cef5fe" stroke-width="65.49" clip-path="url(#c)"/>
+</g>
+</svg>

@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
+use App\Filament\Resources\Runs\RunResource;
 use App\Filament\Resources\Runs\RunVerificationTable;
+use App\Models\Run;
+use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -19,6 +22,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -136,7 +140,13 @@ class RunsRelationManager extends RelationManager
                 CreateAction::make(),
                 AssociateAction::make(),
             ])
+            ->recordUrl(fn (Run $record) => RunResource::getUrl('view', ['record' => $record]))
             ->recordActions([
+                Action::make('view')
+                    ->label('Voir')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->color('gray')
+                    ->url(fn (Run $record) => RunResource::getUrl('view', ['record' => $record])),
                 EditAction::make(),
                 RunVerificationTable::replayAction(),
                 RunVerificationTable::action(),

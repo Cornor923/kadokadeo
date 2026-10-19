@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use App\Achievements\AchievementRule;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Database\Events\NoPendingMigrations;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -68,6 +72,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // the contents the players can report (App\Contracts\Reportable): reports.reportable_type keeps these aliases. Not
+        // enforced: the other morph relations (tokens of Sanctum) keep their class names.
+        Relation::morphMap([
+            'run_comment' => \App\Models\RunComment::class,
+        ]);
+
+        // the settings cache (SETTINGS_CACHE_ENABLED) keeps serialized settings objects: a property added by a settings
+        // migration stays uninitialized in them ("must not be accessed before initialization"), so every `migrate` clears it
+        // (also with nothing to migrate, for a deployment whose migrations already ran)
+        Event::listen([MigrationsEnded::class, NoPendingMigrations::class], function () {
+            if (config('settings.cache.enabled')) {
+                app(\Spatie\LaravelSettings\SettingsCache::class)->clear();
+            }
+        });
     }
 }
