@@ -9,8 +9,6 @@ const emit = defineEmits(['mounted'])
 
 const canvas = ref(null)
 const { mount, destroy, invalidate, crash, getInstance } = useGame(() => props.game)
-// the replay page follows the replay (useReplayClock)
-defineExpose({ getInstance })
 const showTechnicalDetails = ref(false)
 const copyFeedback = ref('')
 
@@ -57,6 +55,71 @@ async function copyTechnicalDetails() {
   }
 }
 
+// « Changer de partie » : la run commencée est remplacée par une nouvelle (KadoKadeoManager.changeRun). Confirmée par
+// un second clic (ou Maj+R) dans les CONFIRM_MS : le jeu n'est jamais bloqué. Possible seulement quand le jeu le dit
+// (contrat affiché ou partie en cours, hors replay et partie du jour)
+const CHANGE_RUN_SHORTCUT = 'Maj+R'
+const CONFIRM_MS = 3000
+const canChangeRun = ref(false)
+const confirmingChangeRun = ref(false)
+const changeRunError = ref('')
+let confirmTimer = null
+
+function stopConfirming() {
+  confirmingChangeRun.value = false
+  clearTimeout(confirmTimer)
+  confirmTimer = null
+}
+
+function onRunState(event) {
+  canChangeRun.value = !!event.detail?.canChangeRun
+  if (canChangeRun.value) {
+    changeRunError.value = ''
+  } else {
+    stopConfirming()
+  }
+}
+
+function onRunChangeFailed(event) {
+  changeRunError.value = event.detail?.message || 'Impossible de changer de partie.'
+}
+
+function askChangeRun() {
+  const instance = getInstance()
+  if (!canChangeRun.value || !instance) {
+    return
+  }
+
+  if (!confirmingChangeRun.value) {
+    confirmingChangeRun.value = true
+    confirmTimer = setTimeout(stopConfirming, CONFIRM_MS)
+    return
+  }
+
+  stopConfirming()
+  changeRunError.value = ''
+  instance.changeRun()
+}
+
+function isTyping(target) {
+  return target instanceof HTMLElement
+    && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+}
+
+function onKeyDown(event) {
+  if (event.code !== 'KeyR' || !event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.repeat) {
+    return
+  }
+  if (isTyping(event.target) || !canChangeRun.value) {
+    return
+  }
+  event.preventDefault()
+  askChangeRun()
+}
+
+// the replay page follows the replay (useReplayClock)
+defineExpose({ getInstance, canChangeRun, confirmingChangeRun, changeRunError, askChangeRun, CHANGE_RUN_SHORTCUT })
+
 // iOS Safari : sans ça, des taps répétés sur le canvas déclenchent la loupe, la sélection
 // et le menu « Copier / Partager / Rechercher ». Le jeu lit les Pointer Events, qui sont
 // émis avant les Touch Events et ne sont pas affectés par preventDefault.
@@ -79,12 +142,19 @@ async function mountGame() {
 
 onMounted(async() => {
   document.documentElement.classList.add('kado-game-mounted')
+  window.evts.addEventListener('runState', onRunState)
+  window.evts.addEventListener('runChangeFailed', onRunChangeFailed)
+  window.addEventListener('keydown', onKeyDown)
   await mountGame()
   emit('mounted')
 })
 
 onBeforeUnmount(() => {
   document.documentElement.classList.remove('kado-game-mounted')
+  window.evts.removeEventListener('runState', onRunState)
+  window.evts.removeEventListener('runChangeFailed', onRunChangeFailed)
+  window.removeEventListener('keydown', onKeyDown)
+  stopConfirming()
   invalidate()
   destroy()
 })

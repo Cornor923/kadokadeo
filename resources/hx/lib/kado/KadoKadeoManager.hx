@@ -82,6 +82,15 @@ class KadoKadeoManager extends Application {
 	var catchUpTarget:Null<Int> = null;
 	var seedHash:Int = 0;
 
+	// "Changer de partie" (changeRun): the new run is asked, the game goes on meanwhile (a game over waits for the answer:
+	// the run it would send is deleted when the change is accepted)
+	var changingRun:Bool = false;
+	// (the parameters of the game over: no function kept in a field of the manager, see Integrity)
+	var deferredSubmit:Bool = false;
+	var deferredSubmitParams:Dynamic = null;
+	// last value given to the page ("runState" event)
+	var canChangeRunSent:Null<Bool> = null;
+
 	var fpsText:pixi.core.text.Text;
 	var fpsFrames:Int = 0;
 	var fpsSampleStartMs:Float = 0;
@@ -157,6 +166,7 @@ class KadoKadeoManager extends Application {
 				updateGraphics(ff.alpha);
 			updateDebugFpsDisplay();
 			pixi.core.Pixi.tweenManager.update();
+			emitRunState();
 		});
 		this.replay = new ReplayManager(params?.replayData);
 		Browser.document.addEventListener("visibilitychange", onVisibilityChange);
@@ -573,24 +583,11 @@ class KadoKadeoManager extends Application {
 			if (wasInReplay) {
 				runFlow.transition(EndScreen, "replay-ended");
 				this.displayEndScene(neutralEndRunDetails());
+			} else if (changingRun) {
+				deferredSubmit = true;
+				deferredSubmitParams = params;
 			} else {
-				runFlow.transition(SubmittingRun, "submit-end-run");
-				// (the last check: before the mask is sent)
-				common_haxe_avm1.kac.Integrity.check();
-				common_haxe_avm1.kac.Integrity.disarm();
-				#if debug
-				trace('AntiCheat: ' + AntiCheat.getMask());
-				#end
-				submitPopup = new SubmitPopup(this);
-				this.stage.addChild(submitPopup);
-				var request = KadoEndRun.buildRequest(runFlow.getRunDetails(), score, runFlow.currentTimestamp(), replay.encodeReplayString(), params,
-					AntiCheat.getPayload());
-				makeEndRunHttpRequest(request).then((endRunDetails:Dto.EndRunResponseDTO) -> {
-					this.displayEndScene(endRunDetails);
-					emitWindowEvent("gameFinished", endRunDetails);
-				}, (error:Dynamic) -> {
-					onSubmitFailed(request, Api.toError(error));
-				});
+				submitEndRun(params);
 			}
 		});
 		this.stage.addChild(gameOverScreen);
@@ -602,6 +599,86 @@ class KadoKadeoManager extends Application {
 		#if debug
 		trace('Replay data: ' + replay.encodeReplayString());
 		#end
+	}
+
+	function submitEndRun(params:Dynamic):Void {
+		runFlow.transition(SubmittingRun, "submit-end-run");
+		// (the last check: before the mask is sent)
+		common_haxe_avm1.kac.Integrity.check();
+		common_haxe_avm1.kac.Integrity.disarm();
+		#if debug
+		trace('AntiCheat: ' + AntiCheat.getMask());
+		#end
+		submitPopup = new SubmitPopup(this);
+		this.stage.addChild(submitPopup);
+		var request = KadoEndRun.buildRequest(runFlow.getRunDetails(), score, runFlow.currentTimestamp(), replay.encodeReplayString(), params,
+			AntiCheat.getPayload());
+		makeEndRunHttpRequest(request).then((endRunDetails:Dto.EndRunResponseDTO) -> {
+			this.displayEndScene(endRunDetails);
+			emitWindowEvent("gameFinished", endRunDetails);
+		}, (error:Dynamic) -> {
+			onSubmitFailed(request, Api.toError(error));
+		});
+	}
+
+	// "CHANGER DE PARTIE"
+	// a live run begun (its contract shown or being played), outside the daily game
+	public function canChangeRun():Bool {
+		return !changingRun
+			&& params.replayData == null
+			&& params.isDaily != true
+			&& runDetails != null
+			&& runDetails.run_id != ""
+			&& runDetails.shared_seed != true
+			&& (runFlow.state == ReadyToStart || (runFlow.state == Playing && game != null && gameOverScreen == null));
+	}
+
+	// the run begun is replaced by a new one (new seed, RunController::reroll): back to the contract. Refused, the game
+	// goes on and the page is told why ("runChangeFailed")
+	public function changeRun():Void {
+		if (!canChangeRun()) {
+			return;
+		}
+		changingRun = true;
+		runFlow.requestReroll((context) -> {
+			changingRun = false;
+			// (the page was left meanwhile)
+			if (root == null) {
+				return;
+			}
+			deferredSubmit = false;
+			deferredSubmitParams = null;
+			reset();
+			runFlow.transition(ContractLoading, "run-changed");
+			applyRunContext(context);
+			startScene = new StartScene(this, params.name);
+			this.stage.addChild(startScene);
+			startScene.disable();
+			startScene.showContract(context.runDetails);
+			startScene.interactive = true;
+			runFlow.transition(ReadyToStart, "contract-received");
+		}, (error) -> {
+			changingRun = false;
+			if (root == null) {
+				return;
+			}
+			trace('Run not changed: ' + error.status + ' ' + error.message);
+			emitWindowEvent("runChangeFailed", {message: error.message});
+			if (deferredSubmit) {
+				var endParams = deferredSubmitParams;
+				deferredSubmit = false;
+				deferredSubmitParams = null;
+				submitEndRun(endParams);
+			}
+		});
+	}
+
+	function emitRunState():Void {
+		var can = canChangeRun();
+		if (can != canChangeRunSent) {
+			canChangeRunSent = can;
+			emitWindowEvent("runState", {canChangeRun: can});
+		}
 	}
 
 	override public function destroy(?removeView:Bool):Void {

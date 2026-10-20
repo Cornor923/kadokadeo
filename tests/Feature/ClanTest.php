@@ -29,6 +29,7 @@ use App\Services\ClanService;
 use App\Services\ClanWarService;
 use App\Settings\ClanSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\Concerns\EnablesClans;
@@ -648,6 +649,8 @@ class ClanTest extends TestCase
     // for nothing, the page sends them back to the missions
     public function test_a_step_completed_by_another_member_is_not_played_again(): void
     {
+        // (more runs begun than the throttle of RunController::begin allows in a minute)
+        $this->withoutMiddleware(ThrottleRequests::class);
         $period = $this->period();
         $leader = User::factory()->create(['kado_games' => 5]);
         $member = User::factory()->create();
@@ -966,6 +969,8 @@ class ClanTest extends TestCase
     // attacks and defenses: the attack games of the day first, then the paid clan games, never the games of the normal runs
     public function test_the_attack_games_of_the_day_then_the_paid_clan_games(): void
     {
+        // (more runs begun than the throttle of RunController::begin allows in a minute)
+        $this->withoutMiddleware(ThrottleRequests::class);
         config(['kado.games_per_day' => 10]);
         $this->period();
         $player = User::factory()->create(['kado_games' => 3, 'clan_attack_games' => 1, 'clan_games' => 1]);
@@ -1290,6 +1295,8 @@ class ClanTest extends TestCase
     // for a new one), the score to reach for a defense or a mission step, and the clan games left
     public function test_the_goal_of_a_clan_run_is_given_when_it_begins(): void
     {
+        // (more runs begun than the throttle of RunController::begin allows in a minute)
+        $this->withoutMiddleware(ThrottleRequests::class);
         config(['kado.games_per_day' => 10]);
         $period = $this->period();
         $attacker = User::factory()->create(['clan_attack_games' => 2, 'clan_games' => 3]);

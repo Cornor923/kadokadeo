@@ -29,6 +29,17 @@ class Api {
 		return send(http, true);
 	}
 
+	// "Changer de partie": the run begun is replaced by a new one (RunController::reroll); rejected with a Dto.ApiError
+	public static function rerollRun(runId:String, build:String):Promise<Dto.ApiResponse<Dto.RunDTO>> {
+		var req:Dynamic = {};
+		var http = buildClient("/api/runs/" + runId + "/reroll");
+		if (build != null) {
+			req.build = build;
+		}
+		http.setPostData(haxe.Json.stringify(req));
+		return send(http, true);
+	}
+
 	public static function endRun(runId:String, request:Dto.EndRunRequestDTO):Promise<Dto.ApiResponse<Dynamic>> {
 		var http = buildClient("/api/runs/" + runId + "/finish");
 		http.setPostData(haxe.Json.stringify(request));

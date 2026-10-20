@@ -7,11 +7,13 @@ use App\Enums\RunVerification;
 use App\Exceptions\RunAlreadyCompletedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RunEndRequest;
+use App\Http\Requests\RunRerollRequest;
 use App\Http\Requests\RunStartRequest;
 use App\Http\Resources\RunBeginResource;
 use App\Http\Resources\RunResource;
 use App\Jobs\EvaluateRunSuspicion;
 use App\Jobs\VerifyRunReplay;
+use App\Models\ClanAction;
 use App\Models\Game;
 use App\Models\GameBuild;
 use App\Models\Period;
@@ -40,9 +42,11 @@ class RunController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('auth:sanctum', except: ['publicKey']),
-            new Middleware('throttle:10,1', only: ['begin']), // 10 requests per minute
+            new Middleware('throttle:4,1,run-begin', only: ['begin']), // 4 requests per minute
             // (its own counter: the runs finished in a row, and their retries, do not use up the begins)
             new Middleware('throttle:30,1,run-end', only: ['end']),
+            // its own counter (not the one of begin)
+            new Middleware('throttle:60,1,run-reroll', only: ['reroll']),
         ];
     }
 
@@ -70,11 +74,9 @@ class RunController extends Controller implements HasMiddleware
             $seed = $gameService->generateSeed();
         }
 
-        $period = Period::current()->first();
-        $membership = $period ? $leagueService->resolveMembership($user, $game, $period) : null;
         $build = GameBuild::resolve($game, $request->validated('build'));
         // the games are taken back if the run is not created
-        $run = DB::transaction(function () use ($build, $clanRunService, $game, $user, $isDaily, $dailyGame, $clanAction, $cost, $period, $membership, $score, $points, $seed) {
+        $run = DB::transaction(function () use ($build, $clanRunService, $leagueService, $game, $user, $isDaily, $dailyGame, $clanAction, $cost, $score, $points, $seed) {
             // the daily game: refused when the game is not the one of the day, or when it was already played today (outside
             // the production it can be played again, 0fe63e9c). The message is shown in the game. The player is locked
             // until their run is created: two daily runs begun at once would both find none played (the check is done again
@@ -86,26 +88,10 @@ class RunController extends Controller implements HasMiddleware
                     abort(403, $dailyGate->message());
                 }
             }
-            if ($cost === ClanRunService::COST_GAME) {
-                Gate::authorize('create', Run::class);
-                // (checked on the player loaded by the auth: taken in one query, two runs begun at once can't both take the
-                // last game)
-                abort_unless($this->useGame($user), 403, RunPolicy::NO_GAMES_LEFT);
-            } elseif ($cost === ClanRunService::COST_CLAN && !$clanRunService->useClanGame($user)) {
-                abort(403, 'Vous n\'avez plus de parties de clan. Vous pouvez en acheter avec vos points Kado.');
-            }
+            $this->takeCost($cost, $user, $clanRunService);
 
-            $run = $game->runs()->create([
-                'user_id' => $user->id,
-                'period_id' => $period?->id,
-                'league_id' => $membership?->league_id,
-                'seed' => $seed,
-                'contract_score' => $score,
-                'contract_points' => $points,
-                // (the daily game of this game, checked by GamePolicy::playDaily)
-                'daily_game_id' => $dailyGame?->id,
-                'game_build_id' => $build?->id,
-            ]);
+            // (the daily game of this game, checked by GamePolicy::playDaily)
+            $run = $this->createRun($user, $game, $seed, $score, $points, $build, $leagueService, $dailyGame?->id);
 
             // only the clan run chosen above (none for the daily game, even when it is played again outside the production)
             if ($clanAction) {
@@ -119,6 +105,62 @@ class RunController extends Controller implements HasMiddleware
         return (new RunBeginResource($run))->withClan($clanAction ? $clanRunService->goal($clanAction, $user->refresh()) : null);
     }
 
+    // "Changer de partie": the run begun is deleted and replaced by a new one (new seed), paid like a run begun (a game of
+    // the day, a clan game for an attack or a defense, free for a mission step). The clan run goes on with the new run.
+    // Not for the daily game (the same seed for every player, one run a day).
+    public function reroll(RunRerollRequest $request, Run $run, GameService $gameService, LeagueService $leagueService, ClanRunService $clanRunService)
+    {
+        if ($run->completed_at !== null) {
+            throw new RunAlreadyCompletedException();
+        }
+        if ($run->daily_game_id !== null) {
+            abort(403, 'Impossible de changer la partie du jour.');
+        }
+        Gate::authorize('view', $run->game);
+
+        $user = $request->user();
+        $clanAction = app(ClanSettings::class)->enabled
+            ? ClanAction::query()->where('run_id', $run->id)->whereNull('completed_at')->first()
+            : null;
+        $cost = $clanRunService->runCost($clanAction);
+        $build = GameBuild::resolve($run->game, $request->validated('build'));
+
+        $newRun = DB::transaction(function () use ($run, $user, $cost, $clanAction, $build, $gameService, $leagueService, $clanRunService) {
+            // (a run finished meanwhile, RunService::confirmRun holds the same lock: not replaced)
+            $run = Run::query()->whereKey($run->id)->lockForUpdate()->firstOrFail();
+            if ($run->completed_at !== null) {
+                throw new RunAlreadyCompletedException();
+            }
+            // refused before anything is deleted: the run begun goes on
+            $this->takeCost($cost, $user, $clanRunService);
+
+            // (run_flags, replay_verifications, comments, views: cascade; leagues and clans: set null)
+            $run->forceDelete();
+            $newRun = $this->createRun($user, $run->game, $gameService->generateSeed(), 0, 0, $build, $leagueService);
+            if ($clanAction) {
+                $clanRunService->bindRun($newRun, $clanAction->refresh());
+            }
+
+            return $newRun;
+        });
+
+        return (new RunBeginResource($newRun))->withClan($clanAction ? $clanRunService->goal($clanAction, $user->refresh()) : null);
+    }
+
+    // what a run costs, taken (or refused) before it is created: a game of the day, or a clan game for an attack or a
+    // defense (a mission step is free)
+    private function takeCost(string $cost, User $user, ClanRunService $clanRunService): void
+    {
+        if ($cost === ClanRunService::COST_GAME) {
+            Gate::forUser($user)->authorize('create', Run::class);
+            // (checked on the player loaded by the auth: taken in one query, two runs begun at once can't both take the
+            // last game)
+            abort_unless($this->useGame($user), 403, RunPolicy::NO_GAMES_LEFT);
+        } elseif ($cost === ClanRunService::COST_CLAN && !$clanRunService->useClanGame($user)) {
+            abort(403, 'Vous n\'avez plus de parties de clan. Vous pouvez en acheter avec vos points Kado.');
+        }
+    }
+
     // one of the games of the day of the player, only while they have one left. Unlimited games: the counter goes down to 0
     // and the runs go on
     private function useGame(User $user): bool
@@ -126,6 +168,23 @@ class RunController extends Controller implements HasMiddleware
         $used = User::query()->whereKey($user->id)->where('kado_games', '>', 0)->decrement('kado_games') > 0;
 
         return $used || config('kado.games_per_day') <= 0;
+    }
+
+    private function createRun(User $user, Game $game, string $seed, int $contractScore, int $contractPoints, ?GameBuild $build, LeagueService $leagueService, ?int $dailyGameId = null): Run
+    {
+        $period = Period::current()->first();
+        $membership = $period ? $leagueService->resolveMembership($user, $game, $period) : null;
+
+        return $game->runs()->create([
+            'user_id' => $user->id,
+            'period_id' => $period?->id,
+            'league_id' => $membership?->league_id,
+            'seed' => $seed,
+            'contract_score' => $contractScore,
+            'contract_points' => $contractPoints,
+            'daily_game_id' => $dailyGameId,
+            'game_build_id' => $build?->id,
+        ]);
     }
 
     public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService)

@@ -8,6 +8,7 @@ use App\Models\Run;
 use App\Models\User;
 use App\Support\GameBuilds\BundleDelta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -89,6 +90,8 @@ class GameBuildsTest extends TestCase
 
     public function test_a_run_remembers_the_version_of_the_game_it_is_played_with(): void
     {
+        // (more runs begun than the throttle of RunController::begin allows in a minute)
+        $this->withoutMiddleware(ThrottleRequests::class);
         $game = $this->game();
         Sanctum::actingAs(User::factory()->create());
 

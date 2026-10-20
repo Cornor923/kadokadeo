@@ -7,6 +7,8 @@ const props = defineProps({
 })
 
 const { isLoading: isFavoriteLoading, error: favoriteError, put } = useApi()
+// the game itself: « Changer de partie » (GameScript.vue)
+const gameScript = ref(null)
 const isArkadeo = computed(() => props.game.is_arkadeo ?? false)
 const _zoomed = ref(localStorage.getItem('isZoomed') === 'true')
 const isZoomed = computed({
@@ -86,6 +88,32 @@ watchEffect((onInvalidate) => {
                     Favori
                   </button>
                 </li>
+                <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
+                  <button
+                    type="button"
+                    class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-inherit"
+                    :class="{ 'text-kado-orange': gameScript?.confirmingChangeRun }"
+                    :title="gameScript?.confirmingChangeRun
+                      ? `Cliquez à nouveau pour abandonner cette partie et tirer un nouveau contrat (${gameScript.CHANGE_RUN_SHORTCUT})`
+                      : `Changer de partie (${gameScript?.CHANGE_RUN_SHORTCUT})`"
+                    :disabled="!gameScript?.canChangeRun"
+                    @click="gameScript?.askChangeRun()"
+                  >
+                    <svg
+                      viewBox="0 0 16 16"
+                      class="inline size-4 align-middle"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" />
+                      <path d="M13.5 2v3.5H10" stroke-linejoin="round" />
+                    </svg>
+                    {{ gameScript?.confirmingChangeRun ? 'Confirmer ?' : 'Changer' }}
+                  </button>
+                </li>
                 <li v-if="!isArkadeo" class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                   <div class="pt-1 font-bold text-center hover:text-kado-orange cursor-pointer"
                        title="Zoom / dézoom"
@@ -96,7 +124,8 @@ watchEffect((onInvalidate) => {
                 </li>
               </ul>
             </nav>
-            <GamesGameScript :game="game" />
+            <p v-if="gameScript?.changeRunError" class="absolute -top-5 right-0 text-xs text-pink-700">{{ gameScript.changeRunError }}</p>
+            <GamesGameScript ref="gameScript" :game="game" />
           </div>
           <div v-if="!game.is_arkadeo"
                class="gameint2 hidden"

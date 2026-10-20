@@ -78,7 +78,16 @@ class KadoRunFlow {
 	#end
 
 	public function requestContract(onSuccess:RunStartContext->Void, onError:Dto.ApiError->Void):Void {
-		Api.askContract({daily: params.isDaily, gameId: params.gameId, build: params.build}).then((data:Dto.ApiResponse<Dto.RunDTO>) -> {
+		receiveContract(Api.askContract({daily: params.isDaily, gameId: params.gameId, build: params.build}), onSuccess, onError);
+	}
+
+	// "Changer de partie": a new run in place of the one begun (the current context is kept when it is refused)
+	public function requestReroll(onSuccess:RunStartContext->Void, onError:Dto.ApiError->Void):Void {
+		receiveContract(Api.rerollRun(currentContext.runDetails.run_id, params.build), onSuccess, onError);
+	}
+
+	function receiveContract(request:js.lib.Promise<Dto.ApiResponse<Dto.RunDTO>>, onSuccess:RunStartContext->Void, onError:Dto.ApiError->Void):Void {
+		request.then((data:Dto.ApiResponse<Dto.RunDTO>) -> {
 			currentContext = {
 				runDetails: data.data,
 				seedHash: hashFNV1a(data.data.seed),
@@ -129,7 +138,7 @@ class KadoRunFlow {
 
 		return switch ([from, to]) {
 			case [Boot, Intro] | [Intro, ContractLoading] | [Intro, Playing] | [ContractLoading, ReadyToStart] | [ContractLoading, Intro] |
-				[ReadyToStart, Playing] | [Playing, SubmittingRun] | [Playing, EndScreen] | [SubmittingRun, EndScreen] | [SubmittingRun, SubmitFailed] |
+				[ReadyToStart, Playing] | [ReadyToStart, ContractLoading] | [Playing, ContractLoading] | [Playing, SubmittingRun] | [Playing, EndScreen] | [SubmittingRun, EndScreen] | [SubmittingRun, SubmitFailed] |
 				[SubmitFailed, EndScreen] | [EndScreen, ReplayTransition] |
 				[ReplayTransition, Intro]:
 				true;
