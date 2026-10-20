@@ -29,6 +29,7 @@ use App\Services\ReplayVerifier;
 use App\Services\RunService;
 use App\Services\ScoreService;
 use App\Settings\ClanSettings;
+use App\Settings\SiteSettings;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -167,7 +168,7 @@ class RunController extends Controller implements HasMiddleware
     {
         $used = User::query()->whereKey($user->id)->where('kado_games', '>', 0)->decrement('kado_games') > 0;
 
-        return $used || config('kado.games_per_day') <= 0;
+        return $used || app(SiteSettings::class)->games_per_day <= 0;
     }
 
     private function createRun(User $user, Game $game, string $seed, int $contractScore, int $contractPoints, ?GameBuild $build, LeagueService $leagueService, ?int $dailyGameId = null): Run

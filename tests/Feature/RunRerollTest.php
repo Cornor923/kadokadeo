@@ -9,6 +9,7 @@ use App\Models\Game;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\EnablesClans;
@@ -27,7 +28,7 @@ class RunRerollTest extends TestCase
 
     public function test_the_run_begun_is_replaced_by_a_new_one_with_a_new_seed(): void
     {
-        config(['kado.games_per_day' => 10]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 10]);
         $user = User::factory()->create(['kado_games' => 5]);
         $game = Game::factory()->create();
         Sanctum::actingAs($user);
@@ -52,7 +53,7 @@ class RunRerollTest extends TestCase
 
     public function test_without_games_left_the_run_begun_goes_on(): void
     {
-        config(['kado.games_per_day' => 10]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 10]);
         $user = User::factory()->create(['kado_games' => 0]);
         $run = Run::factory()->for(Game::factory())->for($user)->create(['score' => 0, 'completed_at' => null]);
         Sanctum::actingAs($user);
@@ -106,7 +107,7 @@ class RunRerollTest extends TestCase
 
     public function test_its_own_rate_limit(): void
     {
-        config(['kado.games_per_day' => 0]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 0]);
         $user = User::factory()->create();
         $game = Game::factory()->create();
         Sanctum::actingAs($user);

@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\GameBuild;
 use App\Models\Run;
 use App\Models\User;
+use App\Settings\SiteSettings;
 use App\Support\GameBuilds\BundleDelta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -33,7 +34,8 @@ class GameBuildsTest extends TestCase
         parent::setUp();
         $this->fixtures = base_path('tests/Fixtures/game-builds');
         $this->app->usePublicPath($this->fixtures.'/public');
-        config(['kado.game_builds.path' => $this->fixtures.'/storage', 'kado.game_builds.enabled' => true]);
+        config(['kado.game_builds.path' => $this->fixtures.'/storage']);
+        $this->setSettings(SiteSettings::class, ['game_builds_enabled' => true]);
     }
 
     private function game(): Game

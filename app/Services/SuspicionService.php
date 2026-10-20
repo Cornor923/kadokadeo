@@ -6,6 +6,7 @@ use App\Enums\AntiCheatBit;
 use App\Enums\RunFlagRule;
 use App\Models\Run;
 use App\Models\RunFlag;
+use App\Settings\AntiCheatSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -19,10 +20,12 @@ class SuspicionService
     // frames of the game by second (kado.FixedFramerate)
     private const FRAMES_PER_SECOND = 32;
 
+    public function __construct(private readonly AntiCheatSettings $settings) {}
+
     // a run just finished (App\Jobs\EvaluateRunSuspicion)
     public function evaluateFinishedRun(Run $run): void
     {
-        if (!config('kado.suspicion.enabled') || $run->is_cheat || $run->completed_at === null) {
+        if (!$this->settings->suspicion_enabled || $run->is_cheat || $run->completed_at === null) {
             return;
         }
 
@@ -34,7 +37,7 @@ class SuspicionService
     // the result of the analyzer of the game (App\Jobs\VerifyRunReplay)
     public function recordAnalysis(Run $run, ?array $analysis): void
     {
-        if (!$analysis || !($analysis['suspicious'] ?? false) || !config('kado.replay_analysis.flag')) {
+        if (!$analysis || !($analysis['suspicious'] ?? false) || !$this->settings->analysis_flag) {
             return;
         }
         $this->flag($run, RunFlagRule::GAME_ANALYSIS, 2, [
@@ -69,16 +72,16 @@ class SuspicionService
         $realSeconds = (int) $run->play_time_seconds;
         $details = ['game_seconds' => round($gameSeconds, 1), 'real_seconds' => $realSeconds, 'frames' => $run->replay_frames];
 
-        $allowed = $realSeconds * (1 + config('kado.suspicion.wall_clock_tolerance')) + config('kado.suspicion.wall_clock_margin_seconds');
+        $allowed = $realSeconds * (1 + $this->settings->suspicion_wall_clock_tolerance) + $this->settings->suspicion_wall_clock_margin_seconds;
         if ($gameSeconds > $allowed) {
             $this->flag($run, RunFlagRule::FASTER_THAN_REAL_TIME, 3, $details);
 
             return;
         }
 
-        if (config('kado.suspicion.slow_motion')
-            && $gameSeconds < $realSeconds * config('kado.suspicion.slow_ratio')
-            && $realSeconds - $gameSeconds > config('kado.suspicion.slow_min_seconds')) {
+        if ($this->settings->suspicion_slow_motion
+            && $gameSeconds < $realSeconds * $this->settings->suspicion_slow_ratio
+            && $realSeconds - $gameSeconds > $this->settings->suspicion_slow_min_seconds) {
             $this->flag($run, RunFlagRule::SLOW_MOTION, 1, $details);
         }
     }
@@ -86,7 +89,7 @@ class SuspicionService
     // a high score alone is legit most of the time: only a new record of the game is looked at
     private function checkWorldRecord(Run $run): void
     {
-        if (!config('kado.suspicion.world_record') || !$this->hasEnoughRuns($run->game_id)) {
+        if (!$this->settings->suspicion_world_record || !$this->hasEnoughRuns($run->game_id)) {
             return;
         }
         $record = Run::query()
@@ -107,7 +110,7 @@ class SuspicionService
             ->where('game_id', $gameId)
             ->whereNotNull('completed_at')
             ->where('is_cheat', false)
-            ->count() >= config('kado.suspicion.game_min_runs'));
+            ->count() >= $this->settings->suspicion_game_min_runs);
     }
 
     // one flag by run and rule: evaluated again, it is updated (its review is kept)

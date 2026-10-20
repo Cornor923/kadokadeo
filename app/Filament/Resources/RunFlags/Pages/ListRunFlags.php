@@ -16,8 +16,8 @@ class ListRunFlags extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // which detections of the game mark a run as cheated, which ones send it here (KADO_ANTICHEAT_SOFT_BITS), which
-            // ones are ignored (KADO_ANTICHEAT_IGNORED_BITS)
+            // which detections of the game mark a run as cheated, which ones send it here, which ones are ignored
+            // (App\Settings\AntiCheatSettings)
             Action::make('detectionRules')
                 ->label('Règles de détection')
                 ->icon(Heroicon::OutlinedInformationCircle)
@@ -27,9 +27,7 @@ class ListRunFlags extends ListRecords
                 ->modalContent(fn () => view('filament.anticheat-detection-rules', [
                     'hard' => AntiCheatBit::hardCases(),
                     'soft' => AntiCheatBit::softCases(),
-                    'mask' => AntiCheatBit::softMask(),
                     'ignored' => AntiCheatBit::ignoredCases(),
-                    'ignoredMask' => AntiCheatBit::ignoredMask(),
                 ]))
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Fermer'),

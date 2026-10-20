@@ -9,7 +9,7 @@ use App\Support\ReplayHeader;
 use Illuminate\Console\Command;
 
 // ANTI CHEAT: the analyzer of a game (resources/js/replay-verifier/analyzers) on the replays of its past runs, to set
-// its thresholds (config kado.replay_analysis.games) before its results put runs in the queue of the suspicious runs
+// its thresholds (admin « Paramètres > Anti-triche ») before its results put runs in the queue of the suspicious runs
 class AnalyzeReplays extends Command
 {
     /**
@@ -33,7 +33,7 @@ class AnalyzeReplays extends Command
     {
         $key = (string) $this->argument('game');
         if (!$verifier->hasAnalyzer($key)) {
-            $this->error("No analyzer for {$key} (resources/js/replay-verifier/analyzers/{$key}.mjs), or kado.replay_analysis.enabled is off.");
+            $this->error("No analyzer for {$key} (resources/js/replay-verifier/analyzers/{$key}.mjs), or the analysis is off (admin « Paramètres > Anti-triche »).");
 
             return self::FAILURE;
         }

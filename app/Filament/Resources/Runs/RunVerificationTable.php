@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Runs;
 use App\Enums\RunVerification;
 use App\Jobs\VerifyRunReplay;
 use App\Models\Run;
+use App\Settings\AntiCheatSettings;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -62,7 +63,7 @@ class RunVerificationTable
 
                 Notification::make()
                     ->title('Vérification lancée.')
-                    ->body(config('kado.replay_verifier.enabled') ? null : 'Le vérificateur est désactivé (KADO_REPLAY_VERIFIER).')
+                    ->body(app(AntiCheatSettings::class)->verifier_enabled ? null : 'Le vérificateur est désactivé (Paramètres > Anti-triche).')
                     ->success()
                     ->send();
             });

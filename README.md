@@ -17,26 +17,30 @@
 
 Go to [Install the project](#install-the-project) if you need to install the project first.
 
-Here are the configuration variables specific to the project (the standard Laravel ones, `APP_*`, `DB_*`, `QUEUE_*`..., are not listed). Most of the `KADO_*` ones are read in [`config/kado.php`](config/kado.php), whose comments give more details.
+Here are the configuration variables specific to the project (the standard Laravel ones, `APP_*`, `DB_*`, `QUEUE_*`..., are not listed). Most of the `KADO_*` ones are read in [`config/kado.php`](config/kado.php), whose comments give more details. They only hold what depends on the server (paths, binaries, queues): the settings of the site (games per day, anti-cheat, replays, clans...) are in the `settings` table (`App\Settings\*`, [spatie/laravel-settings](https://github.com/spatie/laravel-settings)), changed in the admin, « Paramètres », with their default values in [`database/settings`](database/settings).
+
+### Settings of the admin
+
+| Page                      | Class                           | What                                                                                       |
+| ------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------ |
+| « Paramètres > Site »       | `App\Settings\SiteSettings`      | Announcement, games per day (`-1`: unlimited), games in parallel, achievements, versions of the games for the replays, prices of the themes, Poids plume |
+| « Paramètres > Anti-triche » | `App\Settings\AntiCheatSettings` | What the replays must hold, the detections of the game (marked as cheated / to examine / ignored), the queue « Runs suspectes », the replay verifier, the analyzers of the moves and their thresholds by game |
+| « Paramètres > Replays »    | `App\Settings\ReplaySettings`    | Comments, views, longest replay accepted                                                    |
+| « Paramètres > Clans »      | `App\Settings\ClanSettings`      | All the rules of the clans (see [Clans](#clans))                                            |
+
+The settings that were variables of the env until 2026-10 (`KADO_GAMES_PER_DAY`, `KADO_REPLAY_VERIFIER`...) take their first value from them when their migration runs (`kado.legacy` in [`config/kado.php`](config/kado.php)); then the variables can be removed.
 
 ### General
 
 | Variable                    | Description                                                                         | Default                 |
 | --------------------------- | ----------------------------------------------------------------------------------- | ----------------------- |
 | `SELF_URL`                  | Public URL of the site (Laravel `app.url`)                                          | `http://localhost`      |
-| `KADO_GAMES_PER_DAY`        | Games allowed to play per user per day (`-1`: unlimited)                            | 100                     |
-| `KADO_RUNS_MAX_CONCURRENCY` | Maximum amount of games a user can play in parallel before being throttled          | 50                      |
-| `KADO_ACHIEVEMENTS_ENABLED` | Achievements. Off: nothing is evaluated nor shown to the players (the admin stays) | `false`                 |
-| `KADO_GAME_BUILDS_ENABLED`  | Replays played by the version of the game they were recorded with (archive of the old bundles). Off for now: the production wipes `storage/` at each deploy, so every replay is played by the current bundle | `false` |
-| `KADO_GAME_BUILDS_PATH`     | Folder of the archive of the old game bundles (written by `build-games.mjs`)        | `storage/app/game-builds` |
+| `KADO_GAME_BUILDS_PATH`     | Folder of the archive of the old game bundles (written by `build-games.mjs`, used once « Paramètres > Site » turns the versions of the games on: off for now, the production wipes `storage/` at each deploy) | `storage/app/game-builds` |
+| `KADO_DEBUG_TOOLS`          | Tools to try the clans alone (`/clans/debug`), never in production                  | `false`                 |
 
 ### Themes
 
-The players can change the look of the site in « Mon compte »: the KadoKado theme for everyone, the Karbon theme (the second theme of KadoKado, `resources/css/themes/karbon.css`, images in `public/gfx/themes/karbon`) bought once with Kado points (`kado.themes` in [`config/kado.php`](config/kado.php)).
-
-| Variable                   | Description                                  | Default |
-| -------------------------- | -------------------------------------------- | ------- |
-| `KADO_THEME_KARBON_PRICE`  | Price of the Karbon theme in Kado points     | 10000   |
+The players can change the look of the site in « Mon compte »: the KadoKado theme for everyone, the Karbon theme (the second theme of KadoKado, `resources/css/themes/karbon.css`, images in `public/gfx/themes/karbon`) bought once with Kado points (`kado.themes` in [`config/kado.php`](config/kado.php), its price in « Paramètres > Site »).
 
 ### Clans
 
@@ -50,34 +54,25 @@ All the rules (durations, points, steps, options, packs of paid games, rewards..
 | --------------------------- | ----------------------------------------------------------------------------------- | --------------------------------- |
 | `KADO_RSA_PRIVATE_KEY_PATH` | Private RSA key path of the server. Should be kept **private**.                     | `storage/app/private/privkey.pem` |
 | `KADO_RSA_PUBLIC_KEY_PATH`  | Public key path associated with the private key                                     | `storage/app/private/pubkey.pem`  |
-| `KADO_REQUIRE_RNG_STIR`     | A replay outside the daily game must have its RNG stirred by the frames and inputs, otherwise the run is marked as cheated. Turn on a day or two after deploying the games that record it | `false` |
-| `KADO_REQUIRE_INPUT_PHASES` | Same, for the time of the inputs in their frame (replay v4)                         | `false`                           |
-| `KADO_ANTICHEAT_SOFT_BITS`  | Bits of the client anti-cheat mask (`App\Enums\AntiCheatBit`) that only send the run to the suspicious runs queue instead of marking it as cheated (`0`: every bit marks it as cheated) | `0x3F0` |
-| `KADO_SUSPICION`            | Evaluation of every finished run for the admin queue « Runs suspectes » (`App\Services\SuspicionService`, nothing is sanctioned automatically) | `true` |
-| `KADO_SUSPICION_WORLD_RECORD` | A run above the record of the game goes to that queue (a high score alone does not) | `true` |
+
+The rest of the anti-cheat is set in « Paramètres > Anti-triche »: a replay outside the daily game must have its RNG stirred by the frames and inputs, and the time of the inputs in their frame (replay v4), otherwise the run is marked as cheated (turn them on a day or two after deploying the games that record them); the bits of the client mask (`App\Enums\AntiCheatBit`) that only send the run to the queue « Runs suspectes » or are ignored; the evaluation of every finished run for that queue (`App\Services\SuspicionService`, nothing is sanctioned automatically).
 
 ### Replay verifier
 
-The replays of the runs that count (personal best, contract, daily game) are played again on the server in a headless Chrome (`App\Jobs\VerifyRunReplay`, needs Node 22+ and Chrome or its system libraries).
+The replays of the runs that count (personal best, contract, daily game, clan) are played again on the server in a headless Chrome (`App\Jobs\VerifyRunReplay`, needs Node 22+ and Chrome or its system libraries). It is turned on, with its timeout and the games whose replays are not trusted, in « Paramètres > Anti-triche ».
 
 | Variable                               | Description                                                                         | Default                         |
 | -------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
-| `KADO_REPLAY_VERIFIER`                 | Turns the verification on                                                           | `false`                         |
 | `KADO_REPLAY_VERIFIER_NODE`            | Node binary used to run `resources/js/replay-verifier/verify.mjs`                  | `node`                          |
 | `KADO_REPLAY_VERIFIER_BROWSER`         | Path of Chrome / Chromium. Empty: looked for at the usual places, then a chrome-headless-shell is downloaded | (auto)  |
-| `KADO_REPLAY_VERIFIER_TIMEOUT`         | Timeout of a verification, in seconds                                               | 300                             |
-| `KADO_REPLAY_VERIFIER_UNTRUSTED_GAMES` | Comma-separated game keys whose replays sometimes end differently from the live game: a different score is only reported, not sanctioned | |
 | `KADO_VERIFIER_CACHE`                  | Cache folder of the Node scripts (PIXI, downloaded browser)                         | `storage/app/replay-verifier`   |
 
 ### Replay analysis
 
-Per-game analyzers of the moves (`resources/js/replay-verifier/analyzers/<game_key>.mjs`), run by the replay verifier. Calibrate the thresholds (`kado.replay_analysis.games` in [`config/kado.php`](config/kado.php)) with `php artisan kado:replays:analyze <game>` before turning `KADO_REPLAY_ANALYSIS_FLAG` on.
+Per-game analyzers of the moves (`resources/js/replay-verifier/analyzers/<game_key>.mjs`), run by the replay verifier. Turned on, with their thresholds by game, in « Paramètres > Anti-triche » (« Analyse des coups »). Calibrate the thresholds with `php artisan kado:replays:analyze <game>` before turning on « Signaler les parties suspectes ».
 
 | Variable                           | Description                                                                         | Default   |
 | ---------------------------------- | ----------------------------------------------------------------------------------- | --------- |
-| `KADO_REPLAY_ANALYSIS`             | Runs the analyzers and keeps their result with the verification                     | `true`    |
-| `KADO_REPLAY_ANALYSIS_FLAG`        | A suspicious analysis puts the run in the suspicious runs queue                     | `false`   |
-| `KADO_REPLAY_ANALYSIS_SAMPLE_RATE` | Share (0 to 1) of the other runs of the games with an analyzer verified anyway for their analysis | 0 |
 | `KADO_REPLAY_ANALYSIS_QUEUE`       | Queue of these analysis jobs                                                        | `default` |
 
 ### External services
@@ -119,9 +114,9 @@ openssl rsa -in keypair.pem -pubout -out public.pem
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `migrate`                                        | Synchronises the database                                                                                                                                            | ❌                                                             |
 | `kado:prepare-new-period`                        | Close current period and begin a new one.                                                                                                                            | ✅ Every week on monday, but it still makes periods of 2 weeks |
-| `kado:reset-daily-games`                         | Resets the daily games for every user to the configured value (`KADO_GAMES_PER_DAY`)                                                                                 | ✅ Everyday at 00:00                                           |
+| `kado:reset-daily-games`                         | Resets the daily games for every user to the configured value (« Paramètres > Site »)                                                                                 | ✅ Everyday at 00:00                                           |
 | `kado:prepare-daily-game`                        | Picks the daily game of today (a random active game, its seed and contract). Does nothing if it already exists                                                       | ✅ Everyday at 00:00                                           |
-| `kado:game-builds:keep`                          | Lists the game versions still used by replays in `storage/app/game-builds/keep.json`: the next build removes the others (see `KADO_GAME_BUILDS_ENABLED`)              | ✅ Everyday at 00:00                                           |
+| `kado:game-builds:keep`                          | Lists the game versions still used by replays in `storage/app/game-builds/keep.json`: the next build removes the others (see « Paramètres > Site »)              | ✅ Everyday at 00:00                                           |
 | `model:prune --model="App\Models\ReplayVerification"` | Removes the replay verifications that went well after 30 days                                                                                                 | ✅ Everyday at 00:00                                           |
 | `kado:replays:analyze {game}`                    | Runs the move analyzer of a game on the replays of its runs and shows its metrics, to calibrate the thresholds (nothing is stored). Options: `--since=`, `--limit=50`, `--user=` | ❌                                                             |
 | `kado:clean-old-runs`                            | Deletes for good the runs older than two months without a score                                                                                                       | ❌ (disabled in `routes/console.php`)                          |

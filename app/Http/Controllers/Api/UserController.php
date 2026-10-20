@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\ScoreService;
+use App\Settings\SiteSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
             'stars' => fn ($query) => $query->where('period_id', Period::current()->first()?->id),
         ]);
 
-        if (config('kado.achievements.enabled')) {
+        if (app(SiteSettings::class)->achievements_enabled) {
             $user->load('achievementProgress');
         }
 
@@ -69,7 +70,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
             'current_leagues' => $currentLeagues,
             'promotion_game_ids' => $periodId ? $leagueService->getPromotionGameIds($user, $periodId) : [],
             'max_stars' => $maxStars,
-            'achievements' => config('kado.achievements.enabled')
+            'achievements' => app(SiteSettings::class)->achievements_enabled
                 ? $user->achievementProgress->map(function ($progress) {
                     return [
                         'achievement_id' => $progress->achievement_id,

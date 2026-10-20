@@ -206,7 +206,7 @@ KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: cell.x, y: cell.y});
 ## Versions des jeux (replays apres une mise a jour)
 
 Un replay ne contient que les inputs: il doit etre rejoue par la version du jeu avec laquelle il a ete enregistre.
-**Desactive pour l'instant** (`KADO_GAME_BUILDS_ENABLED=false`): la prod ecrase `storage/` a chaque deploiement, l'archive
+**Desactive pour l'instant** (`SiteSettings::$game_builds_enabled`, admin « Paramètres > Site »): la prod ecrase `storage/` a chaque deploiement, l'archive
 est perdue; les runs ne retiennent aucune version et les replays sont joues par le bundle courant.
 C'est automatique, rien a faire dans le code d'un jeu:
 

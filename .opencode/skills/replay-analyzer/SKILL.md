@@ -21,15 +21,16 @@ proposer à l'utilisateur avant de s'y lancer, le taux de faux positifs est plus
 
 1. Fin de partie : `App\Http\Controllers\Api\RunController::end` envoie `VerifyRunReplay` si
    `ReplayVerifier::shouldVerify` (meilleur score perso, contrat réussi, partie du jour) ou, pour les jeux qui ont un
-   analyseur, `shouldSampleForAnalysis` (`kado.replay_analysis.sample_rate`, file `kado.replay_analysis.queue`).
-   Tout est coupé si `KADO_REPLAY_VERIFIER` est faux.
+   analyseur, `shouldSampleForAnalysis` (`AntiCheatSettings::$analysis_sample_rate`, file `kado.replay_analysis.queue`).
+   Tout est coupé si le vérificateur est désactivé (`AntiCheatSettings::$verifier_enabled`, admin « Paramètres >
+   Anti-triche »).
 2. `App\Jobs\VerifyRunReplay` → `App\Services\ReplayVerifier::verify` → `resources/js/replay-verifier/verify.mjs`
-   (Node 22 + Chrome headless) avec `analysis` = `config('kado.replay_analysis.games.<key>')` quand
+   (Node 22 + Chrome headless) avec `analysis` = `AntiCheatSettings::analysisConfig('<key>')` quand
    `analyzers/<key>.mjs` existe (`ReplayVerifier::hasAnalyzer`).
 3. `verify.mjs` importe `/__analyzers/<key>.mjs`, appelle `create({ kk, config })`, puis `beforeFrame(frame)` avant
    chaque `kk.updatePhysics`, puis `finish({ score, frames })` après l'écran de fin.
 4. Le résultat va dans `replay_verifications.analysis` (admin « Paramètres > Vérificateur de replays », colonne
-   « Analyse des coups »), et si `suspicious` et `KADO_REPLAY_ANALYSIS_FLAG` vrai, dans les runs suspectes
+   « Analyse des coups »), et si `suspicious` et `AntiCheatSettings::$analysis_flag` vrai, dans les runs suspectes
    (`SuspicionService::recordAnalysis`, règle `GAME_ANALYSIS`, détails = `reasons`).
 
 Références à lire : `resources/js/replay-verifier/analyzers/README.md` (le contrat), `binary.mjs` (coups lus dans les
@@ -57,7 +58,7 @@ supprimer un champ jamais lu : vérifier par `grep` dans `public/gamesdata/<key>
 
 - Fonctions pures, sans rien du navigateur ni du jeu : `rateMove(state, depth, coup)` →
   `{ best, value, optimal, ... }` (points du meilleur coup, points du coup joué, coup joué parmi les meilleurs).
-- Profondeur bornée (`max_depth` de la config) : le vérificateur a un timeout (`KADO_REPLAY_VERIFIER_TIMEOUT`) et
+- Profondeur bornée (`max_depth` de la config) : le vérificateur a un timeout (`AntiCheatSettings::$verifier_timeout`) et
   rejoue toute la partie ; mémoïser (voir `kaskade2/solver.mjs`).
 - Tests `node --test resources/js/replay-verifier/analyzers/<key>.test.mjs` : règles (un coup, une cascade), un cas
   où le meilleur coup n'est pas le coup glouton, la profondeur. Grilles écrites en chaînes lisibles comme dans les
@@ -80,9 +81,14 @@ Partir de `binary.mjs` ou `kaskade2.mjs` selon d'où vient le coup. Règles imp�
 
 ### 4. La config
 
-Dans `config/kado.php`, `replay_analysis.games.<key>` : `min_decisions`, `optimal_rate`, `max_depth` (+ ce que
-l'analyseur lit), avec un commentaire qui renvoie au solveur. `KADO_REPLAY_ANALYSIS_FLAG` est **global** : s'il est
-déjà allumé en production, un analyseur pas encore calibré enverrait ses parties dans la file dès son déploiement.
+Les seuils sont des settings (`AntiCheatSettings::$analysis_games`, admin « Paramètres > Anti-triche », « Seuils des
+analyseurs » : une ligne par jeu, noms et valeurs libres). Les valeurs par défaut restent dans `create` de
+l'analyseur (`config.min_decisions ?? 25`...) : un jeu sans ligne reçoit `{}`. Pour livrer la ligne du jeu, une
+migration de settings (`database/settings`) qui l'ajoute, avec un commentaire qui renvoie au solveur :
+`$this->migrator->update('anticheat.analysis_games', fn (array $rows) => [...$rows, ['game' => '<key>', 'params' =>
+['min_decisions' => 15, 'optimal_rate' => 0.9, 'max_depth' => 3]]])` (sans doublon si l'admin l'a déjà ajoutée).
+Le signalement (`$analysis_flag`) est **global** : s'il est déjà allumé en production, un analyseur pas encore
+calibré enverrait ses parties dans la file dès son déploiement.
 Dans ce cas, livrer avec un seuil impossible (`optimal_rate` > 1) jusqu'à la calibration, et le dire à l'utilisateur.
 
 ### 5. Essayer de bout en bout (local)
@@ -110,8 +116,9 @@ php artisan kado:replays:analyze <key> --user=<id d'un tricheur connu>
 
 La commande affiche p50 / p90 / p99 / max du taux de meilleur coup. Placer `optimal_rate` au-dessus du p99 des
 joueurs honnêtes (et des meilleurs joueurs du classement : ils jouent bien sans aide), sous les tricheurs connus s'il
-y en a. Rapporter les chiffres à l'utilisateur et le laisser décider d'allumer `KADO_REPLAY_ANALYSIS_FLAG` (et
-éventuellement `KADO_REPLAY_ANALYSIS_SAMPLE_RATE` pour analyser aussi des parties qui ne sont pas des records).
+y en a. Rapporter les chiffres à l'utilisateur et le laisser décider d'allumer « Signaler les parties suspectes » (et
+éventuellement la part des autres parties vérifiées pour leur analyse, pour analyser aussi des parties qui ne sont pas
+des records), dans « Paramètres > Anti-triche ».
 
 ### 7. Finir
 

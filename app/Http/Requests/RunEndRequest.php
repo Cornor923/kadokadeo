@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Settings\ReplaySettings;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RunEndRequest extends FormRequest
@@ -13,9 +14,9 @@ class RunEndRequest extends FormRequest
      */
     public function rules(): array
     {
-        // the payload: base64 of the IV and the encrypted JSON (the replay, kado.replay_max_length, and the score and
+        // the payload: base64 of the IV and the encrypted JSON (the replay, ReplaySettings::$max_length, and the score and
         // its data), a third more than what it holds
-        $maxPayload = intdiv((int) config('kado.replay_max_length') * 4, 3) + 1_000_000;
+        $maxPayload = intdiv(app(ReplaySettings::class)->max_length * 4, 3) + 1_000_000;
 
         return [
             'payload' => 'required|string|max:'.$maxPayload, // encrypted with AES

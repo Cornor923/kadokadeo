@@ -2,9 +2,11 @@
 
 namespace App\Enums;
 
+use App\Settings\AntiCheatSettings;
+
 // what the game detected during a run (the `ac` mask it sends, resources/hx/lib/common_haxe_avm1/kac/AntiCheat.hx):
-// the hard bits mark the run as cheated, the soft ones (config kado.anticheat.soft_bits) put it in the queue of the
-// suspicious runs (App\Services\SuspicionService), the ignored ones (kado.anticheat.ignored_bits) are only kept on the run
+// the hard bits mark the run as cheated, the soft ones (AntiCheatSettings::$soft_bits) put it in the queue of the
+// suspicious runs (App\Services\SuspicionService), the ignored ones ($ignored_bits) are only kept on the run
 enum AntiCheatBit: int
 {
     case PROTECTED_INT_CORRUPTED = 0x1;
@@ -34,12 +36,12 @@ enum AntiCheatBit: int
 
     public static function softMask(): int
     {
-        return (int) config('kado.anticheat.soft_bits');
+        return app(AntiCheatSettings::class)->soft_bits;
     }
 
     public static function ignoredMask(): int
     {
-        return (int) config('kado.anticheat.ignored_bits');
+        return app(AntiCheatSettings::class)->ignored_bits;
     }
 
     public function isSoft(): bool
@@ -63,7 +65,7 @@ enum AntiCheatBit: int
         return $mask & self::softMask() & ~self::ignoredMask();
     }
 
-    // the detections that mark a run as cheated / that put it in the queue of the suspicious runs (kado.anticheat.soft_bits)
+    // the detections that mark a run as cheated / that put it in the queue of the suspicious runs (AntiCheatSettings::$soft_bits)
     /** @return list<self> */
     public static function hardCases(): array
     {

@@ -9,7 +9,7 @@
     <script type="text/javascript">
         window.Kado = {
             public_key: '{{ str_replace("\n", "\\n", app(App\Services\RunService::class)->getPublicKey()) }}',
-            achievements_enabled: @json((bool) config('kado.achievements.enabled')),
+            achievements_enabled: @json(app(App\Settings\SiteSettings::class)->achievements_enabled),
             // the clans are open (App\Settings\ClanSettings::$enabled), else their pages say "Prochainement disponible"
             clans_enabled: @json((bool) app(App\Settings\ClanSettings::class)->enabled),
         }

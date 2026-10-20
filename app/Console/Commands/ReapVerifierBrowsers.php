@@ -32,7 +32,7 @@ class ReapVerifierBrowsers extends Command
         }
         $olderThan = $this->option('older-than') !== null
             ? (int) $this->option('older-than')
-            : (int) config('kado.replay_verifier.timeout') + ReplayVerifier::KILL_AFTER_SECONDS + 60;
+            : ReplayVerifier::timeout() + ReplayVerifier::KILL_AFTER_SECONDS + 60;
         $bootTime = $this->bootTime();
 
         $killed = 0;

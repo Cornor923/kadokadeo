@@ -15,6 +15,7 @@ use App\Models\AchievementLevel;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
+use App\Settings\SiteSettings;
 use Illuminate\Support\Facades\DB;
 
 class AchievementService
@@ -36,7 +37,7 @@ class AchievementService
 
     private function handle(AchievementEventPayload $event): array
     {
-        if (!config('kado.achievements.enabled')) {
+        if (!app(SiteSettings::class)->achievements_enabled) {
             return [];
         }
 

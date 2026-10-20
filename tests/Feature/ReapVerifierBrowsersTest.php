@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class ReapVerifierBrowsersTest extends TestCase
 {
+    // (the timeout of the verifier is a setting)
+    use RefreshDatabase;
+
     private array $processes = [];
 
     protected function tearDown(): void

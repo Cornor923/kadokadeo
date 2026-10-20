@@ -6,6 +6,7 @@ use App\Models\DailyGame;
 use App\Models\Game;
 use App\Models\Run;
 use App\Models\User;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -20,7 +21,7 @@ class RunBeginTest extends TestCase
         parent::setUp();
         // (the bundle of "Testgame" only, GamePolicy::view)
         $this->app->usePublicPath(base_path('tests/Fixtures/game-builds/public'));
-        config(['kado.games_per_day' => 100]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 100]);
     }
 
     private function game(array $attributes = []): Game
@@ -60,7 +61,7 @@ class RunBeginTest extends TestCase
 
     public function test_the_runs_left_open_long_ago_no_longer_block_the_player(): void
     {
-        config(['kado.runs.max_concurrency' => 2, 'kado.runs.open_minutes' => 120]);
+        $this->setSettings(SiteSettings::class, ['runs_max_concurrency' => 2, 'runs_open_minutes' => 120]);
         $user = User::factory()->create(['kado_games' => 10]);
         $game = $this->game();
         Sanctum::actingAs($user);
@@ -75,7 +76,7 @@ class RunBeginTest extends TestCase
 
     public function test_unlimited_games_go_on_at_zero(): void
     {
-        config(['kado.games_per_day' => -1]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => -1]);
         $user = User::factory()->create(['kado_games' => 0]);
         $game = $this->game();
         Sanctum::actingAs($user);

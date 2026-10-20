@@ -24,6 +24,12 @@ class ReplaySettings extends Settings
     // the seconds of a replay really played (not paused, the tab visible) before it counts as a view
     public int $view_after_seconds;
 
+    // the longest replay sent at the end of a run (base64 of the deflated replay, App\Support\ReplayHeader), in
+    // characters: the replays of long games stay far below (a frame takes a few bytes once deflated). The end of the run
+    // (App\Http\Requests\RunEndRequest) is refused above it, the encrypted payload being a third bigger: kept under the
+    // post_max_size of PHP (16M, docker/app/conf/php.ini) by the admin panel
+    public int $max_length;
+
     public static function group(): string
     {
         return 'replays';

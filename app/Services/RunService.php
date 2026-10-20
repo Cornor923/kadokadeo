@@ -7,6 +7,8 @@ use App\Exceptions\RunAlreadyCompletedException;
 use App\Models\GamePeriodStar;
 use App\Models\Run;
 use App\Models\UserPoint;
+use App\Settings\AntiCheatSettings;
+use App\Settings\ReplaySettings;
 use App\Support\ReplayHeader;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +64,7 @@ class RunService
             'score' => 'required|integer|min:0',
             'timestamp' => 'required|integer',
             // (base64 of the deflated replay, App\Support\ReplayHeader)
-            'replay' => 'nullable|string|max:'.config('kado.replay_max_length'),
+            'replay' => 'nullable|string|max:'.app(ReplaySettings::class)->max_length,
             'data' => 'nullable|array',
             'ac' => 'nullable|integer|min:0|max:1000000',
         ]);
@@ -222,8 +224,10 @@ class RunService
             return true;
         }
 
-        return ($header->hasRngStir() || !config('kado.require_rng_stir'))
-            && ($header->hasInputPhases() || !config('kado.require_input_phases'));
+        $settings = app(AntiCheatSettings::class);
+
+        return ($header->hasRngStir() || !$settings->require_rng_stir)
+            && ($header->hasInputPhases() || !$settings->require_input_phases);
     }
 
     private function getAesKeyFromEncrypted(string $key): string

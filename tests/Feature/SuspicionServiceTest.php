@@ -9,6 +9,7 @@ use App\Models\Run;
 use App\Models\RunFlag;
 use App\Models\User;
 use App\Services\SuspicionService;
+use App\Settings\AntiCheatSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -42,7 +43,7 @@ class SuspicionServiceTest extends TestCase
         $this->evaluate(Run::factory()->create(['anticheat_flags' => 0x10 | 0x80]));
         $this->assertSame(['bits' => 0x10], RunFlag::first()->details);
 
-        config(['kado.anticheat.ignored_bits' => 0]);
+        $this->setSettings(AntiCheatSettings::class, ['ignored_bits' => 0]);
         $this->assertSame(['client_detection'], $this->evaluate(Run::factory()->create(['anticheat_flags' => 0x80])));
     }
 
@@ -59,7 +60,7 @@ class SuspicionServiceTest extends TestCase
 
     public function test_only_a_new_record_of_the_game_is_flagged(): void
     {
-        config(['kado.suspicion.game_min_runs' => 100]);
+        $this->setSettings(AntiCheatSettings::class, ['suspicion_game_min_runs' => 100]);
         $game = Game::factory()->create();
         Run::factory()->count(100)->for($game)->sequence(fn ($s) => ['score' => $s->index * 10])->create();
         $player = User::factory()->create();
@@ -78,7 +79,7 @@ class SuspicionServiceTest extends TestCase
 
     public function test_the_records_of_a_game_with_few_runs_are_not_flagged(): void
     {
-        config(['kado.suspicion.game_min_runs' => 100]);
+        $this->setSettings(AntiCheatSettings::class, ['suspicion_game_min_runs' => 100]);
         $game = Game::factory()->create();
         Run::factory()->count(10)->for($game)->create(['score' => 10]);
 
@@ -107,11 +108,11 @@ class SuspicionServiceTest extends TestCase
         $run = Run::factory()->create();
         $analysis = ['analyzer' => 'binary', 'suspicious' => true, 'metrics' => ['optimalRate' => 0.93], 'reasons' => ['optimal_rate 0.93 >= 0.85 over 42 decisions']];
 
-        config(['kado.replay_analysis.flag' => false]);
+        $this->setSettings(AntiCheatSettings::class, ['analysis_flag' => false]);
         app(SuspicionService::class)->recordAnalysis($run, $analysis);
         $this->assertSame(0, RunFlag::count());
 
-        config(['kado.replay_analysis.flag' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['analysis_flag' => true]);
         app(SuspicionService::class)->recordAnalysis($run, $analysis);
         $flag = RunFlag::first();
         $this->assertSame(RunFlagRule::GAME_ANALYSIS, $flag->rule);

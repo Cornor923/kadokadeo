@@ -8,6 +8,7 @@ use App\Filament\Resources\RunFlags\Pages\ListRunFlags;
 use App\Models\Run;
 use App\Models\RunFlag;
 use App\Models\User;
+use App\Settings\AntiCheatSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -48,14 +49,14 @@ class RunFlagResourceTest extends TestCase
     public function test_the_admin_sees_which_detections_mark_a_run_as_cheated(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => true]));
-        config(['kado.anticheat.soft_bits' => 0x3F0]);
+        $this->setSettings(AntiCheatSettings::class, ['soft_bits' => 0x3F0, 'ignored_bits' => 0xC0]);
 
         Livewire::test(ListRunFlags::class)
             ->assertActionExists('detectionRules')
             ->mountAction('detectionRules')
-            ->assertMountedActionModalSee(['Marquées triche automatiquement', 'Code du jeu remplacé', 'KADO_ANTICHEAT_SOFT_BITS = 0x3F0', 'Ignorées', 'KADO_ANTICHEAT_IGNORED_BITS = 0xC0']);
+            ->assertMountedActionModalSee(['Marquées triche automatiquement', 'Code du jeu remplacé', 'Ignorées', 'Paramètres > Anti-triche']);
         $this->assertStringContainsString(
-            'Envoyées ici pour examen (KADO_ANTICHEAT_SOFT_BITS = 0x3F0) : Affichage ajouté par un script, PIXI modifié, Faux événements, Vérification impossible. Ignorées (KADO_ANTICHEAT_IGNORED_BITS = 0xC0) : Fonctions du navigateur modifiées, Actions générées par un script.',
+            'Envoyées ici pour examen : Affichage ajouté par un script, PIXI modifié, Faux événements, Vérification impossible. Ignorées : Fonctions du navigateur modifiées, Actions générées par un script.',
             \App\Filament\AntiCheatNotices::detectionRules(),
         );
     }
@@ -64,11 +65,11 @@ class RunFlagResourceTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['is_admin' => true]));
 
-        config(['kado.require_rng_stir' => false, 'kado.require_input_phases' => false]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => false, 'require_input_phases' => false]);
         $this->get('/admin/run-flags')->assertOk()->assertSee('Anti-triche incomplet')
-            ->assertSee('KADO_REQUIRE_RNG_STIR')->assertSee('KADO_REQUIRE_INPUT_PHASES');
+            ->assertSee('Le mélange des tirages n’est pas exigé')->assertSee('Le moment des actions n’est pas exigé');
 
-        config(['kado.require_rng_stir' => true, 'kado.require_input_phases' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => true, 'require_input_phases' => true]);
         $this->get('/admin/run-flags')->assertOk()->assertDontSee('Anti-triche incomplet');
     }
 

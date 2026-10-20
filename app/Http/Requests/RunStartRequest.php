@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Run;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,14 +14,14 @@ class RunStartRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $configConcurrency = config('kado.runs.max_concurrency');
+        $configConcurrency = app(SiteSettings::class)->runs_max_concurrency;
         if ($configConcurrency == -1) {
             return true;
         }
 
         $currentRunCount = Run::where('user_id', Auth::id())
             ->whereNull('completed_at')
-            ->where('created_at', '>', now()->subMinutes(config('kado.runs.open_minutes')))
+            ->where('created_at', '>', now()->subMinutes(app(SiteSettings::class)->runs_open_minutes))
             ->count();
 
         return $currentRunCount < $configConcurrency;

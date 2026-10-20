@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Settings\SiteSettings;
 use App\Support\GameBuilds\GameBuildArchive;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,7 +29,7 @@ class GameBuild extends Model
     /** the version a run begins with, sent by the game (only the current bundle or a version of the archive) */
     public static function resolve(Game $game, ?string $hash): ?self
     {
-        if (!config('kado.game_builds.enabled') || $hash === null || !preg_match('/^[0-9a-f]{12}$/', $hash)) {
+        if (!app(SiteSettings::class)->game_builds_enabled || $hash === null || !preg_match('/^[0-9a-f]{12}$/', $hash)) {
             return null;
         }
         $current = $game->gamedata['hash'] ?? null;

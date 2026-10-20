@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Settings\ClanSettings;
+use App\Settings\SiteSettings;
 use Eternaltwin\Client\Auth as EtwinAuth;
 use Eternaltwin\Client\HttpEtwinClient;
 use Eternaltwin\OauthClient\RfcOauthClient;
@@ -126,7 +127,7 @@ class LoginController extends Controller implements HasMiddleware
             $dbUser->fill($attrs);
         } else {
             $dbUser = new User($attrs);
-            $dbUser->kado_games = config('kado.games_per_day');
+            $dbUser->kado_games = app(SiteSettings::class)->games_per_day;
             $dbUser->clan_attack_games = app(ClanSettings::class)->attack_games_per_day;
         }
         $dbUser->save();

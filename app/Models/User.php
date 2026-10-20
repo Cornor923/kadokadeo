@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\BanReason;
+use App\Settings\SiteSettings;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -108,7 +109,7 @@ class User extends Authenticatable implements FilamentUser
     // the themes of the site he can use (kado.themes): the free ones and the ones he bought
     public function hasTheme(string $theme): bool
     {
-        return (int) config("kado.themes.{$theme}.price", -1) === 0 || in_array($theme, $this->unlocked_themes ?? [], true);
+        return app(SiteSettings::class)->themePrice($theme) === 0 || in_array($theme, $this->unlocked_themes ?? [], true);
     }
 
     //

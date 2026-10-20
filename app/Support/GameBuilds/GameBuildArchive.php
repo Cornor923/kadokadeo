@@ -4,6 +4,7 @@ namespace App\Support\GameBuilds;
 
 use App\Models\Game;
 use App\Models\GameBuild;
+use App\Settings\SiteSettings;
 use RuntimeException;
 
 /**
@@ -127,7 +128,7 @@ class GameBuildArchive
     {
         $current = $game->gamedata;
         $key = $game->game_key;
-        $hash = config('kado.game_builds.enabled') ? $build?->hash ?? $this->legacyHash($key) : null;
+        $hash = app(SiteSettings::class)->game_builds_enabled ? $build?->hash ?? $this->legacyHash($key) : null;
         if ($hash === null || ($current['hash'] ?? null) === $hash) {
             return $current === null ? null : $current + ['asset_base' => null];
         }

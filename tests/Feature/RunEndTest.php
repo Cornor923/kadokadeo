@@ -11,6 +11,8 @@ use App\Models\Run;
 use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\RunService;
+use App\Settings\AntiCheatSettings;
+use App\Settings\ReplaySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
@@ -198,17 +200,17 @@ class RunEndTest extends TestCase
         $this->assertSame(0xC0, $run->anticheat_flags);
 
         // ignored bits win over a strict setting
-        config(['kado.anticheat.soft_bits' => 0]);
+        $this->setSettings(AntiCheatSettings::class, ['soft_bits' => 0]);
         $this->assertFalse($this->finishWithReplay($pending(), ReplayHeaderTest::BINARY_V4, 0x80)->is_cheat);
 
         // no soft bit: any other bit marks the run
-        config(['kado.anticheat.soft_bits' => 0]);
+        $this->setSettings(AntiCheatSettings::class, ['soft_bits' => 0]);
         $this->assertTrue($this->finishWithReplay($pending(), ReplayHeaderTest::BINARY_V4, 0x10)->is_cheat);
     }
 
     public function test_a_replay_without_the_stirred_draws_is_flagged_outside_the_daily_game(): void
     {
-        config(['kado.require_rng_stir' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => true]);
         $pending = fn () => Run::factory()->create(['score' => 0, 'completed_at' => null]);
 
         $this->assertTrue($this->finishWithReplay($pending(), ReplayHeaderTest::replay(1))->is_cheat);
@@ -217,7 +219,7 @@ class RunEndTest extends TestCase
 
     public function test_the_daily_game_is_not_stirred(): void
     {
-        config(['kado.require_rng_stir' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => true]);
         $game = Game::factory()->create();
         $daily = \App\Models\DailyGame::create(['day' => today(), 'game_id' => $game->id, 'seed' => 'daily', 'contract_score' => 0, 'contract_points' => 0]);
         $run = Run::factory()->for($game)->create(['score' => 0, 'completed_at' => null, 'daily_game_id' => $daily->id]);
@@ -227,20 +229,20 @@ class RunEndTest extends TestCase
 
     public function test_a_replay_without_the_time_of_the_inputs_is_flagged_once_it_is_required(): void
     {
-        config(['kado.require_rng_stir' => true, 'kado.require_input_phases' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => true, 'require_input_phases' => true]);
         $pending = fn () => Run::factory()->create(['score' => 0, 'completed_at' => null]);
 
         $this->assertTrue($this->finishWithReplay($pending(), ReplayHeaderTest::replay(1 | 64))->is_cheat);
         $this->assertTrue($this->finishWithReplay($pending(), ReplayHeaderTest::replay(1 | 64 | 128, 3))->is_cheat);
         $this->assertFalse($this->finishWithReplay($pending(), ReplayHeaderTest::replay(1 | 64 | 128, 4))->is_cheat);
 
-        config(['kado.require_input_phases' => false]);
+        $this->setSettings(AntiCheatSettings::class, ['require_input_phases' => false]);
         $this->assertFalse($this->finishWithReplay($pending(), ReplayHeaderTest::replay(1 | 64))->is_cheat);
     }
 
     public function test_replays_without_the_stir_are_accepted_until_it_is_required(): void
     {
-        config(['kado.require_rng_stir' => false]);
+        $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => false]);
         $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
 
         $this->assertFalse($this->finishWithReplay($run, ReplayHeaderTest::replay(1))->is_cheat);
@@ -249,7 +251,7 @@ class RunEndTest extends TestCase
     public function test_the_end_of_a_new_best_run_queues_its_verification(): void
     {
         Queue::fake();
-        config(['kado.replay_verifier.enabled' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true]);
 
         $run = $this->finishWithReplay(Run::factory()->create(['score' => 0, 'completed_at' => null]), ReplayHeaderTest::replay(1 | 64));
 
@@ -259,7 +261,7 @@ class RunEndTest extends TestCase
 
     public function test_a_replay_above_the_size_limit_is_refused(): void
     {
-        config(['kado.replay_max_length' => 100]);
+        $this->setSettings(ReplaySettings::class, ['max_length' => 100]);
         $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
         Sanctum::actingAs($run->user);
         $finish = fn (string $replay) => $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
@@ -278,7 +280,7 @@ class RunEndTest extends TestCase
 
     public function test_a_payload_above_the_size_limit_is_refused_before_it_is_decrypted(): void
     {
-        config(['kado.replay_max_length' => 0]);
+        $this->setSettings(ReplaySettings::class, ['max_length' => 0]);
         $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
         Sanctum::actingAs($run->user);
 

@@ -3,14 +3,15 @@
 ANTI CHEAT: a run played with help (a script of the page showing the best move) has a legit replay: its score is
 right. An analyzer of the game looks at the moves of the replay while `verify.mjs` plays it, and says whether they
 look like the moves of a player or of a solver. Its result goes to `replay_verifications.analysis` and, when
-`kado.replay_analysis.flag` is on, in the queue of the suspicious runs of the admin (App\Services\SuspicionService).
+« Signaler les parties suspectes » is on (admin « Paramètres > Anti-triche »), in the queue of the suspicious runs of
+the admin (App\Services\SuspicionService).
 
 One file by game, `<game_key>.mjs` (the game has none: no analysis), its own modules in `<game_key>/` (pure functions:
 tested with `node --test`). It runs in the page of the verifier, served at `/__analyzers/`:
 
 ```js
 export const meta = { game: 'binary', version: 1 }
-// once the replay is playing; config: config('kado.replay_analysis.games.<game_key>')
+// once the replay is playing; config: its thresholds (App\Settings\AntiCheatSettings::analysisConfig)
 export function create({ kk, config }) {
   return {
     beforeFrame(frame) {},              // before each frame (kk.updatePhysics); frame = kk.replay.getCurrentFrame()
@@ -27,5 +28,6 @@ Rules:
 - An error (thrown by `create`, `beforeFrame` or `finish`) ends the analysis (`{ analyzer, error }`), never the
   verification. A version of the game whose fields differ (archived builds): throw `unsupported build`.
 - `reasons` are in French: the admin shows them as they are.
-- The thresholds come from the config (`config/kado.php`, `replay_analysis.games`), calibrated with
-  `php artisan kado:replays:analyze <game>` before `KADO_REPLAY_ANALYSIS_FLAG` is turned on.
+- The thresholds come from the settings (admin « Paramètres > Anti-triche », « Seuils des analyseurs »: a row by game,
+  free names and values, numbers and true / false typed; a game without a row gets `{}`: keep defaults in `create`),
+  calibrated with `php artisan kado:replays:analyze <game>` before « Signaler les parties suspectes » is turned on.

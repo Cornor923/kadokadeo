@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class UserFactory extends Factory
             'etwin_id' => (string) Str::uuid(),
             'display_name' => fake()->unique()->userName(),
             'kado_points' => 0,
-            'kado_games' => config('kado.games_per_day'),
+            'kado_games' => app(SiteSettings::class)->games_per_day,
             'clan_attack_games' => 10,
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),

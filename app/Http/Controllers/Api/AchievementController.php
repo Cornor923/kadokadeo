@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\AchievementResource;
 use App\Models\Achievement;
 use App\Models\User;
+use App\Settings\SiteSettings;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -22,7 +23,7 @@ class AchievementController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        if (!config('kado.achievements.enabled')) {
+        if (!app(SiteSettings::class)->achievements_enabled) {
             return AchievementResource::collection([]);
         }
 

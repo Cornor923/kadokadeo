@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Run;
+use App\Settings\AntiCheatSettings;
 use App\Support\GameBuilds\GameBuildArchive;
 use App\Support\ReplayHeader;
 use Illuminate\Support\Facades\File;
@@ -18,11 +19,19 @@ class ReplayVerifier
     // a script of the verifier still running that long after its own timeout is killed
     public const KILL_AFTER_SECONDS = 30;
 
+    private const ANALYZERS = 'resources/js/replay-verifier/analyzers';
+
     public function __construct(private readonly GameBuildArchive $archive) {}
 
     public function enabled(): bool
     {
-        return (bool) config('kado.replay_verifier.enabled');
+        return app(AntiCheatSettings::class)->verifier_enabled;
+    }
+
+    // the seconds a verification may take (its script ends itself then)
+    public static function timeout(): int
+    {
+        return app(AntiCheatSettings::class)->verifier_timeout;
     }
 
     // the runs that count: a personal best (the leaderboards), a contract (kadopoints), the daily game, or a run of the
@@ -42,15 +51,28 @@ class ReplayVerifier
     // the game has an analyzer of the moves (resources/js/replay-verifier/analyzers/<key>.mjs), turned on
     public function hasAnalyzer(string $key): bool
     {
-        return config('kado.replay_analysis.enabled')
-            && preg_match('/^[a-z0-9]+$/', $key)
-            && file_exists(base_path("resources/js/replay-verifier/analyzers/{$key}.mjs"));
+        return app(AntiCheatSettings::class)->analysis_enabled && in_array($key, self::analyzerKeys(), true);
+    }
+
+    /**
+     * The games with an analyzer of the moves, on or off.
+     *
+     * @return list<string>
+     */
+    public static function analyzerKeys(): array
+    {
+        return collect(File::glob(base_path(self::ANALYZERS.'/*.mjs')))
+            ->map(fn (string $path) => basename($path, '.mjs'))
+            ->filter(fn (string $key) => preg_match('/^[a-z0-9]+$/', $key) === 1)
+            ->sort()
+            ->values()
+            ->all();
     }
 
     // a run not verified otherwise, verified anyway for the analysis of its moves (a share of them)
     public function shouldSampleForAnalysis(Run $run): bool
     {
-        $rate = (float) config('kado.replay_analysis.sample_rate');
+        $rate = app(AntiCheatSettings::class)->analysis_sample_rate;
 
         return $this->enabled() && !$run->is_cheat && $rate > 0 && $this->hasAnalyzer($run->game->game_key)
             && mt_rand() / mt_getrandmax() < $rate;
@@ -94,10 +116,10 @@ class ReplayVerifier
                 // an ES module (resources/js/games/builds/bundle.mjs) or a classic script (older versions)
                 'module' => (bool) ($gamedata['module'] ?? false),
                 // the config of the analyzer of the game (none: no analysis)
-                'analysis' => $this->hasAnalyzer($key) ? (object) config("kado.replay_analysis.games.{$key}", []) : null,
+                'analysis' => $this->hasAnalyzer($key) ? (object) app(AntiCheatSettings::class)->analysisConfig($key) : null,
             ]));
 
-            $result = $this->node(['verify.mjs', "{$dir}/input.json"], config('kado.replay_verifier.timeout'));
+            $result = $this->node(['verify.mjs', "{$dir}/input.json"], self::timeout());
             if (!isset($result['ok'])) {
                 return ['ok' => false, 'error' => $result['error'] ?? 'no result'];
             }

@@ -1,7 +1,7 @@
 package common_haxe_avm1.kac;
 
 // Mask of what the client detected during a game, sent with the run (`ac`): the server marks the run as cheated for the
-// "hard" bits, and puts it in the queue of the suspicious runs for the "soft" ones (config kado.anticheat.soft_bits,
+// "hard" bits, and puts it in the queue of the suspicious runs for the "soft" ones (App\Settings\AntiCheatSettings,
 // App\Enums\AntiCheatBit). See Integrity for the detections of a script of the page.
 class AntiCheat {
 	public static inline var PROTECTED_INT_CORRUPTED:Int = 0x1;

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Settings\SiteSettings;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class RunPolicy
@@ -16,7 +17,7 @@ class RunPolicy
      */
     public function create(User $user)
     {
-        if (config('kado.games_per_day') > 0 && $user->kado_games <= 0) {
+        if (app(SiteSettings::class)->games_per_day > 0 && $user->kado_games <= 0) {
             return $this->deny(self::NO_GAMES_LEFT);
         }
 

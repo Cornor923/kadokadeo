@@ -16,7 +16,7 @@ enum RunFlagRule: string implements HasLabel
     case SCORE_TOP_PERCENTILE = 'score_top_percentile';
     // more frames in the replay than the time between the beginning and the end of the run: a clock sped up
     case FASTER_THAN_REAL_TIME = 'faster_than_real_time';
-    // far fewer frames than the time of the run: the game slowed down (off by default, see kado.suspicion)
+    // far fewer frames than the time of the run: the game slowed down (off by default, see App\Settings\AntiCheatSettings)
     case SLOW_MOTION = 'slow_motion';
     // the game detected a script of the page (soft bits of App\Enums\AntiCheatBit)
     case CLIENT_DETECTION = 'client_detection';

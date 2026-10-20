@@ -8,6 +8,7 @@ use App\Models\Run;
 use App\Services\ReplayVerifier;
 use App\Services\RunService;
 use App\Services\SuspicionService;
+use App\Settings\AntiCheatSettings;
 use App\Support\ReplayHeader;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -28,12 +29,12 @@ class VerifyRunReplay implements ShouldQueue
     // the same failure of the verifier (no browser...) fails every run: one alert on Discord for it per period
     private const FAILURE_ALERT_EVERY_SECONDS = 3600;
 
-    // the verifier has its own timeout (kado.replay_verifier.timeout): a bit more for the job
+    // the verifier has its own timeout (AntiCheatSettings::$verifier_timeout): a bit more for the job
     public $timeout;
 
     public function __construct(public string $runId)
     {
-        $this->timeout = config('kado.replay_verifier.timeout') + 60;
+        $this->timeout = ReplayVerifier::timeout() + 60;
     }
 
     public function handle(ReplayVerifier $verifier, RunService $runService, SuspicionService $suspicion): void
@@ -75,7 +76,7 @@ class VerifyRunReplay implements ShouldQueue
             $this->finish($run, RunVerification::MISMATCH, $details);
             $scores = "score envoyé {$run->score}, score du replay {$result['score']}";
             // a game whose replays can end differently: an admin decides
-            if (in_array($run->game->game_key, config('kado.replay_verifier.untrusted_games'), true)) {
+            if (app(AntiCheatSettings::class)->isUntrustedGame($run->game->game_key)) {
                 $this->alert($run, "{$scores} (jeu aux replays non fiables : à vérifier à la main)");
 
                 return;

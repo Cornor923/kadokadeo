@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Services\ClanMissionService;
 use App\Services\ReplayVerifier;
 use App\Services\RunService;
+use App\Settings\AntiCheatSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\EnablesClans;
 use Tests\TestCase;
@@ -109,7 +110,7 @@ class CheatedRunRevertTest extends TestCase
 
     public function test_a_run_of_the_clan_is_verified_even_below_the_best_of_the_player(): void
     {
-        config(['kado.replay_verifier.enabled' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true]);
         $period = $this->period();
         $player = User::factory()->create();
         $clan = Clan::factory()->withLeader($player)->create();

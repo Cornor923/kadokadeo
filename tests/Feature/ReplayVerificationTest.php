@@ -11,6 +11,7 @@ use App\Models\RunFlag;
 use App\Models\User;
 use App\Services\ReplayVerifier;
 use App\Services\RunService;
+use App\Settings\AntiCheatSettings;
 use App\Support\GameBuilds\GameBuildArchive;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -83,7 +84,7 @@ class ReplayVerificationTest extends TestCase
     {
         $this->fakeVerifier(['ok' => true, 'score' => 20, 'frames' => 900]);
         $run = $this->rewardedRun(99999);
-        config(['kado.replay_verifier.untrusted_games' => [$run->game->game_key]]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_untrusted_games' => [$run->game->game_key]]);
 
         $run = $this->verify($run);
 
@@ -131,10 +132,10 @@ class ReplayVerificationTest extends TestCase
         $verifier = app(ReplayVerifier::class);
         $run = Run::factory()->make(['score' => 50, 'contract_score' => 0]);
 
-        config(['kado.replay_verifier.enabled' => false]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => false]);
         $this->assertFalse($verifier->shouldVerify($run, 10));
 
-        config(['kado.replay_verifier.enabled' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true]);
         $this->assertTrue($verifier->shouldVerify($run, 10));
         $this->assertFalse($verifier->shouldVerify($run, 80));
         $run->contract_score = 40;
@@ -143,7 +144,7 @@ class ReplayVerificationTest extends TestCase
 
     public function test_the_analysis_of_the_moves_is_kept_and_a_suspicious_one_flagged(): void
     {
-        config(['kado.replay_analysis.flag' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['analysis_flag' => true]);
         $analysis = ['analyzer' => 'binary', 'version' => 1, 'metrics' => ['decisions' => 40, 'optimalRate' => 0.95], 'suspicious' => true, 'reasons' => ['best move 95 % of the time']];
         $this->fakeVerifier(['ok' => true, 'score' => 120, 'frames' => 900, 'analysis' => $analysis]);
         $run = $this->verify($this->rewardedRun(120));

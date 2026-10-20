@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -13,7 +14,7 @@ class ThemeTest extends TestCase
 
     public function test_a_theme_is_bought_once_with_kado_points_then_chosen(): void
     {
-        config(['kado.themes.karbon.price' => 1000]);
+        $this->setSettings(SiteSettings::class, ['theme_prices' => ['karbon' => 1000]]);
         $user = User::factory()->create(['kado_points' => 1500]);
         Sanctum::actingAs($user);
 
@@ -40,7 +41,7 @@ class ThemeTest extends TestCase
 
     public function test_a_theme_can_not_be_bought_without_enough_kado_points(): void
     {
-        config(['kado.themes.karbon.price' => 1000]);
+        $this->setSettings(SiteSettings::class, ['theme_prices' => ['karbon' => 1000]]);
         $user = User::factory()->create(['kado_points' => 999]);
         Sanctum::actingAs($user);
 

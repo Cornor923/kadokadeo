@@ -12,7 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-// the comments and the views of the replays (App\Settings\ReplaySettings)
+// the comments and the views of the replays, their size (App\Settings\ReplaySettings)
 class ManageReplaySettings extends SettingsPage
 {
     protected static string $settings = ReplaySettings::class;
@@ -69,6 +69,20 @@ class ManageReplaySettings extends SettingsPage
                             ->integer()
                             ->minValue(0)
                             ->suffix('secondes'),
+                    ]),
+
+                Section::make('Taille des replays')
+                    ->columnSpanFull()
+                    ->schema([
+                        TextInput::make('max_length')
+                            ->label('Taille maximum d\'un replay')
+                            ->helperText('Replay compressé envoyé à la fin d\'une partie (en base64) : au-delà, la fin de la partie est refusée. Les replays des longues parties en sont très loin (quelques octets par frame). Au plus 11 000 000 : le contenu chiffré, un tiers plus gros, doit rester sous la limite des requêtes de PHP (16 Mo).')
+                            ->required()
+                            ->integer()
+                            ->minValue(1000)
+                            // (RunEndRequest: a third more and 1 MB, under post_max_size 16M, docker/app/conf/php.ini)
+                            ->maxValue(11_000_000)
+                            ->suffix('caractères'),
                     ]),
             ]);
     }

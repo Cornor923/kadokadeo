@@ -28,6 +28,7 @@ use App\Services\ClanRunService;
 use App\Services\ClanService;
 use App\Services\ClanWarService;
 use App\Settings\ClanSettings;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Laravel\Sanctum\Sanctum;
@@ -816,7 +817,7 @@ class ClanTest extends TestCase
     // the runs of the missions don't cost a game, the attacks and the defenses have their own games
     public function test_the_runs_of_the_missions_are_free(): void
     {
-        config(['kado.games_per_day' => 10]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 10]);
         $this->period();
         $player = User::factory()->create(['kado_games' => 0, 'clan_attack_games' => 0]);
         $clan = Clan::factory()->withLeader($player)->create();
@@ -1007,7 +1008,7 @@ class ClanTest extends TestCase
     {
         // (more runs begun than the throttle of RunController::begin allows in a minute)
         $this->withoutMiddleware(ThrottleRequests::class);
-        config(['kado.games_per_day' => 10]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 10]);
         $this->period();
         $player = User::factory()->create(['kado_games' => 3, 'clan_attack_games' => 1, 'clan_games' => 1]);
         Clan::factory()->withLeader($player)->create();
@@ -1333,7 +1334,7 @@ class ClanTest extends TestCase
     {
         // (more runs begun than the throttle of RunController::begin allows in a minute)
         $this->withoutMiddleware(ThrottleRequests::class);
-        config(['kado.games_per_day' => 10]);
+        $this->setSettings(SiteSettings::class, ['games_per_day' => 10]);
         $period = $this->period();
         $attacker = User::factory()->create(['clan_attack_games' => 2, 'clan_games' => 3]);
         $defender = User::factory()->create();

@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import { useApi } from '@/composables/useApi'
 
-// KADO_ACHIEVEMENTS_ENABLED, injected by resources/views/layouts/default.blade.php
+// App\Settings\SiteSettings::$achievements_enabled, injected by resources/views/layouts/default.blade.php
 export const achievementsEnabled = window.Kado?.achievements_enabled === true
 
 export const useAchievementStore = defineStore('achievement', () => {

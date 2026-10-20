@@ -11,6 +11,7 @@ use App\Models\Run;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
 use App\Services\AchievementService;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -21,7 +22,7 @@ class AchievementsToggleTest extends TestCase
 
     public function test_nothing_is_evaluated_when_achievements_are_disabled(): void
     {
-        config(['kado.achievements.enabled' => false]);
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => false]);
         [$user, $game, $run] = $this->runWithStarsAchievement();
 
         $updates = app(AchievementService::class)->handleGameRunCompleted(new GameRunCompleted($user, $game, $run, []));
@@ -34,7 +35,7 @@ class AchievementsToggleTest extends TestCase
 
     public function test_achievements_progress_when_enabled(): void
     {
-        config(['kado.achievements.enabled' => true]);
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
         [$user, $game, $run] = $this->runWithStarsAchievement();
 
         $updates = app(AchievementService::class)->handleGameRunCompleted(new GameRunCompleted($user, $game, $run, []));
@@ -47,7 +48,7 @@ class AchievementsToggleTest extends TestCase
 
     public function test_the_api_lists_no_achievement_when_disabled(): void
     {
-        config(['kado.achievements.enabled' => false]);
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => false]);
         $this->runWithStarsAchievement();
         Sanctum::actingAs(User::factory()->create());
 

@@ -8,6 +8,7 @@ use App\Filament\Resources\Runs\RunVerificationTable;
 use App\Filament\Widgets\ReplayVerificationStats;
 use App\Models\ReplayVerification;
 use App\Services\ReplayVerifier;
+use App\Settings\AntiCheatSettings;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -168,7 +169,7 @@ class ReplayVerifierDashboard extends Page implements HasTable
     public function settings(): array
     {
         return [
-            'Vérificateur activé (KADO_REPLAY_VERIFIER)' => config('kado.replay_verifier.enabled') ? 'Oui' : 'Non',
+            'Vérificateur activé (Paramètres > Anti-triche)' => app(AntiCheatSettings::class)->verifier_enabled ? 'Oui' : 'Non',
             'Node (KADO_REPLAY_VERIFIER_NODE)' => config('kado.replay_verifier.node'),
             'Navigateur (KADO_REPLAY_VERIFIER_BROWSER)' => config('kado.replay_verifier.browser') ?: 'Recherche automatique',
         ];

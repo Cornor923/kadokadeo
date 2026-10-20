@@ -11,6 +11,7 @@ use App\Models\Run;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
 use App\Services\AchievementService;
+use App\Settings\SiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class AchievementServiceTest extends TestCase
     // the next level reached once and paid once (not the level of the other run a second time)
     public function test_the_progress_is_computed_from_the_locked_row(): void
     {
-        config(['kado.achievements.enabled' => true]);
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
         $user = User::factory()->create(['kado_points' => 0]);
         $game = Game::factory()->create();
         $run = Run::factory()->for($game)->for($user)->create();
