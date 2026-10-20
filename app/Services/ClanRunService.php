@@ -36,7 +36,15 @@ class ClanRunService
         // a mission step completed meanwhile (by the player or another member) or a mission over: the reason is given to
         // the page (ClanMissionService::startStep), which sends the player back to the missions
         if ($action->type === ClanActionType::MISSION) {
-            return $this->missionService->startStep($user, $action->missionStep);
+            // (the run begun meanwhile already went on with the step: continueFailedStep)
+            return ClanAction::query()
+                ->where('user_id', $action->user_id)
+                ->where('clan_mission_step_id', $action->clan_mission_step_id)
+                ->where('id', '>', $action->id)
+                ->whereNull('completed_at')
+                ->latest('id')
+                ->first()
+                ?? $this->missionService->startStep($user, $action->missionStep);
         }
 
         try {
@@ -99,7 +107,8 @@ class ClanRunService
             ->whereNull('completed_at')
             ->where('created_at', '>=', now()->subMinutes(ClanWarService::ACTION_TTL_MINUTES))
             ->latest('id')
-            ->first();
+            ->first()
+            ?? $this->continueFailedStep($userId, $gameId);
 
         // a mission step completed by another member (or a mission over) since it was asked: the run is refused (the game
         // shows why) rather than played for nothing, or as a normal run costing a game
@@ -132,6 +141,26 @@ class ClanRunService
         }
 
         return $action;
+    }
+
+    // "Rejouer" after a failed mission step, begun before the page asked for it (ClanActionController::again, sent once
+    // the end of the run is received: a quick click on the end screen of the game is sooner): the run goes on with the
+    // step while it is open. Only right after it (the last clan run of the player, on this game, ACTION_TTL_MINUTES ago at
+    // most)
+    private function continueFailedStep(int $userId, int $gameId): ?ClanAction
+    {
+        $last = ClanAction::query()->where('user_id', $userId)->latest('id')->first();
+        if ($last?->type !== ClanActionType::MISSION || (int) $last->game_id !== $gameId || $last->result !== 'failed'
+            || $last->completed_at === null || $last->completed_at->lt(now()->subMinutes(ClanWarService::ACTION_TTL_MINUTES))) {
+            return null;
+        }
+
+        try {
+            return $this->missionService->startStep($last->user, $last->missionStep);
+        } catch (ClanException) {
+            // (the step completed meanwhile, the mission over...: a normal run)
+            return null;
+        }
     }
 
     // a mission step

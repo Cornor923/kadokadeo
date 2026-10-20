@@ -688,6 +688,42 @@ class ClanTest extends TestCase
         $this->assertSame(4, $leader->fresh()->kado_games);
     }
 
+    // a failed step played again from the end screen of the game before the page asked for it ("Rejouer": the end of the
+    // run took a while): the new run still counts for the step
+    public function test_a_failed_step_played_again_at_once_still_counts(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $period = $this->period();
+        $leader = User::factory()->create(['kado_games' => 5]);
+        $clan = Clan::factory()->withLeader($leader)->create();
+        Game::factory()->count(8)->create();
+        $step = ClanMissionStep::query()->where('clan_mission_id', app(ClanMissionService::class)->currentMission($clan)->id)->firstOrFail();
+        $game = Game::query()->findOrFail($step->game_id);
+        Sanctum::actingAs($leader);
+
+        $this->postJson("/api/clan-mission-steps/{$step->id}/play")->assertCreated();
+        $this->assertSame('failed', $this->playClanRun($leader, $game, $period, $step->target_score - 1)['result']);
+
+        // no "Rejouer" yet: the run begun is bound to the step all the same (free)
+        $runId = $this->postJson("/api/runs/games/{$game->id}")->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'mission')
+            ->json('data.run_id');
+        $this->assertSame(5, $leader->fresh()->kado_games);
+        // then "Rejouer" of the page: the clan run already going on, not another one
+        $failed = ClanAction::query()->where('user_id', $leader->id)->whereNotNull('completed_at')->sole();
+        $this->postJson("/api/clan-actions/{$failed->id}/again")->assertOk()
+            ->assertJsonPath('data.id', ClanAction::query()->where('run_id', $runId)->value('id'));
+        $this->assertSame(2, ClanAction::query()->where('user_id', $leader->id)->count());
+        $run = Run::query()->findOrFail($runId);
+        $run->update(['score' => $step->target_score, 'completed_at' => now()]);
+        $this->assertSame('completed', app(ClanRunService::class)->handleRunCompleted($run->fresh())['result']);
+        $this->assertNotNull($step->fresh()->completed_at);
+
+        // a step completed: the next run is a normal one
+        $this->postJson("/api/runs/games/{$game->id}")->assertSuccessful()->assertJsonPath('data.clan', null);
+        $this->assertSame(4, $leader->fresh()->kado_games);
+    }
+
     public function test_the_steps_grow_with_the_members_of_the_clan(): void
     {
         $missionService = app(ClanMissionService::class);

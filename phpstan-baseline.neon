@@ -1923,13 +1923,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$missionStep\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 4
 			path: app/Services/ClanRunService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 3
 			path: app/Services/ClanRunService.php
 
 		-
