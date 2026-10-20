@@ -83,6 +83,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
     public function showHistory(User $user, Request $request)
     {
         $runsQuery = $user->runs()
+            ->withoutReplay()
             ->whereNotNull('score')
             ->with('game')
             ->orderByDesc('completed_at');

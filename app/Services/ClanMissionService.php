@@ -8,6 +8,7 @@ use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanAction;
 use App\Models\ClanBonus;
+use App\Models\ClanMemberStat;
 use App\Models\ClanMission;
 use App\Models\ClanMissionStep;
 use App\Models\Game;
@@ -183,6 +184,26 @@ class ClanMissionService
             $this->completeMissionIfDone($mission);
 
             return 'completed';
+        });
+    }
+
+    // a run found cheated after it completed a step (RunService::flagAsCheat): the step is to do again while its mission
+    // goes on. A mission already completed keeps its points (an admin decides)
+    public function revertCheatedRun(Run $run): void
+    {
+        DB::transaction(function () use ($run) {
+            $steps = ClanMissionStep::query()->where('run_id', $run->id)->whereNotNull('completed_at')->lockForUpdate()->get();
+            foreach ($steps as $step) {
+                $mission = ClanMission::query()->lockForUpdate()->find($step->clan_mission_id);
+                if (!$mission || $mission->status !== ClanMission::ACTIVE) {
+                    continue;
+                }
+                ClanMemberStat::query()
+                    ->where(['clan_id' => $mission->clan_id, 'user_id' => $step->completed_by_user_id, 'period_id' => $mission->period_id])
+                    ->where('mission_steps', '>', 0)
+                    ->decrement('mission_steps');
+                $step->update(['completed_by_user_id' => null, 'run_id' => null, 'score' => null, 'completed_at' => null]);
+            }
         });
     }
 

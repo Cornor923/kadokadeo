@@ -81,6 +81,9 @@ return [
     'runs' => [
         // A single user can run this amount of games in parallel.
         'max_concurrency' => env('KADO_RUNS_MAX_CONCURRENCY', 50),
+        // a run not finished after this many minutes no longer counts in max_concurrency (a tab closed during a game
+        // sends nothing: the runs left open would refuse every new run)
+        'open_minutes' => (int) env('KADO_RUNS_OPEN_MINUTES', 120),
     ],
 
     // the looks of the site (App\Http\Controllers\Api\ThemeController): "base" for everyone, the others bought once with

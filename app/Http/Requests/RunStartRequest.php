@@ -18,7 +18,10 @@ class RunStartRequest extends FormRequest
             return true;
         }
 
-        $currentRunCount = Run::where('user_id', Auth::id())->whereNull('completed_at')->count();
+        $currentRunCount = Run::where('user_id', Auth::id())
+            ->whereNull('completed_at')
+            ->where('created_at', '>', now()->subMinutes(config('kado.runs.open_minutes')))
+            ->count();
 
         return $currentRunCount < $configConcurrency;
     }

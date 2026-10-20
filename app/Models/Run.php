@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\BinaryCast;
 use App\Enums\RunVerification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,14 @@ class Run extends Model
     use SoftDeletes;
 
     protected $fillable = ['period_id', 'game_id', 'user_id', 'league_id', 'score', 'play_time_seconds', 'replay', 'completed_at', 'contract_score', 'contract_points', 'seed', 'score_details', 'daily_game_id', 'is_cheat', 'game_build_id', 'verification', 'verified_at', 'anticheat_flags', 'replay_frames'];
+
+    // every column but replay (withoutReplay; checked by tests/Feature/RunWithoutReplayTest.php)
+    public const COLUMNS_BUT_REPLAY = [
+        'id', 'period_id', 'game_id', 'user_id', 'league_id', 'score', 'play_time_seconds', 'completed_at', 'created_at',
+        'updated_at', 'deleted_at', 'contract_score', 'contract_points', 'seed', 'score_details', 'daily_game_id',
+        'is_cheat', 'game_build_id', 'verification', 'verified_at', 'anticheat_flags', 'replay_frames', 'views_count',
+        'comments_count',
+    ];
 
     protected $casts = [
         'replay' => BinaryCast::class,
@@ -68,9 +77,19 @@ class Run extends Model
         return $this->hasMany(RunComment::class);
     }
 
-    public function getHasReplayAttribute()
+    // (selected as has_replay by withoutReplay, without reading the replay)
+    public function getHasReplayAttribute($value)
     {
-        return !is_null($this->replay);
+        return $value !== null ? (bool) $value : !is_null($this->replay);
+    }
+
+    // the columns of the runs but the replay (a blob of a few hundred KB, read for nothing by the lists of runs), and
+    // whether they have one (has_replay)
+    public function scopeWithoutReplay(Builder $query): void
+    {
+        $table = $this->getTable();
+        $query->select(array_map(fn (string $column) => "{$table}.{$column}", self::COLUMNS_BUT_REPLAY))
+            ->selectRaw("{$table}.replay IS NOT NULL AS has_replay");
     }
 
     // a run of today's daily game: every player has the same seed, so its seed and replay (the coming pieces) are

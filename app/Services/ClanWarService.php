@@ -317,6 +317,46 @@ class ClanWarService
         });
     }
 
+    // a run found cheated after it counted (RunService::flagAsCheat): its attack still waiting for a defense is
+    // cancelled, its defense undone (the attack waits again for a defense, or is won by the attacker once its time is
+    // over: resolveExpired). An attack already won stays (an admin decides)
+    public function revertCheatedRun(Run $run): void
+    {
+        DB::transaction(function () use ($run) {
+            ClanAttack::query()
+                ->where('run_id', $run->id)
+                ->where('status', ClanAttackStatus::ACTIVE)
+                ->update(['status' => ClanAttackStatus::CANCELLED, 'resolved_at' => now()]);
+
+            $defended = ClanAttack::query()
+                ->where('defense_run_id', $run->id)
+                ->where('status', ClanAttackStatus::REPELLED)
+                ->lockForUpdate()
+                ->get();
+            foreach ($defended as $attack) {
+                $this->undoDefenseStats($this->clanService->periodScore($attack->defenderClan, $attack->period), 'defenses_won', 1);
+                $stat = $this->clanService->memberStat($attack->defender_clan_id, $attack->defender_user_id, $attack->period_id);
+                $this->undoDefenseStats($stat, 'defenses_won', 1);
+                $this->undoDefenseStats($stat, 'performance', (int) $attack->points);
+                $attack->update([
+                    'status' => ClanAttackStatus::ACTIVE,
+                    'defender_user_id' => null,
+                    'defense_run_id' => null,
+                    'points' => 0,
+                    'resolved_at' => null,
+                ]);
+            }
+        });
+    }
+
+    // (never below 0)
+    private function undoDefenseStats($row, string $column, int $amount): void
+    {
+        if ($amount > 0) {
+            $row->newQuery()->whereKey($row->getKey())->where($column, '>=', $amount)->decrement($column, $amount);
+        }
+    }
+
     // the attacks of a closed period still waiting for a defense count for nothing: the scores start again from 0
     public function cancelUnfinished(Period $period): void
     {

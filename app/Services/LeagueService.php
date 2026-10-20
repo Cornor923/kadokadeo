@@ -10,6 +10,7 @@ use App\Models\LeaguePromotion;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -49,6 +50,31 @@ class LeagueService
             ->first();
 
         return $latestMembership?->league ?? $this->getBeginnerLeague();
+    }
+
+    // getCurrentLeagueFor of every game at once: [game_id => League]
+    public function getCurrentLeaguesForGames(User $user, EloquentCollection $games, Period $period): array
+    {
+        $memberships = LeagueMembership::query()
+            ->with('league')
+            ->where('user_id', $user->id)
+            ->whereIn('game_id', $games->modelKeys())
+            ->where('period_id', '<=', $period->id)
+            ->orderByDesc('period_id')
+            ->get();
+        $current = $memberships->where('period_id', $period->id)->keyBy('game_id');
+        // (the latest one before the period, whatever its league: like getCurrentLeagueFor)
+        $latest = $memberships->where('period_id', '<', $period->id)->unique('game_id')->keyBy('game_id');
+        // (read once, for the games never played)
+        $beginner = null;
+        $leagues = [];
+        foreach ($games as $game) {
+            $leagues[$game->id] = $current->get($game->id)?->league
+                ?? $latest->get($game->id)?->league
+                ?? ($beginner ??= $this->getBeginnerLeague());
+        }
+
+        return $leagues;
     }
 
     public function getCurrentLeagues(User $user, ?int $periodId = null): array

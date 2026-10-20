@@ -44,11 +44,44 @@ class ScoreServiceTest extends TestCase
         $this->withToken($token)
             ->getJson('/api/competition?period='.$previousPeriod->id)
             ->assertOk()
-            ->assertJsonCount(1)
-            ->assertJsonPath('0.user.display_name', 'Previous player')
-            ->assertJsonPath('0.score', 1500)
-            ->assertJsonPath('0.games.0.game.name', $game->name)
-            ->assertJsonPath('0.games.0.score', 1500);
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.user.display_name', 'Previous player')
+            ->assertJsonPath('data.0.score', 1500)
+            ->assertJsonPath('data.0.games.0.game.name', $game->name)
+            ->assertJsonPath('data.0.games.0.score', 1500)
+            // not ranked
+            ->assertJsonPath('me', null);
+    }
+
+    public function test_competition_is_paginated_and_gives_the_line_of_the_player_on_any_page(): void
+    {
+        $period = Period::factory()->create(['start_at' => now()->subDay(), 'end_at' => now()->addDay()]);
+        $game = Game::factory()->create(['is_active' => true, 'score_rankv1' => 10000]);
+        // 60 players: scores 100, 200... 6000 (the last one first)
+        $players = User::factory()->count(60)->create();
+        $players->each(fn (User $player, int $index) => Run::factory()->for($period)->for($game)->for($player)->create(['score' => ($index + 1) * 100]));
+        $last = $players->first();
+
+        $response = $this->withToken($last->createToken('kadokadeo')->plainTextToken)
+            ->getJson('/api/competition')
+            ->assertOk()
+            ->assertJsonCount(50, 'data')
+            ->assertJsonPath('data.0.rank', 1)
+            ->assertJsonPath('meta.current_page', 1)
+            ->assertJsonPath('meta.last_page', 2)
+            ->assertJsonPath('meta.total', 60)
+            ->assertJsonPath('me.rank', 60)
+            ->assertJsonPath('me.user.etwin_id', $last->etwin_id);
+
+        $this->withToken($last->createToken('kadokadeo')->plainTextToken)
+            ->getJson('/api/competition?page=2')
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('data.0.rank', 51)
+            ->assertJsonPath('data.9.user.etwin_id', $last->etwin_id);
+        // (a page after the last one gives the last one)
+        $this->withToken($last->createToken('kadokadeo')->plainTextToken)
+            ->getJson('/api/competition?page=9')
+            ->assertJsonPath('meta.current_page', 2);
     }
 
     public function test_ranking_v1_interpolates_between_the_four_score_thresholds(): void

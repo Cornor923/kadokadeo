@@ -7,6 +7,7 @@ use App\Enums\ClanAttackStatus;
 use App\Exceptions\ClanException;
 use App\Models\ClanAction;
 use App\Models\ClanAttack;
+use App\Models\ClanMission;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
@@ -32,9 +33,14 @@ class ClanRunService
         }
         $user = $action->user;
 
+        // a mission step completed meanwhile (by the player or another member) or a mission over: the reason is given to
+        // the page (ClanMissionService::startStep), which sends the player back to the missions
+        if ($action->type === ClanActionType::MISSION) {
+            return $this->missionService->startStep($user, $action->missionStep);
+        }
+
         try {
             return match ($action->type) {
-                ClanActionType::MISSION => $this->missionService->startStep($user, $action->missionStep),
                 ClanActionType::DEFENSE => $this->warService->startDefense($user, $action->attack),
                 ClanActionType::ATTACK => ($attack = $action->attack ?? ClanAttack::query()->where('run_id', $action->run_id)->first())
                     && $attack->status === ClanAttackStatus::ACTIVE
@@ -94,6 +100,23 @@ class ClanRunService
             ->where('created_at', '>=', now()->subMinutes(ClanWarService::ACTION_TTL_MINUTES))
             ->latest('id')
             ->first();
+
+        // a mission step completed by another member (or a mission over) since it was asked: the run is refused (the game
+        // shows why) rather than played for nothing, or as a normal run costing a game
+        if ($action?->type === ClanActionType::MISSION) {
+            $step = $action->missionStep;
+            $mission = $step?->mission;
+            $closed = match (true) {
+                !$mission || $mission->status !== ClanMission::ACTIVE || $mission->expires_at->isPast() => 'Cette mission est terminée.',
+                $step->isDone() => 'Cette étape a déjà été réussie.',
+                default => null,
+            };
+            if ($closed !== null) {
+                $action->update(['result' => 'too_late', 'completed_at' => now()]);
+
+                throw new ClanException($closed.' Retournez sur la page des missions de votre clan.');
+            }
+        }
 
         // a new attack checked again when it begins (out of the clan, or the maximum of attacks reached meanwhile: his seat
         // of "Attaquant" taken back...): forgotten, the run is a normal one
@@ -194,6 +217,20 @@ class ClanRunService
             'result' => $result,
             'message' => $this->message($action->type, $result),
         ];
+    }
+
+    // a run found cheated after it counted for the clan (RunService::flagAsCheat)
+    public function revertCheatedRun(Run $run): void
+    {
+        $this->warService->revertCheatedRun($run);
+        $this->missionService->revertCheatedRun($run);
+    }
+
+    // the run of an attack, a defense or a mission step: its replay is verified like a run that counts
+    // (ReplayVerifier::shouldVerify)
+    public function isClanRun(Run $run): bool
+    {
+        return ClanAction::query()->where('run_id', $run->id)->exists();
     }
 
     private function message(ClanActionType $type, string $result): string

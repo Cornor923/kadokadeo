@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\ClanActionType;
+use App\Exceptions\ClanException;
 use App\Http\Controllers\Controller;
 use App\Models\ClanAction;
 use App\Services\ClanRunService;
@@ -34,9 +35,14 @@ class ClanActionController extends Controller implements HasMiddleware
     public function again(Request $request, ClanAction $action, ClanRunService $clanRunService)
     {
         abort_unless($action->user_id === $request->user()->id, 404);
-        $next = $clanRunService->again($action);
+        try {
+            $next = $clanRunService->again($action);
+        } catch (ClanException $e) {
+            // a mission step no longer open: why, for the page (it sends the player back to the missions)
+            return ['data' => null, 'closed' => $e->getMessage()];
+        }
 
-        return ['data' => $next ? ['id' => $next->id] : null];
+        return ['data' => $next ? ['id' => $next->id] : null, 'closed' => null];
     }
 
     public function show(Request $request, ClanAction $action)

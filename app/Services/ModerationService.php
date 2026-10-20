@@ -209,8 +209,8 @@ class ModerationService
     }
 
     // the stars of the player in the game and period of the run, from the best score of the runs left
-    // (RunService::rewardStars gives each star once, up to the star of the score)
-    private function recomputeStars(Run $run): void
+    // (RunService::rewardStars gives each star once, up to the star of the score; also used by RunService::flagAsCheat)
+    public function recomputeStars(Run $run): void
     {
         if (!$run->period_id) {
             return;

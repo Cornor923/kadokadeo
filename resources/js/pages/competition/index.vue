@@ -4,7 +4,12 @@ import KadoPoints from '@svg/k.svg'
 const { isLoading: isRankingV1Loading, error: leaderboardError, get: getLeaderboard } = useApi()
 const { isLoading: isFeathersLoading, error: feathersError, get: getFeathersLeaderboard } = useApi()
 const { isLoading: isGamesLoading, error: gamesError, fetchGames } = useGames()
+const route = useRoute()
+const router = useRouter()
 const leaderboard = ref([])
+// the pages of the ranking V1, and the line of the player (shown above or below the page when it is on another one)
+const leaderboardMeta = ref(null)
+const myRanking = ref(null)
 const feathersLeaderboard = ref([])
 const games = ref([])
 const selectedGameId = ref('')
@@ -20,27 +25,57 @@ const displayedPeriod = computed(() => selectedPeriod.value ?? currentPeriod.val
 const canGoPrevious = computed(() => displayedPeriod.value !== null && displayedPeriod.value > 1)
 const periodLabel = computed(() => (isCurrentPeriod.value ? 'Période courante' : `Période ${selectedPeriod.value}`))
 const periodQuery = computed(() => (isCurrentPeriod.value ? '' : `?period=${selectedPeriod.value}`))
-const selectedPlayer = computed(() => leaderboard.value.find((player) => player.user.etwin_id === selectedPlayerId.value) ?? null)
+const page = computed(() => Number(route.query.page) || 1)
+const pageRoute = (pageNumber) => ({ query: { ...route.query, page: pageNumber } })
+const isMe = (player) => player.user.etwin_id === myRanking.value?.user.etwin_id
+// the players of the page, and the player out of it: first if ranked before the page, last if after ("…" between)
+const rankingRows = computed(() => {
+  const rows = leaderboard.value.map((player) => ({ key: player.user.etwin_id, player }))
+  const me = myRanking.value
+  if (!me || !rows.length || leaderboard.value.some(isMe)) return rows
+  const meRow = { key: me.user.etwin_id, player: me }
+  return me.rank < leaderboard.value[0].rank
+    ? [meRow, { key: 'gap', gap: true }, ...rows]
+    : [...rows, { key: 'gap', gap: true }, meRow]
+})
+const selectedPlayer = computed(() => rankingRows.value.find((row) => row.player?.user.etwin_id === selectedPlayerId.value)?.player ?? null)
 
 function togglePlayerDetails(event) {
   const playerId = event.currentTarget.dataset.playerId
   selectedPlayerId.value = selectedPlayerId.value === playerId ? null : playerId
 }
 
-function loadLeaderboards() {
+function loadLeaderboard() {
   selectedPlayerId.value = null
+  const separator = periodQuery.value ? '&' : '?'
 
-  getLeaderboard(`/competition${periodQuery.value}`)
+  getLeaderboard(`/competition${periodQuery.value}${page.value > 1 ? `${separator}page=${page.value}` : ''}`)
     .then((response) => {
-      leaderboard.value = response.data
+      leaderboard.value = response.data.data
+      leaderboardMeta.value = response.data.meta
+      myRanking.value = response.data.me
     })
     .catch(() => null)
+}
 
+watch(page, loadLeaderboard)
+
+function loadFeathersLeaderboard() {
   getFeathersLeaderboard(`/competition/poids-plumes${periodQuery.value}`)
     .then((response) => {
       feathersLeaderboard.value = response.data
     })
     .catch(() => null)
+}
+
+// another period: from its first page (the watch of the page loads the ranking when it changes)
+function loadLeaderboards() {
+  if (page.value > 1) {
+    router.replace({ query: { ...route.query, page: undefined } })
+  } else {
+    loadLeaderboard()
+  }
+  loadFeathersLeaderboard()
 }
 
 function goPrevious() {
@@ -57,7 +92,8 @@ function goNext() {
   loadLeaderboards()
 }
 
-loadLeaderboards()
+loadLeaderboard()
+loadFeathersLeaderboard()
 
 fetchGames()
   .then((response) => {
@@ -157,23 +193,27 @@ const scoreOn1500 = computed(() => {
               </tr>
             </thead>
             <tbody>
-              <template v-for="player in leaderboard" :key="player.user.etwin_id">
+              <template v-for="row in rankingRows" :key="row.key">
+                <tr v-if="row.gap" aria-hidden="true">
+                  <td colspan="3" class="text-center text-kado-slate-400">…</td>
+                </tr>
                 <tr
+                  v-else
                   class="cursor-pointer transition-colors hover:bg-kado-cyan-100"
-                  :class="{ 'bg-kado-cyan-100': selectedPlayerId === player.user.etwin_id }"
+                  :class="{ 'bg-kado-cyan-100': selectedPlayerId === row.player.user.etwin_id, 'font-bold': isMe(row.player) }"
                   tabindex="0"
                   role="button"
-                  :data-player-id="player.user.etwin_id"
-                  :aria-expanded="selectedPlayerId === player.user.etwin_id"
+                  :data-player-id="row.player.user.etwin_id"
+                  :aria-expanded="selectedPlayerId === row.player.user.etwin_id"
                   @click="togglePlayerDetails"
                   @keydown.enter.prevent="togglePlayerDetails"
                   @keydown.space.prevent="togglePlayerDetails"
                 >
-                  <td class="text-right">{{ player.rank }}</td>
-                  <td class="text-left">{{ player.user.display_name }}</td>
-                  <td class="text-right"><Number color="blue" :value="player.score" /></td>
+                  <td class="text-right">{{ row.player.rank }}</td>
+                  <td class="text-left">{{ row.player.user.display_name }}</td>
+                  <td class="text-right"><Number color="blue" :value="row.player.score" /></td>
                 </tr>
-                <tr v-if="selectedPlayerId === player.user.etwin_id">
+                <tr v-if="!row.gap && selectedPlayerId === row.player.user.etwin_id">
                   <td colspan="3" class="px-4 py-3 text-left">
                     <div class="rounded border border-kado-cyan-800 bg-white p-3">
                       <div class="mb-2 flex items-center justify-between gap-3">
@@ -195,6 +235,10 @@ const scoreOn1500 = computed(() => {
               </template>
             </tbody>
           </table>
+          <NavPagination v-if="leaderboardMeta"
+                         :current-page="leaderboardMeta.current_page"
+                         :last-page="leaderboardMeta.last_page"
+                         :to="pageRoute" />
         </div>
       </div>
 

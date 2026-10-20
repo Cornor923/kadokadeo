@@ -58,6 +58,21 @@ class RunBeginTest extends TestCase
         $this->assertSame(0, $user->fresh()->kado_games);
     }
 
+    public function test_the_runs_left_open_long_ago_no_longer_block_the_player(): void
+    {
+        config(['kado.runs.max_concurrency' => 2, 'kado.runs.open_minutes' => 120]);
+        $user = User::factory()->create(['kado_games' => 10]);
+        $game = $this->game();
+        Sanctum::actingAs($user);
+        // two tabs closed during a game, yesterday
+        Run::factory()->count(2)->for($user)->for($game)->create(['score' => null, 'completed_at' => null, 'created_at' => now()->subDay()]);
+
+        $this->postJson("/api/runs/games/{$game->id}")->assertSuccessful();
+        $this->postJson("/api/runs/games/{$game->id}")->assertSuccessful();
+        // two runs open now: the limit
+        $this->postJson("/api/runs/games/{$game->id}")->assertForbidden();
+    }
+
     public function test_unlimited_games_go_on_at_zero(): void
     {
         config(['kado.games_per_day' => -1]);

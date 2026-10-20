@@ -9,6 +9,7 @@ use App\Models\LeagueMembership;
 use App\Models\Run;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -62,6 +63,7 @@ class ScoreService
     public function getUserBestScore(Game $game, ?int $userId, ?int $periodId = null): ?Run
     {
         return $game->runs()
+            ->withoutReplay()
             ->whereNotNull('score')
             ->where('is_cheat', false)
             ->when($periodId, fn ($q) => $q->where('period_id', $periodId))
@@ -76,6 +78,7 @@ class ScoreService
     public function getBestScore(Game $game, ?int $userId, ?int $periodId = null): ?Run
     {
         return $game->runs()
+            ->withoutReplay()
             ->whereNotNull('score')
             ->where('is_cheat', false)
             ->when($periodId, fn ($q) => $q->where('period_id', $periodId))
@@ -84,6 +87,61 @@ class ScoreService
             ->orderBy('completed_at')
             ->orderBy('id')
             ->first();
+    }
+
+    // the best run of each game (getBestScore of every game at once, with their player and without their replay): one
+    // probe of the index (game_id, score) by game. A window on the runs of every game would sort them all
+    public function getBestRunsByGame(EloquentCollection $games): Collection
+    {
+        if ($games->isEmpty()) {
+            return collect();
+        }
+        $bestRunIds = DB::table('games')
+            ->whereIn('games.id', $games->modelKeys())
+            ->selectSub(fn ($query) => $query->from('runs')
+                ->select('runs.id')
+                ->whereColumn('runs.game_id', 'games.id')
+                ->whereNotNull('runs.score')
+                ->where('runs.is_cheat', false)
+                ->whereNull('runs.deleted_at')
+                ->orderByDesc('runs.score')
+                ->orderBy('runs.play_time_seconds')
+                ->orderBy('runs.completed_at')
+                ->orderBy('runs.id')
+                ->limit(1), 'best_run_id')
+            ->pluck('best_run_id')
+            ->filter();
+
+        return Run::query()->withoutReplay()->whereKey($bestRunIds)->with('user')->get()->keyBy('game_id');
+    }
+
+    // the best scores of a player on each game, of all time and of a period (getUserBestScore of every game at once):
+    // [game_id => ['score' => ?int, 'current_score' => ?int]], read by the index (game_id, user_id)
+    public function getUserBestScoresByGame(EloquentCollection $games, int $userId, ?int $periodId): array
+    {
+        if ($games->isEmpty()) {
+            return [];
+        }
+        $best = fn (?int $periodId) => fn ($query) => $query->from('runs')
+            ->selectRaw('MAX(runs.score)')
+            ->whereColumn('runs.game_id', 'games.id')
+            ->where('runs.user_id', $userId)
+            ->whereNotNull('runs.score')
+            ->where('runs.is_cheat', false)
+            ->whereNull('runs.deleted_at')
+            ->when($periodId, fn ($query) => $query->where('runs.period_id', $periodId));
+
+        return DB::table('games')
+            ->whereIn('games.id', $games->modelKeys())
+            ->select('games.id')
+            ->selectSub($best(null), 'score')
+            ->when($periodId, fn ($query) => $query->selectSub($best($periodId), 'current_score'))
+            ->get()
+            ->mapWithKeys(fn ($row) => [$row->id => [
+                'score' => $row->score === null ? null : (int) $row->score,
+                'current_score' => ($row->current_score ?? null) === null ? null : (int) $row->current_score,
+            ]])
+            ->all();
     }
 
     public function getUserBestScoresByPeriod(Game $game, int $userId): Collection
@@ -136,7 +194,9 @@ class ScoreService
                 ->values();
         });
 
+        // (the players with a score only)
         return User::query()
+            ->whereIn('id', $playerScores->keys())
             ->get(['id', 'etwin_id', 'display_name'])
             ->map(fn (User $user) => [
                 'user' => [
@@ -202,7 +262,7 @@ class ScoreService
             ->distinct();
 
         $bestRunsPerUser = Run::query()
-            ->select('runs.*')
+            ->withoutReplay()
             ->selectRaw('
                 ROW_NUMBER() OVER (
                     PARTITION BY runs.game_id, runs.user_id

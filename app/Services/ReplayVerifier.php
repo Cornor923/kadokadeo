@@ -25,7 +25,8 @@ class ReplayVerifier
         return (bool) config('kado.replay_verifier.enabled');
     }
 
-    // the runs that count: a personal best (the leaderboards), a contract (kadopoints) or the daily game
+    // the runs that count: a personal best (the leaderboards), a contract (kadopoints), the daily game, or a run of the
+    // clan (an attack, a defense, a mission step: its score counts for the clan even below the best of the player)
     public function shouldVerify(Run $run, int $previousBestScore): bool
     {
         if (!$this->enabled() || $run->is_cheat) {
@@ -34,7 +35,8 @@ class ReplayVerifier
 
         return $run->score > $previousBestScore
             || ($run->contract_score > 0 && $run->score >= $run->contract_score)
-            || $run->daily_game_id !== null;
+            || $run->daily_game_id !== null
+            || app(ClanRunService::class)->isClanRun($run);
     }
 
     // the game has an analyzer of the moves (resources/js/replay-verifier/analyzers/<key>.mjs), turned on

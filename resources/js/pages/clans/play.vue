@@ -11,8 +11,13 @@ const { fetchGame } = useGames()
 const action = ref(null)
 const game = ref(null)
 const result = ref(null)
-// "Rejouer" in the game: false when the next run would be a normal run (the step completed, the attack over...)
+// "Rejouer" in the game: false when the next run would be a normal run (the attack over...)
 const countsAgain = ref(true)
+// a mission step no longer open (completed, by the player or another member, or the mission over): no more runs here,
+// the page goes back to the missions (as on KadoKado)
+const closedMessage = ref(null)
+const BACK_TO_MISSIONS_MS = 3000
+let backTimer = null
 
 fetchAction(route.params.action).then((data) => {
   action.value = data.data
@@ -30,7 +35,11 @@ const onGameFinished = (e) => {
     // the next run of the page counts for the clan too while the target is open
     playAgain(action.value.id).then((data) => {
       countsAgain.value = data.data !== null
-      if (data.data) {
+      if (data.closed) {
+        closedMessage.value = data.closed
+        game.value = null
+        backTimer = setTimeout(() => router.push(backRoute.value), BACK_TO_MISSIONS_MS)
+      } else if (data.data) {
         router.replace({ params: { action: data.data.id } })
         fetchAction(data.data.id).then((actionData) => {
           action.value = actionData.data
@@ -40,7 +49,10 @@ const onGameFinished = (e) => {
   }
 }
 onMounted(() => window.evts.addEventListener('gameFinished', onGameFinished))
-onUnmounted(() => window.evts.removeEventListener('gameFinished', onGameFinished))
+onUnmounted(() => {
+  window.evts.removeEventListener('gameFinished', onGameFinished)
+  clearTimeout(backTimer)
+})
 
 const backRoute = computed(() => {
   const id = action.value?.clan.id
@@ -75,7 +87,10 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
       <template v-if="result">
         <MessageSuccess v-if="isSuccess">{{ result.message }}</MessageSuccess>
         <MessageError v-else>{{ result.message }}</MessageError>
-        <p class="text-center text-sm">
+        <p v-if="closedMessage" class="text-center">
+          {{ closedMessage }} Retour à la page des missions dans quelques secondes...
+        </p>
+        <p v-else class="text-center text-sm">
           <template v-if="countsAgain">Si vous rejouez, votre nouvelle partie comptera aussi pour votre clan.</template>
           <template v-else>Si vous rejouez, ce sera une partie normale : elle ne comptera plus pour votre clan.</template>
         </p>

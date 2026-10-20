@@ -25,7 +25,7 @@ class RunPolicy
 
     public function view(User $user, $run)
     {
-        if (!$run->replay) {
+        if (!$run->has_replay) {
             return $this->deny('No replay for this run');
         }
 
