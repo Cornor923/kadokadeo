@@ -362,7 +362,10 @@ class Hero extends Entity {
 			// Base
 			dy -= 0.55;
 			stable = false;
-			cd.set("jumpExtend", 3);
+			// (Arkadeo HTML5 port: the original has no super jump) with the super power, the extension of a held jump
+			// lasts one more frame: its top goes from 3.5 to 4.75 cells, it still lands one floor up (floors are 3 cells
+			// apart) but reaches an item lying two floors up; a tapped jump keeps its height
+			cd.set("jumpExtend", hasSuperPower() ? 4 : 3);
 
 			var s = mode.tiles.getAndPlay("fx_jump", 1, true);
 			mode.dm.add(s, Const.DP_FX);
