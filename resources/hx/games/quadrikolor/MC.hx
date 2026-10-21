@@ -268,8 +268,11 @@ class MC {
 		s.visible = vis && !hide && !s.selfRemoved;
 	}
 
+	// the last attached first: a score line is inside its sheet (attached after it), destroyed with its children
 	public static function clearAll():Void {
-		for (m in all.copy())
+		var list = all.copy();
+		list.reverse();
+		for (m in list)
 			m.removeMovieClip();
 		all = [];
 	}

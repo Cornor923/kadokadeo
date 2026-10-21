@@ -515,10 +515,7 @@ class KadoKadeoManager extends Application {
 		AntiCheat.reset();
 		common_haxe_avm1.kac.Integrity.disarm();
 
-		if (game != null) {
-			game.destroy();
-			game = null;
-		}
+		destroyGame();
 
 		if (startScene != null) {
 			if (startScene.parent != null) {
@@ -813,6 +810,21 @@ class KadoKadeoManager extends Application {
 		}
 	}
 
+	// the game is let go first: a game that fails to destroy itself must not go on (after "Changer de partie" it would
+	// finish under the new run, with the replay of its own seed: Quadrikolor during its score sheet)
+	function destroyGame():Void {
+		var g = game;
+		game = null;
+		if (g == null) {
+			return;
+		}
+		try {
+			g.destroy();
+		} catch (e:Dynamic) {
+			trace('Game destroy failed: ' + e);
+		}
+	}
+
 	// the replay starts again from its first frame, without leaving the screen of the game
 	function restartReplay():Void {
 		var paused = replayPaused;
@@ -824,10 +836,7 @@ class KadoKadeoManager extends Application {
 			gameOverScreen.destroy({children: true});
 			gameOverScreen = null;
 		}
-		if (game != null) {
-			game.destroy();
-			game = null;
-		}
+		destroyGame();
 		if (gameRoot != null) {
 			if (gameRoot.parent != null) {
 				gameRoot.parent.removeChild(gameRoot);
