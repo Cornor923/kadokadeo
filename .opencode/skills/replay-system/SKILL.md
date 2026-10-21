@@ -180,8 +180,8 @@ KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: cell.x, y: cell.y});
     - `resources/hx/games/interwheel/Game.hx`
     - `resources/hx/games/kaskade2/Game.hx`
     - `resources/hx/games/zipzap/Game.hx`
-- Evenements metier seuls:
-    - `resources/hx/games/chocomouche/Game.hx`
+- Clics en evenements, appliques avant le stir (`applyInputEvents`, voir plus bas):
+    - `resources/hx/games/chocomouche/Game.hx`, `resources/hx/games/opalus2/Game.hx`
 - Inputs + evenements metier:
     - `resources/hx/games/opalus2/Game.hx`
     - `resources/hx/games/kslash/Game.hx`
@@ -199,6 +199,23 @@ KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: cell.x, y: cell.y});
       aleatoire par event) ; l'appui garde la phase de l'input.
 
 ## Points d'attention importants
+
+- Jamais de callback d'input sur un sprite (`ASprite.onPress` / `onRelease` / `onRollOver` / `onMouseMove`...): ils
+  partent des evenements PIXI, dans `MouseManager.beginFrame`, donc avant le `Seed.stir` de la frame, alors que le
+  replay applique ses evenements dans `update()` (apres le stir): un clic qui tire le RNG de gameplay (Chocomouche:
+  les bombes) diverge. Lire la souris en polling. Un jeu dont le clic doit rester avant le stir (anciens replays
+  enregistres avec les callbacks) definit `applyInputEvents()`: appele par `KadoKadeoManager` entre
+  `replay.beginFrame()` et le stir, il y lit la souris en live (evenement enregistre avec
+  `recordEvent(e, replay.getCurrentFrame())`) et y applique les evenements du replay. Les `onPress` champs d'une classe
+  `MC` du jeu, appeles par son `Buttons.hx` depuis la souris pollee (Electrolink, Hypercube, Logic'O...), sont du
+  polling: pas concernes.
+- Ne pas lire la souris / le clavier dans le constructeur du jeu: rien n'est encore enregistre (en replay, la position
+  donnee est celle de la frame 0, `MouseManager.presetPosition`).
+- La position de la souris n'est jamais negative (`MouseManager.getX/getY`, comme l'enregistrement): pointeur sorti a
+  gauche / en haut = 0.
+- Le gameplay ne lit pas les pixels d'une texture (`PixelHelper.extract`, `renderer.extract`): le GPU donne d'autres
+  bords d'une machine a l'autre, et le verificateur du serveur n'a pas de GPU. Garder un modele CPU (Crepuscud:
+  `ground`).
 
 - Lorsque le jeu est en recordEvent et possède une grille où x et y sont inférieurs à 8 (entre 0 et 7), on peut utiliser recordEvent({k: 0-3, x: 0-7, y: 0-7}) pour encoder un event en un seul octet (k<<6 | x<<3 | y). Cela permet de réduire la taille du replay.
 - Si le jeu est en recordEvent mais n'est pas dans une grille, utiliser un autre valeur que "k" dans l'objet recordé.

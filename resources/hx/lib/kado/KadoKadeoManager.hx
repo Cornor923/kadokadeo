@@ -258,6 +258,7 @@ class KadoKadeoManager extends Application {
 			if (runFlow.state == Playing && game != null) {
 				pollGameTouchControls();
 				replay.beginFrame();
+				applyGameInputEvents();
 				Seed.stir(replay.getCurrentFrame(), replay.getFrameSignature());
 				pollManagerShortcuts();
 				gameRoot.update();
@@ -1174,6 +1175,19 @@ class KadoKadeoManager extends Application {
 			return;
 		}
 		var fn = Reflect.field(game, "pollTouchControls");
+		if (fn != null) {
+			Reflect.callMethod(game, fn, []);
+		}
+	}
+
+	// a game that acts in the input callbacks of its sprites (onPress, onRelease...): they run in MouseManager.beginFrame,
+	// before the stir of the frame. Its replay must apply the recorded events at the same moment, not in update (after
+	// the stir: the gameplay draws of the action would differ). Game.applyInputEvents(), see chocomouche.Game
+	function applyGameInputEvents():Void {
+		if (game == null) {
+			return;
+		}
+		var fn = Reflect.field(game, "applyInputEvents");
 		if (fn != null) {
 			Reflect.callMethod(game, fn, []);
 		}

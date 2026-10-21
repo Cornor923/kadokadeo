@@ -4,6 +4,7 @@ import haxe.io.UInt16Array;
 import pixi.core.renderers.webgl.filters.Filter;
 import pixi.core.text.Text;
 import common_haxe_avm1.KKApi;
+import common_haxe_avm1.MouseManager;
 import mt.bumdum.Sprite;
 import mt.bumdum.Phys;
 import mt.bumdum.Lib;
@@ -121,11 +122,69 @@ class Game implements kado.GameInterface {
 		return step != Play || flGameOver;
 	}
 
-	public function update(ts:Float) {
-		for (event in KadoKadeoManager.kkm.replay.consumeEvents()) {
-			applyReplayEvent(event);
+	// the clicks, called by KadoKadeoManager before the stir of the frame (the first one of a level draws the bombs): the
+	// live game polls the mouse and records them, the replay applies them at the same moment. Before the stir like the
+	// Slot.onRelease of the replays recorded until 2026-10 (sprite callbacks run in MouseManager.beginFrame)
+	public function applyInputEvents() {
+		var replay = KadoKadeoManager.kkm.replay;
+		if (replay.isPlayingReplay()) {
+			for (event in replay.consumeEvents()) {
+				applyReplayEvent(event);
+			}
+			return;
 		}
+		pollMouse();
+	}
 
+	// the slot under the mouse, the one pressed: the onRollOver / onRollOut / onPress / onRelease / onReleaseOutside of
+	// the slots in Flash (a click: pressed and released on the same slot)
+	var overSlot:Slot;
+	var pressedSlot:Slot;
+
+	function pollMouse() {
+		var slot = slotAt(MouseManager.getX(), MouseManager.getY());
+		if (slot != overSlot) {
+			if (overSlot != null)
+				overSlot.slotOut();
+			overSlot = slot;
+			if (slot != null)
+				slot.slotOver();
+		}
+		if (MouseManager.isButtonJustPressed(MouseManager.BUTTON_LEFT)) {
+			pressedSlot = slot;
+			if (slot != null)
+				slot.imPressed();
+		}
+		if (MouseManager.isButtonJustReleased(MouseManager.BUTTON_LEFT)) {
+			var pressed = pressedSlot;
+			pressedSlot = null;
+			if (pressed != null) {
+				if (pressed == slot)
+					pressed.imClicked();
+				else
+					pressed.imReleased();
+			}
+		}
+	}
+
+	// the slot whose square (0..SLOT_SIZE in its clip) holds the point of the game (its state, not the picture shown)
+	function slotAt(x:Float, y:Float):Slot {
+		if (grid == null)
+			return null;
+		var p = new pixi.core.math.Point(x, y);
+		for (column in grid) {
+			for (s in column) {
+				if (s == null || s.root == null || s.root.parent == null)
+					continue;
+				var l = s.root.toLocal(p);
+				if (l.x >= 0 && l.x < Cs.SLOT_SIZE && l.y >= 0 && l.y < Cs.SLOT_SIZE)
+					return s;
+			}
+		}
+		return null;
+	}
+
+	public function update(ts:Float) {
 		updateSprites();
 
 		switch (step) {
@@ -186,8 +245,10 @@ class Game implements kado.GameInterface {
 		}
 	}
 
+	// on the frame being played: the replay applies it there, before the stir (applyInputEvents)
 	public function recordSlotClick(pos:Pos) {
-		KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: pos.x, y: pos.y});
+		var replay = KadoKadeoManager.kkm.replay;
+		replay.recordEvent({k: 2, x: pos.x, y: pos.y}, replay.getCurrentFrame());
 	}
 
 	function updateSprites() {
@@ -274,6 +335,8 @@ class Game implements kado.GameInterface {
 				}
 			}
 		}
+		overSlot = null;
+		pressedSlot = null;
 
 		grid = new Array();
 		for (x in 0...Cs.GRID_WIDTH) {

@@ -1,5 +1,6 @@
 package crepuscud;
 
+import haxe.io.Bytes;
 import js.html.IFrameElement;
 import mt.bumdum.Sprite;
 import mt.bumdum.Phys;
@@ -73,6 +74,78 @@ class Game implements kado.GameInterface {
 
 	public var bmpGround:RenderTexture;
 
+	// The ground of the gameplay, GH rows of Cs.mcw pixels (1: ground), computed by the CPU like bmpGround is drawn (the
+	// strip, the elements, the holes): the pixels of the picture, drawn by the GPU, differ from a machine to another at
+	// the edges (and the replay verifier of the server draws without GPU), so a replay read them differently
+	var ground:Bytes;
+	var groundCpu:Bool;
+
+	// replay event at frame 0: the game uses the ground of the CPU
+	static inline var EV_GROUND_CPU = 1;
+
+	// mcGroundElement (frames 1-5): its pixels of alpha >= 128, a rectangle of its 113 x 13 picture (anchor 0.5, 0.947)
+	static var ELEMENT_FRAMES = [0, 0, 1, 1, 2];
+	static var ELEMENT_SHAPES:Array<{x:Int, y:Int, rows:Array<String>}> = [
+		{
+			x: 38,
+			y: 0,
+			rows: [
+				"..............########...............",
+				"...........##############............",
+				".........##################..........",
+				"........####################.........",
+				"......########################.......",
+				".....##########################......",
+				".....###########################.....",
+				"....############################.....",
+				"...##############################....",
+				"...###############################...",
+				"..################################...",
+				"..################################...",
+				"..################################...",
+			]
+		},
+		{
+			x: 22,
+			y: 0,
+			rows: [
+				"............................############............................",
+				"......................########################......................",
+				"...................##############################...................",
+				"................####################################................",
+				"..............########################################..............",
+				"............############################################............",
+				"..........################################################..........",
+				"........####################################################........",
+				".......######################################################.......",
+				".....#########################################################......",
+				"....############################################################....",
+				"...##############################################################...",
+				"...##############################################################...",
+			]
+		},
+		{
+			x: 0,
+			y: 3,
+			rows: [
+				".................................................................................................................",
+				".................................................................................................................",
+				"..........................................############################...........................................",
+				"..............................####################################################...............................",
+				"......................####################################################################.......................",
+				"................################################################################################.................",
+				"...........##########################################################################################............",
+				".......##################################################################################################........",
+				"...##########################################################################################################....",
+				".................................................................................................................",
+			]
+		},
+	];
+	static inline var ELEMENT_ANCHOR_X = 56.5;
+	static inline var ELEMENT_ANCHOR_Y = 12.315784;
+	// mcOnde: a disc of 100 pixels of radius (200 x 200, anchor 0.5)
+	static inline var HOLE_RAY = 100;
+
 	public var step:Step;
 	public var plasma:Plasma;
 	public var dm:mt.DepthManager;
@@ -90,13 +163,23 @@ class Game implements kado.GameInterface {
 	public function new(root:ASprite, ?isReplay:Bool = false) {
 		var replayMouseButtons = new UInt16Array(1);
 		replayMouseButtons[0] = MouseManager.BUTTON_LEFT;
-		KadoKadeoManager.kkm.replay.init({
+		var replay = KadoKadeoManager.kkm.replay;
+		replay.init({
 			recordedKeys: new UInt16Array(0),
 			recordInputs: false,
-			recordEvents: false,
+			// (only EV_GROUND_CPU)
+			recordEvents: true,
 			recordMousePosition: true,
 			recordedMouseButtons: replayMouseButtons,
 		});
+		// the ground computed by the CPU (see ground): the replays recorded before it (2026-10) read the pixels of the
+		// picture, like their live game
+		if (replay.isPlayingReplay()) {
+			groundCpu = Lambda.exists(replay.getReplayEvents(), (e) -> e.event != null && e.event.k == EV_GROUND_CPU);
+		} else {
+			groundCpu = true;
+			replay.recordEvent({k: EV_GROUND_CPU}, 0);
+		}
 
 		this.root = root;
 		me = this;
@@ -166,6 +249,9 @@ class Game implements kado.GameInterface {
 		Filt.glow(mc, 2, 2, 0xCC6600); // TODO filt.glow à bannir et à mettre sur l'image directement
 
 		bmpGround.fillRect(new Rectangle(0, GH - RGH, Cs.mcw, RGH), 0x000000);
+		ground = Bytes.alloc(Std.int(Cs.mcw) * Std.int(GH));
+		for (y in Std.int(GH - RGH)...Std.int(GH))
+			ground.fill(y * Std.int(Cs.mcw), Std.int(Cs.mcw), 1);
 
 		// ELEMENTS
 		var mc = dm.attach("mcGroundElement", 0);
@@ -174,9 +260,12 @@ class Game implements kado.GameInterface {
 			var sc = 0.5 + Seed.randVfx() * 0.5;
 			var m = new Matrix();
 			m.scale(sc, sc);
-			m.translate(ma + Seed.randomVfx(Cs.mcw - ma), GH - RGH);
-			mc.gotoAndStop(Seed.randomVfx(mc._totalframes) + 1);
+			var tx = ma + Seed.randomVfx(Cs.mcw - ma);
+			m.translate(tx, GH - RGH);
+			var frame = Seed.randomVfx(mc._totalframes) + 1;
+			mc.gotoAndStop(frame);
 			bmpGround.draw(mc, m);
+			groundElement(frame, sc, tx, GH - RGH);
 		}
 		mc.removeMovieClip();
 
@@ -369,19 +458,69 @@ class Game implements kado.GameInterface {
 		mc.blendMode = untyped BlendModes.ERASE;
 		bmpGround.draw(mc, m);
 		mc.removeMovieClip();
+		groundHole(Std.int(x), Std.int(y - GY), HOLE_RAY * sc);
 		if (y + sc * 50 > Cs.mch + 1) {
 			initGameOver();
 			holes.push(x);
 		}
 	}
 
-	public function getGroundHeight(x) {
+	public function getGroundHeight(x:Int) {
+		if (groundCpu) {
+			var w = Std.int(Cs.mcw);
+			// (outside: the first row, like the pixels read out of the picture)
+			if (x < 0 || x >= w)
+				return GY;
+			for (y in 0...Std.int(GH)) {
+				if (ground.get(y * w + x) != 0)
+					return GY + y;
+			}
+			return Cs.mch;
+		}
 		var pixels = PixelHelper.extract(bmpGround);
 		for (y in 0...Std.int(GH)) {
 			if (pixels.getPixelAlpha(x, y) != 0)
 				return GY + y;
 		}
 		return Cs.mch;
+	}
+
+	// an element drawn at (tx, ty) scaled by sc: the pixels whose middle falls on a pixel of its picture
+	function groundElement(frame:Int, sc:Float, tx:Float, ty:Float) {
+		var shape = ELEMENT_SHAPES[ELEMENT_FRAMES[frame - 1]];
+		var w = Std.int(Cs.mcw), h = Std.int(GH);
+		var sw = shape.rows[0].length, sh = shape.rows.length;
+		var x0 = Std.int(Math.max(0, Math.floor(tx + (shape.x - ELEMENT_ANCHOR_X) * sc)));
+		var x1 = Std.int(Math.min(w, Math.ceil(tx + (shape.x + sw - ELEMENT_ANCHOR_X) * sc)));
+		var y0 = Std.int(Math.max(0, Math.floor(ty + (shape.y - ELEMENT_ANCHOR_Y) * sc)));
+		var y1 = Std.int(Math.min(h, Math.ceil(ty + (shape.y + sh - ELEMENT_ANCHOR_Y) * sc)));
+		for (py in y0...y1) {
+			var v = Math.floor((py + 0.5 - ty) / sc + ELEMENT_ANCHOR_Y) - shape.y;
+			if (v < 0 || v >= sh)
+				continue;
+			var row = shape.rows[Std.int(v)];
+			for (px in x0...x1) {
+				var u = Math.floor((px + 0.5 - tx) / sc + ELEMENT_ANCHOR_X) - shape.x;
+				if (u >= 0 && u < sw && row.charCodeAt(Std.int(u)) == "#".code)
+					ground.set(py * w + px, 1);
+			}
+		}
+	}
+
+	// mcOnde drawn with ERASE at (cx, cy): the pixels whose middle is in its disc
+	function groundHole(cx:Int, cy:Int, ray:Float) {
+		var w = Std.int(Cs.mcw), h = Std.int(GH);
+		var r2 = ray * ray;
+		var x0 = Std.int(Math.max(0, Math.floor(cx - ray))), x1 = Std.int(Math.min(w, Math.ceil(cx + ray) + 1));
+		var y0 = Std.int(Math.max(0, Math.floor(cy - ray))), y1 = Std.int(Math.min(h, Math.ceil(cy + ray) + 1));
+		for (py in y0...y1) {
+			var dy = py + 0.5 - cy;
+			for (px in x0...x1) {
+				var dx = px + 0.5 - cx;
+				if (dx * dx + dy * dy < r2)
+					ground.set(py * w + px, 0);
+			}
+		}
 	}
 
 	public function destroy():Void {}

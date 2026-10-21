@@ -40,6 +40,8 @@ export async function launch(browser) {
     // no crash handler: it detaches itself from Chrome (left to PID 1 in a container)
     '--disable-breakpad', '--disable-crash-reporter',
     '--enable-unsafe-swiftshader', '--use-angle=swiftshader',
+    // a new profile asks the keychain of macOS for a "Chrome" entry (a dialog at each run): none kept
+    '--use-mock-keychain', '--password-store=basic',
     // in a container: no sandbox (it needs the user namespaces, and can't run as root), small /dev/shm, and no zygote
     // (its processes outlive Chrome, left to PID 1). On any Linux server: a container is not always told by
     // /.dockerenv (Kubernetes, Podman...), and the page only runs the bundles of the site

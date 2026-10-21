@@ -71,18 +71,25 @@ class MouseManager {
 		return getY();
 	}
 
+	// never negative: the replay records no negative position (kado.ReplayManager.captureFrameMousePosition), the pointer
+	// that leaves the canvas on the left or the top (pointerleave, pointer capture) is read at 0 by the live game too
 	static public function getX():Int {
-		if (hasPolledCoords) {
-			return polledX;
-		}
-		return getLiveX();
+		var x = hasPolledCoords ? polledX : getLiveX();
+		return x < 0 ? 0 : x;
 	}
 
 	static public function getY():Int {
-		if (hasPolledCoords) {
-			return polledY;
-		}
-		return getLiveY();
+		var y = hasPolledCoords ? polledY : getLiveY();
+		return y < 0 ? 0 : y;
+	}
+
+	// replay: the position of the player when the game began (its first recorded one), read by a game before its first
+	// frame (the live game reads the pointer then)
+	static public function presetPosition(x:Int, y:Int):Void {
+		ensureStateInitialized();
+		hasPolledCoords = true;
+		polledX = x;
+		polledY = y;
 	}
 
 	static public function isButtonDown(button:Int):Bool {

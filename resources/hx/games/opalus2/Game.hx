@@ -3,6 +3,7 @@ package opalus2;
 import haxe.io.UInt16Array;
 import mt.bumdum.Sprite;
 import common_haxe_avm1.KKApi;
+import common_haxe_avm1.MouseManager;
 import mt.bumdum.Lib;
 import mt.DepthManager;
 import mt.Timer;
@@ -181,18 +182,8 @@ class Game implements kado.GameInterface {
 
 		// Replaced GPU mask with logical culling.
 
-		// DONT REPRODUCE THIS FOR ANY OTHER GAME. THIS IS NOT HOW ITS SUPPOSED TO BE DONE
-		// Events should not be listened for deterministic games.
-		// To have a deterministic game, you have to check if mouse button is clicked or check the X and Y position of the mouse, DONT USE EVENTS.
-		map.onPress = function() {
-			onMapPress();
-		};
-		map.onMouseMove = function() {
-			onMapMove();
-		};
-		map.onRollOut = function() {
-			onMapOut();
-		};
+		// (map.onPress / onMouseMove / onRollOut: the mouse is polled, see applyInputEvents; only the hand cursor here)
+		map.interactive = true;
 		map.useHandCursor = true;
 		KKApi.registerButton(map);
 		updateLogicalCulling();
@@ -275,10 +266,23 @@ class Game implements kado.GameInterface {
 		}
 	}
 
-	public function update(delta:Float) {
-		for (event in KadoKadeoManager.kkm.replay.consumeEvents()) {
-			applyReplayEvent(event);
+	// the hover and the presses on the map, called by KadoKadeoManager before the stir of the frame: the live game polls
+	// the mouse and records them, the replay applies them at the same moment (the replays recorded until 2026-10: the
+	// callbacks of the map, in MouseManager.beginFrame)
+	public function applyInputEvents() {
+		if (isReplayMode) {
+			for (event in KadoKadeoManager.kkm.replay.consumeEvents()) {
+				applyReplayEvent(event);
+			}
+			return;
 		}
+		onMapMove();
+		if (MouseManager.isButtonJustPressed(MouseManager.BUTTON_LEFT)) {
+			onMapPress();
+		}
+	}
+
+	public function update(delta:Float) {
 
 		timer -= Timer.tmod;
 		switch (step) {
@@ -789,6 +793,7 @@ class Game implements kado.GameInterface {
 		return centerEmpty;
 	}
 
+	// the hover of a cell (onMouseMove / onRollOut of the map in Flash): each frame, from the mouse polled
 	public function onMapMove() {
 		if (isReplayMode) {
 			return;
@@ -801,16 +806,6 @@ class Game implements kado.GameInterface {
 			return;
 		}
 		updateHoverFromCell(pos, true);
-	}
-
-	public function onMapOut() {
-		if (isReplayMode) {
-			return;
-		}
-		if (hoveredCell == null && hoverColor == -1) {
-			return;
-		}
-		updateHoverFromCell(null, true);
 	}
 
 	public function updateHoverFromCell(pos:{x:Int, y:Int}, ?recordEvent:Bool = false) {
@@ -833,7 +828,8 @@ class Game implements kado.GameInterface {
 
 		if (recordEvent && id != -1 && pos != null) {
 			if (hoveredCell == null || hoveredCell.x != pos.x || hoveredCell.y != pos.y) {
-				KadoKadeoManager.kkm.replay.recordEvent({k: 0, x: pos.x, y: pos.y});
+				// (on the frame being played: the replay applies it there, see applyInputEvents)
+				KadoKadeoManager.kkm.replay.recordEvent({k: 0, x: pos.x, y: pos.y}, KadoKadeoManager.kkm.replay.getCurrentFrame());
 			}
 		}
 
@@ -859,7 +855,7 @@ class Game implements kado.GameInterface {
 		var pos = getMouseCell();
 		if (pos != null) {
 			if (!isReplayMode) {
-				KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: pos.x, y: pos.y});
+				KadoKadeoManager.kkm.replay.recordEvent({k: 2, x: pos.x, y: pos.y}, KadoKadeoManager.kkm.replay.getCurrentFrame());
 			}
 			selectFromCell(pos.x, pos.y);
 		}

@@ -72,12 +72,10 @@ class Slot extends Phys {
 		mc._x = Cs.GRID_X + pos.x * Cs.SLOT_SIZE;
 		mc._y = Cs.GRID_Y + pos.y * Cs.SLOT_SIZE;
 
-		mc.onRollOver = slotOver;
-		mc.onRollOut = slotOut;
-		mc.onRelease = imClicked;
-		mc.onPress = imPressed;
-		mc.onReleaseOutside = imReleased;
+		// (onRollOver = slotOver, onRollOut = slotOut, onPress = imPressed, onRelease = imClicked, onReleaseOutside =
+		// imReleased: the mouse is polled, Game.pollMouse; only the hand cursor here)
 		mc.interactive = true;
+		mc.buttonMode = true;
 		common_haxe_avm1.KKApi.registerButton(mc);
 		initPartsPool();
 		// ### TO CONTINUE
@@ -153,7 +151,7 @@ class Slot extends Phys {
 		return count;
 	}
 
-	function imPressed() {
+	public function imPressed() {
 		if (canBeClicked())
 			return;
 
@@ -161,7 +159,7 @@ class Slot extends Phys {
 		slot._yscale = 92;
 	}
 
-	function imReleased() {
+	public function imReleased() {
 		if (canBeClicked())
 			return;
 

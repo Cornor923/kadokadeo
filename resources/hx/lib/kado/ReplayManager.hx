@@ -182,6 +182,11 @@ class ReplayManager {
 			common_haxe_avm1.MouseManager.setInputLocked(true);
 			common_haxe_avm1.KeyboardManager.clearState();
 			common_haxe_avm1.MouseManager.clearState();
+			// a game that reads the mouse when it is built (Alphabounce) gets the position of the player at frame 0, the
+			// one its live game read then, not the pointer of the viewer
+			if (playFrames.length > 0 && playFrames[0] == 0 && playRecords[0].mousePosition != null) {
+				common_haxe_avm1.MouseManager.presetPosition(playRecords[0].mousePosition.x, playRecords[0].mousePosition.y);
+			}
 		} else {
 			this.isRecording = true;
 			frameRecords = new IntMap();
