@@ -17,7 +17,7 @@ class AnalyzeReplays extends Command
      *
      * @var string
      */
-    protected $signature = 'kado:replays:analyze {game : game_key of the game (binary...)} {--since= : runs finished since this date} {--limit=50 : number of runs (the latest)} {--user= : runs of this user id only}';
+    protected $signature = 'kado:replays:analyze {game : game_key of the game (binary...)} {--since= : runs finished since this date} {--limit=50 : number of runs (the latest)} {--user= : runs of this user id only} {--metrics= : other metrics of the analyzer shown as columns, comma separated (lookaheadRate,instantRate...)} {--json= : also write every result (metrics of the analyzer included) to this file}';
 
     /**
      * The console command description.
@@ -82,12 +82,19 @@ class AnalyzeReplays extends Command
 
         $rows = [];
         $rates = [];
-        $this->withProgressBar($runs, function (Run $run) use ($verifier, &$rows, &$rates) {
+        $results = [];
+        // the metrics of a game that the common columns don't show (see its analyzer)
+        $extra = array_values(array_filter(array_map('trim', explode(',', (string) $this->option('metrics')))));
+        $this->withProgressBar($runs, function (Run $run) use ($verifier, $extra, &$rows, &$rates, &$results) {
             $result = $verifier->verify($run);
+            // a replay that no longer ends with the score of the run (a game changed since): its moves are not the ones
+            // of the run, its analysis says nothing
+            $diverged = $result['ok'] && (int) $result['score'] !== (int) $run->score;
+            $results[] = ['run' => $run->id, 'user' => $run->user_id, 'score' => $run->score, 'is_cheat' => $run->is_cheat] + $result;
             $analysis = $result['analysis'] ?? null;
             $metrics = $analysis['metrics'] ?? [];
             $rate = $metrics['optimalRate'] ?? null;
-            if ($rate !== null) {
+            if ($rate !== null && !$diverged) {
                 $rates[] = $rate;
             }
             $rows[] = [
@@ -99,12 +106,21 @@ class AnalyzeReplays extends Command
                 $rate ?? '—',
                 $metrics['valueRate'] ?? '—',
                 $metrics['medianDecisionFrames'] ?? '—',
-                !$result['ok'] ? 'erreur : '.$result['error'] : ($analysis['error'] ?? (($analysis['suspicious'] ?? false) ? 'SUSPECT' : '')),
+                ...array_map(fn (string $name) => $metrics[$name] ?? '—', $extra),
+                match (true) {
+                    !$result['ok'] => 'erreur : '.$result['error'],
+                    isset($analysis['error']) => $analysis['error'],
+                    $diverged => "replay divergent (score {$result['score']})",
+                    default => ($analysis['suspicious'] ?? false) ? 'SUSPECT : '.implode(' ; ', $analysis['reasons'] ?? []) : '',
+                },
             ];
         });
         $this->newLine(2);
+        if ($this->option('json')) {
+            file_put_contents($this->option('json'), json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
 
-        $this->table(['Partie', 'Joueur', 'Score', 'Triche', 'Coups', 'Meilleur coup', 'Points / max', 'Temps médian (frames)', ''], $rows);
+        $this->table(['Partie', 'Joueur', 'Score', 'Triche', 'Coups', 'Meilleur coup', 'Points / max', 'Temps médian (frames)', ...$extra, ''], $rows);
 
         if ($rates) {
             sort($rates);

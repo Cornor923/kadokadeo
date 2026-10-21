@@ -19,7 +19,7 @@ import { basename, dirname, extname, join, normalize, resolve, sep } from 'node:
 import { fileURLToPath } from 'node:url'
 
 import { findBrowser } from './browser.mjs'
-import { deadline, launch } from './cdp.mjs'
+import { deadline, launch, output } from './cdp.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const PUBLIC = join(ROOT, 'public')
@@ -157,21 +157,51 @@ async function verify(input) {
   const b = await launch(path)
   try {
     await b.goto(`http://127.0.0.1:${server.address().port}/`)
-    await b.waitFor('!!window.__crash || !!(window.kk && kk.game && kk.replay.isPlayingReplay())', 120000)
-    // the physics is only stepped by hand from now on (an own property: the prototypes of the game may be frozen)
-    await b.eval('Object.defineProperty(kk.ff, "onTick", { value: function () {}, configurable: true, writable: true })')
-    const maxFrames = (await b.eval('kk.getReplayLength()')) + EXTRA_FRAMES
-    // the analyzer of the game: reads the game before each frame (read only), its errors only end the analysis
+    await b.waitFor('!!window.__crash || !!(window.kk && kk.ff)', 120000)
+    // the physics is only stepped by hand once the replay plays (own properties: the prototypes of the game may be
+    // frozen). The live loop is stopped in its step that would play the first frame of the replay (kado.FixedFramerate
+    // calls its `update` once per step), so the analyzer sees every frame; an older build without it: stopped when
+    // the replay is seen playing, a few frames later
     const analyzer = analyzerOf(input)
-    if (analyzer) {
-      await b.eval(`(async () => {
+    await b.eval(`(() => {
+      const ff = kk.ff, update = ff.update
+      // the analyzer of the game: reads the game before each frame (read only), its errors only end the analysis
+      window.__createAnalyzer = () => {
+        const m = window.__analyzerModule
+        if (!m || window.__analyzer || window.__analyzerError) return
         try {
-          const m = await import('/__analyzers/${analyzer}.mjs')
           window.__analyzerMeta = m.meta
           window.__analyzer = m.create({ kk, config: ${JSON.stringify(input.analysis)} })
         } catch (e) { window.__analyzerError = String((e && e.message) || e) }
-      })()`)
+      }
+      window.__start = () => {
+        if (!window.__started) {
+          window.__started = true
+          Object.defineProperty(ff, 'onTick', { value: function () {}, configurable: true, writable: true })
+        }
+        window.__createAnalyzer()
+      }
+      if (typeof update !== 'function') return
+      try {
+        Object.defineProperty(ff, 'update', { configurable: true, writable: true, value: function (dt) {
+          if (!window.__started && kk.game && kk.replay.isPlayingReplay()) {
+            window.__start()
+            // ends the loop of this tick (FixedFramerate.onTick: while accumulator >= STEP)
+            ff.accumulator = 0
+            return
+          }
+          return update.call(this, dt)
+        } })
+      } catch { /* not extensible: stopped later */ }
+    })()`)
+    if (analyzer) {
+      await b.eval(`import('/__analyzers/${analyzer}.mjs').then((m) => { window.__analyzerModule = m },
+        (e) => { window.__analyzerError = String((e && e.message) || e) })`)
     }
+    await b.waitFor('!!window.__crash || !!window.__started || !!(kk.game && kk.replay.isPlayingReplay())', 120000)
+    // a build without FixedFramerate.update, or the replay began before the analyzer was loaded
+    await b.eval('window.__start()')
+    const maxFrames = (await b.eval('kk.getReplayLength()')) + EXTRA_FRAMES
     let state
     do {
       state = await b.eval(`(() => {
@@ -216,8 +246,7 @@ async function verify(input) {
 deadline((seconds) => ({ ok: false, error: `the verification took more than ${seconds} s` }))
 try {
   const input = JSON.parse(await readFile(process.argv[2], 'utf8'))
-  console.log(JSON.stringify(await verify(input)))
+  output(await verify(input))
 } catch(e) {
-  console.log(JSON.stringify({ ok: false, error: String(e?.message || e).slice(0, 1000) }))
+  output({ ok: false, error: String(e?.message || e).slice(0, 1000) })
 }
-process.exit(0)

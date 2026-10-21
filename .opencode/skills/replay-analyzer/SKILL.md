@@ -17,6 +17,11 @@ l'écran (Binary, Kaskade 2, Logico, Hexile, Quadrikolor...). Jeux d'action/réf
 des métriques de temps/régularité des entrées (temps de réaction sous ~100 ms, intervalles trop réguliers) ; à
 proposer à l'utilisateur avant de s'y lancer, le taux de faux positifs est plus dur à tenir.
 
+Choisir ce qu'on regarde selon le jeu, pas toujours « le meilleur coup » : une information cachée lue dans la mémoire
+du jeu laisse une trace bien plus sûre (Memopsy : paires trouvées sans avoir vu la seconde carte, comparées à la chance),
+un auto-joueur externe se voit à sa précision (Toy Maniak : clics au même pixel), un script branché sur la boucle du jeu
+à ses entrées instantanées (Atlanteine). Ne compter que les décisions qui départagent (pas les coups forcés ou évidents).
+
 ## La chaîne (lire avant d'écrire)
 
 1. Fin de partie : `App\Http\Controllers\Api\RunController::end` envoie `VerifyRunReplay` si
@@ -104,6 +109,17 @@ Il faut des parties avec replay dans la base locale (jouer quelques parties en l
 une partie : `--user=<id>`. Une colonne vide ou « erreur : ... » = l'analyseur ne lit pas le jeu (champ, frame du coup).
 Vérifier à la main 2 ou 3 coups notés « meilleur » / « pas meilleur » contre le replay (admin, bouton replay) avant de
 faire confiance aux taux.
+
+- `--metrics=lookaheadRate,instantRate` ajoute des colonnes (métriques propres au jeu), `--json=<fichier>` écrit tous
+  les résultats (métriques complètes) pour calculer ses percentiles. « replay divergent » = le replay ne finit plus
+  avec le score de la partie (le jeu a changé depuis) : exclu des percentiles, ne pas calibrer dessus.
+- Sans parties en base (jeu récent) : des bots du harness (`.opencode/skills/flash-port/scripts/examples/<jeu>/`), un
+  qui joue comme la triche (le solveur) et un « humain » (heuristique + erreurs), passés dans `verify.mjs`. Dans un
+  input écrit à la main, `seed` est une **chaîne** (`"123"`, comme l'envoie le serveur) : un nombre fait diverger le
+  replay. Seuils alors provisoires, à calibrer en production.
+- Depuis un worktree (le conteneur ne monte que le checkout principal) : un conteneur frère de la même image, le worktree
+  monté sur `/www` (avec `vendor/` et `.env` copiés, `public/gamesdata` et `node_modules` du checkout principal montés),
+  sur le réseau `kadokadeo_kadokadeo_network`.
 
 ### 6. Calibrer (production)
 

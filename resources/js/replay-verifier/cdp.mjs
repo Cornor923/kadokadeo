@@ -16,14 +16,17 @@ for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
   process.on(signal, () => process.exit(1))
 }
 
+// prints the result of the script (one JSON line) and quits once it is written: process.exit right after console.log
+// cuts a long line sent to a pipe (App\Services\ReplayVerifier reads it)
+export function output(value) {
+  process.stdout.write(JSON.stringify(value) + '\n', () => process.exit(0))
+}
+
 // a timeout for the whole script (env KADO_VERIFIER_TIMEOUT, seconds): it prints its result (one JSON line) and quits
 export function deadline(result) {
   const seconds = +process.env.KADO_VERIFIER_TIMEOUT
   if (!(seconds > 0)) return
-  setTimeout(() => {
-    console.log(JSON.stringify(result(seconds)))
-    process.exit(0)
-  }, seconds * 1000).unref()
+  setTimeout(() => output(result(seconds)), seconds * 1000).unref()
 }
 
 export async function launch(browser) {

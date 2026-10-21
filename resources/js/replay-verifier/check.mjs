@@ -9,7 +9,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { findBrowser, missingLibraries } from './browser.mjs'
-import { deadline, launch } from './cdp.mjs'
+import { deadline, launch, output } from './cdp.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const CACHE = process.env.KADO_VERIFIER_CACHE || join(ROOT, 'storage/app/replay-verifier')
@@ -59,5 +59,4 @@ if (report.browser.path) {
   }
 }
 
-console.log(JSON.stringify(report))
-process.exit(0)
+output(report)
