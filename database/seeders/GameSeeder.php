@@ -107,7 +107,7 @@ class GameSeeder extends Seeder
             ['name' => 'Klinker Surprise', 'image_path' => '/assets/img/games/Klinker_Surprise.png', 'is_active' => true, 'stars' => [16111, 48333, 64444]],
             ['name' => 'Tubulo', 'image_path' => '/assets/img/games/Tubulo.png', 'is_active' => true, 'stars' => [7000, 12000, 17000]],
             ['name' => 'Memopsy', 'image_path' => '/assets/img/games/Memopsy.png', 'is_active' => true, 'stars' => [12000, 24000, 30000]],
-            ['name' => 'Rock Faller', 'image_path' => '/assets/img/games/Rock_Faller.png', 'is_active' => false],
+            ['name' => 'Rock Faller', 'image_path' => '/assets/img/games/Rock_Faller.png', 'is_active' => true, 'is_arkadeo' => true, 'stars' => [6000, 15000, 25000], 'description' => "Fais pivoter les pierres par carrés de quatre pour réunir au moins quatre gemmes de la même couleur, et fais tomber les rochers noirs dans les tubes pour gagner des coups ou des points. Tu n'as que 10 coups au départ : à toi de faire durer la partie !"],
             ['name' => 'Animoz', 'image_path' => '/assets/img/games/Animoz.png', 'is_active' => false],
             ['name' => 'Nosushi', 'image_path' => '/assets/img/games/Nosushi.png', 'is_active' => false],
             ['name' => 'BattleSheep', 'image_path' => '/assets/img/games/BattleSheep.png', 'is_active' => false],
