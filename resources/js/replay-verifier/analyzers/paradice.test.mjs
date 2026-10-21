@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { COLS, EMPTY, ICE, ROWS, fall, groupPoints, groups, place, rateMove, rateShifts, resolve } from './paradice/solver.mjs'
+import { COLS, EMPTY, fall, groupPoints, groups, ICE, place, rateMove, rateShifts, resolve,ROWS } from './paradice/solver.mjs'
 
 // a grid from rows written top to bottom (the last row is y = 0, just above the line), one character by column x:
 // '.' empty, a digit a colour, a letter a frozen ball of a colour (a = 0, b = 1...)

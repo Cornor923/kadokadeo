@@ -199,7 +199,7 @@ function playLink(analyzer, game, frame, cells, gap = 5) {
   return frame
 }
 
-test('the analyzer: clicks read from the tiles turning, a link rated on the board shown', async () => {
+test('the analyzer: clicks read from the tiles turning, a link rated on the board shown', async() => {
   const { create } = await import('./electrolink.mjs')
   const b = board('00 00 01 00 01 00 00 00', '. . 30 30 30 . . .')
   // the best link (2 clicks), twice; then a link with a cross clicked and a full turn first (2 + 1 + 4 clicks)
@@ -234,7 +234,7 @@ test('the analyzer: clicks read from the tiles turning, a link rated on the boar
   assert.match(flagged.reasons[0], /^lien le plus court trouvé 100 % du temps \(2 liens, limite 90 %\)$/)
 })
 
-test('the analyzer: a one-click (two by default) link is not a decision, a build without the fields is unsupported', async () => {
+test('the analyzer: a one-click (two by default) link is not a decision, a build without the fields is unsupported', async() => {
   const { create } = await import('./electrolink.mjs')
   const kk = { game: fakeGame(board('00 00 00 01 00 00 00 00')) }
   const analyzer = create({ kk, config: {} })

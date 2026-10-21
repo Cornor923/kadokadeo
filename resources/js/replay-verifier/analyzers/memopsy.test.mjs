@@ -132,7 +132,7 @@ function play(seed, choose, maxLevels = 30) {
   const t = createTracker()
   const ratings = []
   let lives = 10
-  let frame = 0
+  // let frame = 0
   for (let nl = 0; lives > 0; nl++) {
     const deck = deal(nl, random)
     t.level(deck, nl)
@@ -141,7 +141,7 @@ function play(seed, choose, maxLevels = 30) {
     let left = deck.length / 2
     while (left > 0 && lives > 0) {
       const [a, b] = nl >= maxLevels ? missOnPurpose(deck, down) : choose({ deck, down, known, random })
-      frame += 30
+      // frame += 30
       const r1 = t.select(a)
       const r2 = t.select(b)
       r2.frames = 20

@@ -184,7 +184,7 @@ async function play(n, cells) {
   return analyzer.finish({ score: 0, frames: frame })
 }
 
-test('the analyzer: the best move every time is flagged, a player who builds is not', async () => {
+test('the analyzer: the best move every time is flagged, a player who builds is not', async() => {
   const solver = await play(30, [at(8, 4)])
   assert.equal(solver.metrics.decisions, 30)
   assert.equal(solver.metrics.optimalRate, 1)
@@ -203,7 +203,7 @@ test('the analyzer: the best move every time is flagged, a player who builds is 
   assert.equal((await play(29, [at(8, 4)])).suspicious, false)
 })
 
-test('the analyzer: a version of the game without the fields read is not supported', async () => {
+test('the analyzer: a version of the game without the fields read is not supported', async() => {
   const { create } = await import('./autrement.mjs')
   const analyzer = create({ kk: { game: { step: { _hx_name: 'Play' }, stamp: { x: 5, y: 5 } } }, config: {} })
   assert.throws(() => analyzer.beforeFrame(1), /unsupported build/)

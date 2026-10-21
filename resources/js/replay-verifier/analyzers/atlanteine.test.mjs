@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { create } from './atlanteine.mjs'
-import { BLOCK, DIR, EMPTY, Level, OUT, PATH, ROCK, SEA, TELEPORT, UNSOLVABLE, baseGrid, levelCache, rateMove } from './atlanteine/solver.mjs'
+import { baseGrid, BLOCK, DIR, EMPTY, Level, levelCache, OUT, PATH, rateMove,ROCK, SEA, TELEPORT, UNSOLVABLE } from './atlanteine/solver.mjs'
 
 const RIGHT = 0
 const DOWN = 1

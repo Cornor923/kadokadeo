@@ -6,7 +6,7 @@
 // solver always. Not counted: the boards where nothing scores or one way only (every player finds it), the specials
 // (flame thrower, bomb, grenades). The balls of the next turns are random (stirred by the inputs): nobody can plan for
 // them, a move is valued by its own points. Timing is reported, never judged.
-import { EMPTY, ICE, gridOf, rateMove } from './paradice/solver.mjs'
+import { EMPTY, gridOf, ICE, rateMove } from './paradice/solver.mjs'
 
 export const meta = { game: 'paradice', version: 1 }
 

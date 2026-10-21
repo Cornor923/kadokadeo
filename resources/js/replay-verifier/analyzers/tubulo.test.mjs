@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { CELLS, click, clicksOf, isSolved, PLUS, rateAttempt, rateClick, SIDE, solutions, solve, visible } from './tubulo/solver.mjs'
+import { CELLS, click, clicksOf, isSolved, PLUS, rateAttempt, rateClick, SIDE, solutions, solve } from './tubulo/solver.mjs'
 
 // a board from rows y = 0..6, one digit (color) by column x (index x * 7 + y)
 function board(...rows) {
@@ -191,7 +191,7 @@ function fakeGame() {
   }
 }
 
-test('the analyzer: clicks rated on the board seen, levels solved and reset, the limit', async () => {
+test('the analyzer: clicks rated on the board seen, levels solved and reset, the limit', async() => {
   const { create } = await import('./tubulo.mjs')
   // a level of 12 overlapping pluses (Game.genLevel)
   let seed = 3
@@ -253,7 +253,7 @@ test('the analyzer: clicks rated on the board seen, levels solved and reset, the
   assert.ok(r.metrics.medianDecisionFrames >= 3 && r.metrics.medianDecisionFrames < 23)
 })
 
-test('the analyzer: a build without the fields', async () => {
+test('the analyzer: a build without the fields', async() => {
   const { create } = await import('./tubulo.mjs')
   const analyzer = create({ kk: { game: { step: { _hx_index: 0 }, grid: [] } }, config: {} })
   assert.throws(() => analyzer.beforeFrame(0), /unsupported build/)
