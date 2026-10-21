@@ -1,4 +1,4 @@
-FROM docker.io/library/php:8.3-fpm AS backend
+FROM docker.io/library/php:8.5-fpm AS backend
 
 ARG UID
 ARG GID
