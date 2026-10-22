@@ -124,7 +124,7 @@ const gameAchievements = computed(() => {
   <NavTabs
     :items="[
       { label: 'moi', value: 'me' },
-      { label: 'dernière période', value: 'last', disabled: true },
+      { label: 'dernière période', value: 'last' },
       { label: 'stats', value: 'stats' },
     ]"
   >
@@ -303,7 +303,7 @@ const gameAchievements = computed(() => {
             </div>
           </div>
           <div v-else-if="item.value === 'last'">
-            <ProfileLastPeriod :profile="profile" />
+            <ProfileLastPeriod :player-id="profile.data.etwin_id" :player-name="profile.data.display_name" :is-me="isMe" />
           </div>
           <div v-else-if="item.value === 'stats'">
             <KadoPageTitle class="mb-5">Records de {{ profile.data.display_name }}</KadoPageTitle>
@@ -347,18 +347,17 @@ const gameAchievements = computed(() => {
                       </div>
                     </td>
                     <td class="text-left">
-                      <div v-if="record.current_score !== null && record.score !== null" class="inline-flex min-w-28 items-center justify-start gap-2">
-                        <div
-                          role="progressbar"
-                          :aria-label="`Progression du score de ${record.game.name}`"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          :aria-valuenow="getProgressPercent(record)"
-                          class="h-2.5 w-20 overflow-hidden rounded border border-kado-blue-600 bg-kado-blue-200"
-                        >
-                          <div class="h-full bg-kado-green-500 transition-[width]" :style="{ width: `${getProgressPercent(record)}%` }"></div>
-                        </div>
-                        <span class="w-9 text-left text-xs">{{ getProgressPercent(record) }}%</span>
+                      <!-- the progress bar of KadoKado (div.percentBar): its tab holds the percentage, the green bar is
+                           100 px long at 100 % -->
+                      <div v-if="record.current_score !== null && record.score !== null"
+                           role="progressbar"
+                           :aria-label="`Progression du score de ${record.game.name}`"
+                           aria-valuemin="0"
+                           aria-valuemax="100"
+                           :aria-valuenow="getProgressPercent(record)"
+                           class="relative inline-block h-5 w-[106px] overflow-hidden bg-[url(/assets/img/gfx/gui/base/progress_bg.gif)] bg-no-repeat align-middle">
+                        <span class="absolute top-0.5 right-3 text-[10px] leading-2.5">{{ getProgressPercent(record) }} %</span>
+                        <div class="absolute bottom-0.5 left-0.5 h-[5px] bg-[url(/assets/img/gfx/gui/base/progress.gif)] bg-no-repeat transition-[width]" :style="{ width: `${getProgressPercent(record)}px` }"></div>
                       </div>
                     </td>
                   </tr>

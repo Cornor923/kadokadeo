@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LeaguePromotion extends Model
 {
@@ -42,7 +43,10 @@ class LeaguePromotion extends Model
         return $this->belongsTo(Period::class, 'next_period_id');
     }
 
-    public function game()
+    /**
+     * @return BelongsTo<Game, $this>
+     */
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }

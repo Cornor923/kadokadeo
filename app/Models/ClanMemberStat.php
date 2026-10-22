@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClanMemberStat extends Model
 {
@@ -20,7 +21,10 @@ class ClanMemberStat extends Model
         'user_point_id',
     ];
 
-    public function clan()
+    /**
+     * @return BelongsTo<Clan, $this>
+     */
+    public function clan(): BelongsTo
     {
         return $this->belongsTo(Clan::class);
     }

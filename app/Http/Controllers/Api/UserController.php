@@ -10,6 +10,7 @@ use App\Models\Period;
 use App\Models\User;
 use App\Services\GameService;
 use App\Services\LeagueService;
+use App\Services\PeriodSummaryService;
 use App\Services\ScoreService;
 use App\Settings\SiteSettings;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
     public static function middleware()
     {
         return [
-            new \Illuminate\Routing\Controllers\Middleware('auth:sanctum', only: ['index', 'show']),
+            new \Illuminate\Routing\Controllers\Middleware('auth:sanctum', only: ['index', 'show', 'showPeriod']),
         ];
     }
 
@@ -79,6 +80,24 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
                 })
                 : [],
         ]);
+    }
+
+    /**
+     * The summary of a finished period of a player (its Kado points, its stars, its rankings): the last one when no
+     * period is given; null when no period is finished yet.
+     */
+    public function showPeriod(User $user, PeriodSummaryService $periodSummaryService, ?Period $period = null)
+    {
+        $period ??= $periodSummaryService->lastFinishedPeriod();
+        if (!$period) {
+            return response()->json(['data' => null]);
+        }
+        abort_unless($periodSummaryService->isFinished($period), 404);
+
+        $summary = $periodSummaryService->summary($user, $period);
+        $summary['rankings'] = RunResource::collection($summary['rankings']);
+
+        return response()->json(['data' => $summary]);
     }
 
     public function showHistory(User $user, Request $request)
