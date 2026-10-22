@@ -92,7 +92,7 @@ const confirmBonus = () => {
           <Number :value="mission.reward" color="violet" /> points et passera à la mission suivante.
         </p>
         <div class="overflow-x-auto">
-          <table class="w-full">
+          <KadoTable class="w-full">
             <thead>
               <tr class="text-2xs uppercase">
                 <th class="min-w-24">Jeu</th>
@@ -136,7 +136,7 @@ const confirmBonus = () => {
                 </td>
               </tr>
             </tbody>
-          </table>
+          </KadoTable>
         </div>
       </template>
       <p v-else class="italic mx-0">

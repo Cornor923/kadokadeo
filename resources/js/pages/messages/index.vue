@@ -90,7 +90,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
       <MessageError v-if="error">{{ error }}</MessageError>
       <div class="relative overflow-x-auto">
         <Loader v-if="isLoading && !messages.length" />
-        <table class="w-full">
+        <KadoTable class="w-full">
           <thead>
             <tr class="text-2xs uppercase">
               <th></th>
@@ -124,7 +124,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
               <td class="whitespace-nowrap text-xs">{{ date(message.created_at) }}</td>
             </tr>
           </tbody>
-        </table>
+        </KadoTable>
       </div>
       <div v-if="hasNextPage" class="text-center">
         <FormButton size="lg" :disabled="isLoading" @click="load(meta.current_page + 1)">Messages précédents</FormButton>

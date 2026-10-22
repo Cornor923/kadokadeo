@@ -88,7 +88,7 @@ const doDissolve = () => {
     <KadoSectionTitle>Candidatures</KadoSectionTitle>
     <p v-if="!applications.length" class="italic mx-0">Aucune candidature en attente.</p>
     <div v-else class="overflow-x-auto">
-      <table class="w-full">
+      <KadoTable class="w-full">
         <tbody>
           <tr v-for="(application, index) in applications" :key="application.id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="min-w-28 text-left">
@@ -104,7 +104,7 @@ const doDissolve = () => {
             </td>
           </tr>
         </tbody>
-      </table>
+      </KadoTable>
     </div>
 
     <KadoSectionTitle>Présentation du clan</KadoSectionTitle>
@@ -132,7 +132,7 @@ const doDissolve = () => {
       </template>
     </p>
     <div class="overflow-x-auto">
-      <table class="w-full">
+      <KadoTable class="w-full">
         <tbody>
           <tr v-for="(m, index) in members" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="min-w-28 text-left [font-variant:small-caps]">
@@ -177,7 +177,7 @@ const doDissolve = () => {
             </td>
           </tr>
         </tbody>
-      </table>
+      </KadoTable>
     </div>
 
     <template v-if="isLeader">

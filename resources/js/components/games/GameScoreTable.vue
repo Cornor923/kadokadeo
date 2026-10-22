@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-  <table class="w-full border-0 **:border-0">
+  <KadoTable borderless class="w-full">
     <thead>
       <tr>
         <!-- <th scope="col">Période</th> -->
@@ -48,5 +48,5 @@ defineProps({
         </td>
       </tr>
     </tbody>
-  </table>
+  </KadoTable>
 </template>

@@ -44,7 +44,7 @@ const markdownClasses = [
       <KadoSectionTitle>Historique</KadoSectionTitle>
       <!-- the closed periods: the rank and the score in each ranking (— when not ranked), the Kado points won -->
       <div class="overflow-x-auto">
-        <table class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
+        <KadoTable class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
           <thead>
             <tr class="uppercase text-2xs">
               <th class="text-left!">Période</th>
@@ -75,7 +75,7 @@ const markdownClasses = [
               </td>
             </tr>
           </tbody>
-        </table>
+        </KadoTable>
       </div>
     </template>
   </div>

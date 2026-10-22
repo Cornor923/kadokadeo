@@ -46,7 +46,7 @@ const doCancel = (attack) => {
     <Loader v-if="isLoading && !status" />
 
     <div class="overflow-x-auto">
-      <table v-if="status" class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
+      <KadoTable v-if="status" class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
         <thead>
           <tr class="uppercase text-2xs">
             <th class="min-w-28 text-left!">Joueur</th>
@@ -113,7 +113,7 @@ const doCancel = (attack) => {
             </tr>
           </template>
         </tbody>
-      </table>
+      </KadoTable>
     </div>
 
     <!-- the wars declared by the clan (its targets) and against it -->

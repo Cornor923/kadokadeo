@@ -4,6 +4,9 @@ import KadoPoints from '@svg/k.svg'
 defineProps({
   profile: { type: Object, required: true },
 })
+
+// the tables of the summary: thin uppercase headers, cells without borders
+const thinTitles = '[&_th]:text-xs [&_th]:font-normal [&_th]:uppercase [&_td]:border-0 [&_a]:text-xs [&_a]:font-bold'
 </script>
 
 <template>
@@ -20,7 +23,7 @@ defineProps({
   </ul>
 
   <KadoSectionTitle>Améliorations aux jeux</KadoSectionTitle>
-  <table class="w-75/100 thinTitles">
+  <KadoTable :class="thinTitles" class="w-75/100">
     <thead>
       <tr>
         <th> </th>
@@ -43,10 +46,10 @@ defineProps({
         <td><Number :value="5000" color="green" /> <KadoPoints class="inline size-[17px]" /></td>
       </tr>
     </tbody>
-  </table>
+  </KadoTable>
 
   <KadoSectionTitle>Classement</KadoSectionTitle>
-  <table class="w-60/100 thinTitles">
+  <KadoTable :class="thinTitles" class="w-60/100">
     <thead>
       <tr>
         <th>Jeu</th>
@@ -81,7 +84,7 @@ defineProps({
         <td><Number :value="35142" color="blue" /></td>
       </tr>
     </tbody>
-  </table>
+  </KadoTable>
 
   <p class="text-center">
     <input type="button" value="Période précédente" class="pinkButton h-6 w-auto pt-px" />

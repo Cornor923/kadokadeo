@@ -48,7 +48,7 @@ const greyCellClasses = 'border border-t-0 border-solid border-kado-teal-400 bg-
 
 <template>
   <div class="overflow-x-auto">
-    <table class="w-full border-collapse text-xs">
+    <KadoTable class="w-full text-xs">
       <thead>
         <tr>
           <th :class="headerClasses">Sujet</th>
@@ -100,6 +100,6 @@ const greyCellClasses = 'border border-t-0 border-solid border-kado-teal-400 bg-
           </tr>
         </template>
       </tbody>
-    </table>
+    </KadoTable>
   </div>
 </template>

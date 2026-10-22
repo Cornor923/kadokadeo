@@ -41,16 +41,19 @@ function getKeyView(key) {
 </script>
 
 <template>
-  <table class="gameCommands border-0 **:border-0 noBackground">
+  <KadoTable borderless
+             plain-header
+             rows="none"
+             class="mx-auto my-2 w-71">
     <thead>
       <tr>
-        <th style="width: 70px" scope="col">Commande</th>
+        <th scope="col" class="w-17.5">Commande</th>
         <th scope="col">Fonction</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="control in game.controls" :key="control.id">
-        <td scope="row">
+        <td>
           <template v-for="key in control.keys" :key="key">
             <img
               v-if="getKeyView(key).image"
@@ -67,5 +70,5 @@ function getKeyView(key) {
         <td>{{ control.description }}</td>
       </tr>
     </tbody>
-  </table>
+  </KadoTable>
 </template>

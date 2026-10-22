@@ -127,7 +127,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
       <MessageError v-if="error">{{ error }}</MessageError>
       <div class="relative min-h-24 overflow-x-auto">
         <Loader v-if="isLoading && !clans.length" />
-        <table class="w-full">
+        <KadoTable class="w-full">
           <thead>
             <tr class="text-[10px] uppercase">
               <th>Position</th>
@@ -184,7 +184,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
               <td colspan="6" class="italic">Aucun clan pour le moment.</td>
             </tr>
           </tbody>
-        </table>
+        </KadoTable>
       </div>
       <p v-if="hasNextPage" class="text-center">
         <FormButton size="lg" @click="load(meta.current_page + 1)">Charger plus de clans</FormButton>

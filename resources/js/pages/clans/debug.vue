@@ -83,7 +83,7 @@ const endPeriod = () => {
 
       <KadoSectionTitle>Attaques en cours</KadoSectionTitle>
       <p v-if="!data.attacks.length" class="mx-0 italic text-sm">Aucune attaque en cours.</p>
-      <table v-else class="w-full text-sm">
+      <KadoTable v-else class="w-full text-sm">
         <thead>
           <tr class="text-[10px] uppercase">
             <th>Attaque</th>
@@ -109,7 +109,7 @@ const endPeriod = () => {
             </td>
           </tr>
         </tbody>
-      </table>
+      </KadoTable>
 
       <KadoSectionTitle>Mission de mon clan</KadoSectionTitle>
       <p v-if="!data.mission" class="mx-0 italic text-sm">Vous ne faites partie d'aucun clan.</p>

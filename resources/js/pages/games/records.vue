@@ -80,7 +80,7 @@ const chartLabels = computed(() => {
       <div class="grid gap-8 px-4 py-4 sm:px-6 lg:grid-cols-2">
         <section>
           <KadoSectionTitle>Historique</KadoSectionTitle>
-          <table class="w-full">
+          <KadoTable class="w-full">
             <thead>
               <tr class="text-kado-orange-500 uppercase text-sm *:px-2">
                 <th class="text-left">Période</th>
@@ -96,7 +96,7 @@ const chartLabels = computed(() => {
                 </td>
               </tr>
             </tbody>
-          </table>
+          </KadoTable>
         </section>
 
         <section>

@@ -139,9 +139,12 @@ const menus = [
       </h3>
 
       <article id="gameStars" :class="selectedTab === 'gameStars' ? '' : notZoomedHiddenState">
-        <table class="border-0 **:border-0 whiteFirst">
+        <KadoTable borderless
+                   plain-header
+                   rows="white"
+                   class="w-full">
           <thead>
-            <tr class="noBackground">
+            <tr>
               <th scope="col">Record période</th>
               <th scope="col">Mon record</th>
               <th scope="col">Record du monde</th>
@@ -149,7 +152,7 @@ const menus = [
           </thead>
           <tbody>
             <tr>
-              <td scope="row">
+              <td>
                 <Number :value="Math.max(personalBestForPeriod?.score ?? 0, currentScore)" color="orange" />
               </td>
               <td>
@@ -160,20 +163,20 @@ const menus = [
               </td>
             </tr>
           </tbody>
-        </table>
+        </KadoTable>
 
         <h3 class="text-right">Objectifs</h3>
-        <table class="gameGoals border-0 **:border-0">
+        <KadoTable borderless plain-header class="w-full">
           <thead>
-            <tr class="noBackground">
-              <th scope="col" style="width:30px;"></th>
+            <tr>
+              <th scope="col" class="w-7.5"></th>
               <th scope="col" class="text-left">Paliers</th>
               <th scope="col" class="text-right">Valeur</th>
             </tr>
           </thead>
-          <tbody class="twoColoured">
+          <tbody>
             <tr v-for="(pallier, index) in palliers" :key="index" :class="{'opacity-35': nextPallierIndex < index}">
-              <td scope="row">
+              <td>
                 <img v-if="nextPallierIndex === index" src="/gfx/iconOrangeArrow.gif" alt="Prochain palier" />
               </td>
               <td class="text-left">
@@ -192,7 +195,7 @@ const menus = [
               </td>
             </tr>
           </tbody>
-        </table>
+        </KadoTable>
       </article>
     </div>
 

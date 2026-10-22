@@ -17,7 +17,7 @@ get('/site-records')
     <Loader v-if="isLoading">Chargement des records...</Loader>
     <MessageError v-else-if="error">Error: {{ error }}</MessageError>
     <div v-else class="px-8 sm:px-16">
-      <table class="w-full">
+      <KadoTable class="w-full">
         <thead>
           <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-center">
             <th>Nom du jeu</th>
@@ -55,7 +55,7 @@ get('/site-records')
             </td>
           </tr>
         </tbody>
-      </table>
+      </KadoTable>
     </div>
   </div>
 </template>

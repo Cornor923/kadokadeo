@@ -53,7 +53,7 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
     <p class="mx-0">Ce clan comporte {{ members.length }} joueur(s).</p>
 
     <div class="overflow-x-auto">
-      <table class="w-full">
+      <KadoTable class="w-full">
         <thead>
           <tr class="text-[10px] uppercase *:cursor-pointer">
             <th class="min-w-28 text-right" @click="sortBy('names')">Joueur</th>
@@ -124,7 +124,7 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
             <td v-if="showStatus" />
           </tr>
         </tfoot>
-      </table>
+      </KadoTable>
     </div>
   </div>
 </template>

@@ -190,7 +190,7 @@ const gameAchievements = computed(() => {
 
             <KadoSectionTitle>Classements</KadoSectionTitle>
             <div class="px-2">
-              <table class="w-full">
+              <KadoTable class="w-full">
                 <thead>
                   <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                     <th :aria-sort="rankingSort.key === 'level' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
@@ -242,7 +242,7 @@ const gameAchievements = computed(() => {
                     </td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
             </div>
 
             <template v-if="achievementStore.enabled">
@@ -298,7 +298,7 @@ const gameAchievements = computed(() => {
             <Loader v-if="isRecordsLoading">Chargement des records...</Loader>
             <MessageError v-else-if="recordsError">Error: {{ recordsError }}</MessageError>
             <div v-else class="px-8 sm:px-16">
-              <table class="w-full">
+              <KadoTable class="w-full">
                 <thead>
                   <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-center">
                     <th>Jeu</th>
@@ -349,7 +349,7 @@ const gameAchievements = computed(() => {
                     </td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
             </div>
           </div>
         </div>

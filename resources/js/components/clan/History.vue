@@ -25,7 +25,7 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â
     <Loader v-if="isLoading && !meta" />
 
     <div class="overflow-x-auto">
-      <table v-if="meta" class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
+      <KadoTable v-if="meta" class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
         <thead>
           <tr class="uppercase text-2xs">
             <th class="text-left!">Date</th>
@@ -85,7 +85,7 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â
             </td>
           </tr>
         </tbody>
-      </table>
+      </KadoTable>
     </div>
 
     <div v-if="hasNextPage" class="text-center">

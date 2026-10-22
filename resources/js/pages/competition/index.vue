@@ -184,7 +184,7 @@ const scoreOn1500 = computed(() => {
         <Loader v-if="isRankingV1Loading">Chargement du classement...</Loader>
         <MessageError v-else-if="leaderboardError">Error: {{ leaderboardError }}</MessageError>
         <div v-else class="px-8 sm:px-16">
-          <table class="w-full">
+          <KadoTable class="w-full">
             <thead>
               <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                 <th>Rang</th>
@@ -234,7 +234,7 @@ const scoreOn1500 = computed(() => {
                 </tr>
               </template>
             </tbody>
-          </table>
+          </KadoTable>
           <NavPagination v-if="leaderboardMeta"
                          :current-page="leaderboardMeta.current_page"
                          :last-page="leaderboardMeta.last_page"
@@ -261,7 +261,7 @@ const scoreOn1500 = computed(() => {
         <Loader v-if="isFeathersLoading">Chargement du classement...</Loader>
         <MessageError v-else-if="feathersError">Error: {{ feathersError }}</MessageError>
         <div v-else class="px-8 sm:px-16">
-          <table class="w-full">
+          <KadoTable class="w-full">
             <thead>
               <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                 <th>Rang</th>
@@ -300,7 +300,7 @@ const scoreOn1500 = computed(() => {
                 </td>
               </tr>
             </tbody>
-          </table>
+          </KadoTable>
         </div>
       </div>
     </template>

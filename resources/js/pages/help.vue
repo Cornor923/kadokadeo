@@ -140,7 +140,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
             <template v-else-if="section.id === 'niveaux'">
               <p>A chaque passage de niveau, vous obtenez des points Kado supplémentaires, qui augmentent au fur et à mesure que votre niveau progresse :</p>
-              <table class="w-full">
+              <KadoTable class="w-full">
                 <thead>
                   <tr>
                     <th>Niveau</th>
@@ -172,7 +172,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                     </td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
               <p>Si un joueur est seul dans son niveau, il ne pourra monter que s'il y a des joueurs dans le niveau suivant. Sinon, il faudra au moins 2 joueurs pour prétendre à monter.</p>
             </template>
 
@@ -204,7 +204,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
             <template v-else-if="section.id === 'roles'">
               <p>Pour les attaques et les défenses, chaque joueur du Clan a un rôle. Sans siège, c'est un simple <strong>Membre</strong>. Le chef et ses bras droits peuvent donner les sièges d'<strong>Attaquant</strong> et de <strong>Défenseur</strong> depuis « Gérer le clan ».</p>
-              <table class="w-full">
+              <KadoTable class="w-full">
                 <thead>
                   <tr>
                     <th class="!text-left">Rôle</th>
@@ -233,7 +233,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                     <td>Les autres</td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
               <p>Le nombre de sièges dépend du nombre de membres, arrondi en dessous, avec au moins un siège de chaque rôle. Par exemple, un Clan de {{ rules.max_members }} joueurs a {{ seatsFor(rules.max_members, rules.attacker_seats) }} sièges d'Attaquant et {{ seatsFor(rules.max_members, rules.defender_seats) }} de Défenseur ; un Clan de 4 joueurs en a un de chaque.</p>
               <p>Attention, un rôle donné est <strong>bloqué jusqu'à la fin de la période</strong> : il ne peut plus être changé ni retiré avant la période suivante. Choisissez bien vos Attaquants et vos Défenseurs ! Les rôles de chacun sont indiqués dans l'onglet Membres.</p>
             </template>
@@ -247,20 +247,20 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
             <template v-else-if="section.id === 'options'">
               <p>Au début de chaque période, votre Clan reçoit les options Jeu cool et Jeu caca. Chaque mission réussie a {{ rules.bonus_chance }} % de chances de lui en faire gagner une autre. C'est le chef de clan ou un bras droit qui les utilise. Chaque Jeu caca et chaque Jeu cool ajoute un jeu à la liste des jeux caca ou des jeux cool du Clan ; un jeu ne peut être que dans une seule liste. S'il y a plus de jeux cool que d'étapes, la mission en prend une partie au hasard. Elles sont remises à zéro à la fin de la période.</p>
-              <table class="w-full">
+              <KadoTable class="w-full">
                 <tbody>
                   <tr v-for="bonus in rules.bonuses ?? []" :key="bonus.type">
                     <td class="w-10"><img :src="bonus.icon" :alt="bonus.label" class="size-9 max-w-none"></td>
                     <td class="!text-left text-xs"><strong>{{ bonus.label }}</strong> : {{ bonus.description }}</td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
             </template>
 
             <template v-else-if="section.id === 'classement'">
               <p>Le tournoi des clans dure une période. A la fin, les clans les mieux classés de chaque classement remportent des points Kado, répartis à parts égales entre leurs membres. « L'union fait la force » !</p>
               <div class="flex flex-wrap gap-4">
-                <table v-for="ranking in clanRewards" :key="ranking.title" class="min-w-48 flex-1">
+                <KadoTable v-for="ranking in clanRewards" :key="ranking.title" class="min-w-48 flex-1">
                   <thead>
                     <tr><th colspan="2" class="text-xs">{{ ranking.title }}</th></tr>
                   </thead>
@@ -270,7 +270,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                       <td class="!text-right">{{ formatScore(reward.points) }} <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4"></td>
                     </tr>
                   </tbody>
-                </table>
+                </KadoTable>
               </div>
             </template>
 
@@ -278,7 +278,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
               <p>Chaque période, la compétition du classement V1 a lieu. Il s'agit d'un classement dans lequel les 12 meilleurs scores de chaque joueur sont additionnés pour atteindre un maximum de 18.000 points</p>
               <p>Les scores de chaque jeu sont convertis dans une échelle allant de 0 à 1500 selon les critères suivants : </p>
 
-              <table>
+              <KadoTable>
                 <thead>
                   <tr>
                     <th>Score atteint</th>
@@ -303,7 +303,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                     <td>1500</td>
                   </tr>
                 </tbody>
-              </table>
+              </KadoTable>
             </template>
 
             <template v-else-if="section.id === 'compte'">
