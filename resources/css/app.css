@@ -4,9 +4,6 @@
 /* the Karbon theme (App.vue: <html data-theme="karbon">), for the components: karbon:bg-... */
 @custom-variant karbon (html[data-theme='karbon'] &);
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-
 @layer base {
   html,
   :host {
@@ -90,10 +87,6 @@
 @font-face {
   font-family: 'Neuropol';
   src: url('/fonts/Neuropol.ttf') format('truetype');
-}
-
-[data-lang='fr'] {
-  background: url('/gfx/langFrench.gif') no-repeat;
 }
 
 @theme {
@@ -291,16 +284,6 @@
     @apply font-bold text-xs;
   }
 
-  .noPadding th,
-  .noPadding td {
-    padding: 0;
-  }
-
-  .smallPadding th,
-  .smallPadding td {
-    padding: 2px;
-  }
-
   .noBackground,
   .noBackground th,
   .noBackground tr,
@@ -358,43 +341,6 @@
 
   h3 {
     @apply font-semibold text-2xl text-kado-blue-800;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  .italic {
-    font-style: italic;
-  }
-
-  .center {
-    text-align: center;
-  }
-
-  .centerMargin {
-    margin: auto;
-  }
-
-  .nomargin {
-    margin: 0;
-    padding: 0;
-  }
-
-  .hidden {
-    display: none;
-  }
-
-  .show {
-    display: block;
-  }
-
-  .textRight {
-    text-align: right;
-  }
-
-  .textLeft {
-    text-align: left;
   }
 
   /* HEADER, TOP NAV, TOP BANNER */
@@ -523,11 +469,6 @@
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-  }
-
-  .inColumns .twoCols {
-    width: 46%;
-    margin: 0 2% 0 2%;
   }
 
   #containerSide h2 {
@@ -718,31 +659,6 @@
 
   /* GAME SHOW */
 
-  .gameint1 {
-    border-style: solid;
-    border-width: 22px 23px;
-    border-image-source: url('/gfx/gameInterface-1.png');
-    border-image-slice: 22 25 22 23 fill;
-    border-image-repeat: stretch;
-  }
-
-  .gameint2 {
-    width: 29px;
-    border-style: solid;
-    border-width: 10px 0 4px 0;
-    border-image-source: url('/gfx/gameInterface-2.png');
-    border-image-slice: 10 0 4 0 fill;
-    border-image-repeat: repeat;
-  }
-
-  .gameint3 {
-    border-style: solid;
-    border-width: 15px;
-    border-image-source: url('/gfx/gameInterface-3.png');
-    border-image-slice: 25 25 25 25 fill;
-    border-image-repeat: stretch;
-  }
-
   #gameRules table.gameCommands {
     width: 284px;
     margin: 8px auto;
@@ -888,20 +804,43 @@
   }
 }
 
-.game-interface-button {
-  background: url('/gfx/gameInterfaceButton.gif') no-repeat;
-  width: 101px;
-}
-
-canvas {
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-
 /* iOS : le menu « Enregistrer l'image » d'un appui long sur le canvas vise l'image de fond
    d'un ancêtre (#bodySection), dont le -webkit-touch-callout est celui de cet ancêtre.
    Posé par GameScript.vue tant qu'un jeu est monté. */
-html.kado-game-mounted,
-html.kado-game-mounted body {
-  -webkit-touch-callout: none;
+@layer base {
+  html.kado-game-mounted,
+  html.kado-game-mounted body {
+    -webkit-touch-callout: none;
+  }
+}
+
+/* the frames of the game interface (games/GamePlayer.vue): 9-slice images */
+@utility game-interface-1 {
+  border-style: solid;
+  border-width: 22px 23px;
+  border-image-source: url('/gfx/gameInterface-1.png');
+  border-image-slice: 22 25 22 23 fill;
+  border-image-repeat: stretch;
+}
+
+@utility game-interface-2 {
+  width: 29px;
+  border-style: solid;
+  border-width: 10px 0 4px 0;
+  border-image-source: url('/gfx/gameInterface-2.png');
+  border-image-slice: 10 0 4 0 fill;
+  border-image-repeat: repeat;
+}
+
+@utility game-interface-3 {
+  border-style: solid;
+  border-width: 15px;
+  border-image-source: url('/gfx/gameInterface-3.png');
+  border-image-slice: 25 25 25 25 fill;
+  border-image-repeat: stretch;
+}
+
+@utility game-interface-button {
+  width: 101px;
+  background: url('/gfx/gameInterfaceButton.gif') no-repeat;
 }

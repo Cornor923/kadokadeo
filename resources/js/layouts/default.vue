@@ -16,15 +16,6 @@ const sidebarOpen = ref(false)
 <template>
   <div class="flex flex-col h-dvh">
     <header id="topPage" class="mx-auto w-full max-w-5xl h-[100px] flex relative justify-center z-10">
-      <!-- <nav class="w-8">
-      <ul class="flex flex-col space-y-1">
-        <li>
-          <a href="#" title="Français">
-            <div data-lang="fr" alt="french" title="Français"></div>
-          </a>
-        </li>
-      </ul>
-    </nav> -->
       <div class="flex flex-col items-center justify-center">
         <img src="/gfx/logoBasic.png" alt="KadoKadéo" class="h-fit w-auto mx-auto mb-5" />
         <Starbar v-if="authStore.isAuthenticated" />

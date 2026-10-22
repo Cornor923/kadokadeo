@@ -167,8 +167,8 @@ const menus = [
           <thead>
             <tr class="noBackground">
               <th scope="col" style="width:30px;"></th>
-              <th scope="col" class="textLeft">Paliers</th>
-              <th scope="col" class="textRight">Valeur</th>
+              <th scope="col" class="text-left">Paliers</th>
+              <th scope="col" class="text-right">Valeur</th>
             </tr>
           </thead>
           <tbody class="twoColoured">
@@ -176,7 +176,7 @@ const menus = [
               <td scope="row">
                 <img v-if="nextPallierIndex === index" src="/gfx/iconOrangeArrow.gif" alt="Prochain palier" />
               </td>
-              <td class="textLeft">
+              <td class="text-left">
                 <img :src="pallier.img"
                      :alt="pallier.alt"
                      :title="pallier.alt"
@@ -184,7 +184,7 @@ const menus = [
                      :class="pallier.className"/>
                 <Number :value="pallier.score" color="orange" />
               </td>
-              <td class="textRight">
+              <td class="text-right">
                 <template v-if="pallier.points !== null">
                   <Number :value="pallier.points" color="green" />
                   <KadoPoints class="inline size-[17px]" />
@@ -202,7 +202,7 @@ const menus = [
       <article id="gameRanking" :class="selectedTab === 'gameRanking' ? '' : notZoomedHiddenState">
         <Loader v-if="isLoading">Chargement des scores...</Loader>
         <GamesGameScoreTable v-else :scores="scores" style="margin:0 auto" />
-        <p class="center bold">
+        <p class="text-center font-bold">
           <RouterLink :to="{ name: 'games.ranking', params: { id: game.id }, query: { period: periodStore.period?.id, league: league?.id } }">
             Classement de ce jeu
           </RouterLink>

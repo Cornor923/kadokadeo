@@ -111,7 +111,7 @@ watch(clock.frame, (frame, previous) => {
 
     <div ref="gameBox" class="max-w-full w-fit max-h-full h-fit m-auto overflow-y-auto pt-5">
       <div class="flex flex-col">
-        <div class="relative gameint1 mx-auto max-w-full! shrink-0" :class="[run.game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado']">
+        <div class="relative game-interface-1 mx-auto max-w-full! shrink-0" :class="[run.game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado']">
           <GamesGameScript
             ref="gameScript"
             :game="replayGame"

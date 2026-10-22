@@ -202,15 +202,8 @@ onBeforeUnmount(() => {
       ref="canvas"
       :width="game.is_arkadeo ? 600 : 900"
       :height="game.is_arkadeo ? 500 : 960"
-      class="w-full"
-      :style="{
-        touchAction: 'none',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        WebkitTapHighlightColor: 'transparent',
-        ...props.canvasStyle,
-      }"
+      class="w-full touch-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]"
+      :style="props.canvasStyle"
       @touchstart="blockNativeGesture"
       @touchend="blockNativeGesture"
       @dblclick="blockNativeGesture"
