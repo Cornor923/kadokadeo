@@ -101,6 +101,15 @@
 
   --text-2xs: 0.625rem;
 
+  /* the rings of the loader (Loader.vue): animate-spin, and this one the other way */
+  --animate-spin-reverse: spin-reverse 0.5s linear infinite;
+
+  @keyframes spin-reverse {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
   /* the frame of the content of the pages (layouts/default.vue), in the base theme and in Karbon */
   --shadow-kado-page: 0 0 0 2px var(--color-white), 0 0 30px 1px --alpha(var(--color-black) / 50%);
   --shadow-kado-page-karbon: 0 0 0 2px var(--color-kado-slate-100), 0 0 30px 1px --alpha(var(--color-black) / 70%);
@@ -318,7 +327,8 @@
   }
 }
 
-/* the frames of the game interface (games/GamePlayer.vue): 9-slice images */
+/* the 9-slice frames of KadoKado: the game interface (games/GamePlayer.vue), the bar of the stars (nav/Starbar.vue), the
+   box of the daily game (games/DailyGameBlock.vue) */
 @utility game-interface-1 {
   border-style: solid;
   border-width: 22px 23px;
@@ -347,4 +357,20 @@
 @utility game-interface-button {
   width: 101px;
   background: url('/gfx/gameInterfaceButton.gif') no-repeat;
+}
+
+@utility top-bar-frame {
+  border-style: solid;
+  border-width: 10px 20px 15px 20px;
+  border-image-source: url('/gfx/bgTopBarInfo.png');
+  border-image-slice: 10 20 15 20 fill;
+  border-image-repeat: stretch;
+}
+
+@utility daily-game-frame {
+  border-style: solid;
+  border-width: 35px 15px 30px 15px;
+  border-image-source: url('/gfx/gameBoxDayRight.png');
+  border-image-slice: 35 15 30 15 fill;
+  border-image-repeat: repeat stretch;
 }

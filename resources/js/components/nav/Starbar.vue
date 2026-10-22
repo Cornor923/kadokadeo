@@ -3,7 +3,7 @@ const authStore = useAuthStore()
 </script>
 
 <template>
-  <aside class="h-fit topBar transform -translate-y-0 absolute bottom-0 w-full max-w-[424px]">
+  <aside class="top-bar-frame absolute bottom-0 h-fit w-full max-w-[424px] translate-y-[calc(50%-6px)]">
     <ul class="flex justify-between items-center -my-1.5 flex-wrap gap-2">
       <li class="flex gap-2">
         <img src="/gfx/topBarPointsKado.png" alt="Points Kado" />
@@ -25,14 +25,3 @@ const authStore = useAuthStore()
   </aside>
 </template>
 
-<style scoped>
-.topBar {
-  border-style: solid;
-  border-width: 10px 20px 15px 20px;
-  border-image-source: url("/gfx/bgTopBarInfo.png");
-  border-image-slice: 10 20 15 20 fill;
-  border-image-repeat: stretch;
-
-  --tw-translate-y: calc(1/2 * 100% - 6px);
-}
-</style>

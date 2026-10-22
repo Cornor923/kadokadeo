@@ -1,5 +1,8 @@
 <script setup>
 const achievementStore = useAchievementStore()
+// they come in from the right and leave to it (transform and opacity, each at its pace)
+const motion = '[transition:transform_800ms_cubic-bezier(0.22,1,0.36,1),opacity_240ms_ease]'
+const away = '[transform:translateX(120%)_scale(0.96)] opacity-0'
 </script>
 
 <template>
@@ -7,15 +10,23 @@ const achievementStore = useAchievementStore()
     class="pointer-events-none fixed inset-x-4 bottom-4 z-50 sm:bottom-6 sm:left-auto sm:right-6 sm:w-[36rem]"
     aria-live="polite"
   >
-    <TransitionGroup name="kado-achievement-list" tag="div" class="flex w-full flex-col gap-3">
+    <TransitionGroup tag="div"
+                     class="flex w-full flex-col gap-3"
+                     :move-class="motion"
+                     :enter-active-class="motion"
+                     :leave-active-class="`${motion} absolute inset-x-0`"
+                     :enter-from-class="away"
+                     :leave-to-class="away">
       <div
         v-for="achievement in achievementStore.completedAchievements"
         :key="achievement.id"
-        class="relative"
       >
         <Transition
-          name="kado-achievement"
           appear
+          :enter-active-class="motion"
+          :leave-active-class="motion"
+          :enter-from-class="away"
+          :leave-to-class="away"
           @after-leave="achievementStore.removeCompletedAchievement(achievement.id)"
         >
           <div v-if="achievement.visible" class="pointer-events-auto">
@@ -36,28 +47,3 @@ const achievementStore = useAchievementStore()
   </div>
 </template>
 
-<style scoped>
-.kado-achievement-list-move,
-.kado-achievement-list-enter-active,
-.kado-achievement-list-leave-active,
-.kado-achievement-enter-active,
-.kado-achievement-leave-active {
-  transition:
-    transform 800ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 240ms ease;
-}
-
-.kado-achievement-list-enter-from,
-.kado-achievement-list-leave-to,
-.kado-achievement-enter-from,
-.kado-achievement-leave-to {
-  transform: translateX(120%) scale(0.96);
-  opacity: 0;
-}
-
-.kado-achievement-list-leave-active {
-  left: 0;
-  position: absolute;
-  right: 0;
-}
-</style>

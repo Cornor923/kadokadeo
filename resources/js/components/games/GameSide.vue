@@ -98,6 +98,15 @@ const menus = [
   { id: 'gameRanking', label: 'Classement', icon: '/gfx/iconGameRanking.png' },
   ...(achievementStore.enabled ? [{ id: 'achievements', label: 'Succès', icon: '/gfx/iconAchievements.png' }] : []),
 ]
+// the tabs: the active one underlined in orange, the others in relief (white top and left, teal right and bottom),
+// sunken when hovered
+const activeTab = 'flex-1 border-b border-kado-orange-500 bg-kado-cream-200 font-bold text-kado-orange-500'
+const inactiveTab = [
+  'border-t-2 border-r border-b border-l border-t-white border-r-kado-teal-400 border-b-kado-teal-400 border-l-white',
+  'hover:border-t-kado-teal-400 hover:border-r-white hover:border-b-white hover:border-l-kado-teal-400',
+  'bg-kado-blue-600/10 text-kado-blue-700 hover:bg-kado-blue-100 hover:pt-1 hover:text-kado-orange-500',
+]
+const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-[1.3em] font-bold tracking-[1px] text-kado-blue-700'
 </script>
 
 <template>
@@ -108,7 +117,7 @@ const menus = [
             :key="menu.id"
             @click="selectedTab = menu.id"
             class="flex items-center justify-center text-center gap-1 pt-0.5 cursor-pointer h-7 px-2 @md:flex-1"
-            :class="selectedTab === menu.id ? 'flex-1 bg-kado-cream-200 borderactive text-kado-orange-500 font-bold' : 'text-kado-blue-700 bordernormal bg-kado-blue-600/10 hover:bg-kado-blue-100 hover:text-kado-orange-500 hover:pt-1'"
+            :class="selectedTab === menu.id ? activeTab : inactiveTab"
             :title="menu.label">
           <img v-if="menu.icon" :src="menu.icon" :alt="menu.label" />
           <div class="overflow-hidden" :class="selectedTab === menu.id ? 'w-full' : 'w-0 @md:w-full'">{{ menu.label }}</div>
@@ -121,24 +130,24 @@ const menus = [
     </nav>
 
     <div>
-      <h3 v-if="isZoomed" class="text-center">Règles</h3>
+      <h3 v-if="isZoomed" :class="heading" class="text-center">Règles</h3>
 
-      <article id="gameRules" :class="selectedTab === 'gameRules' ? '' : notZoomedHiddenState">
-        <p>{{ game.description ?? '[WIP description]' }}</p>
-        <hr />
+      <article id="gameRules" class="m-2" :class="selectedTab === 'gameRules' ? '' : notZoomedHiddenState">
+        <p class="my-2">{{ game.description ?? '[WIP description]' }}</p>
+        <hr class="mx-auto my-2 w-[200px] border-t border-kado-blue-700" />
         <GamesGameControls :game="game" />
       </article>
     </div>
 
     <div>
-      <h3 v-if="isZoomed" class="flex justify-center">Paliers
+      <h3 v-if="isZoomed" :class="heading" class="flex justify-center">Paliers
         <img  v-if="league"
               :src="`/gfx/leagues/${league.level}s.svg`"
               :alt="league.name"
               class="w-6 h-auto" />
       </h3>
 
-      <article id="gameStars" :class="selectedTab === 'gameStars' ? '' : notZoomedHiddenState">
+      <article id="gameStars" class="m-2" :class="selectedTab === 'gameStars' ? '' : notZoomedHiddenState">
         <KadoTable borderless
                    plain-header
                    rows="white"
@@ -165,7 +174,7 @@ const menus = [
           </tbody>
         </KadoTable>
 
-        <h3 class="text-right">Objectifs</h3>
+        <h3 :class="heading" class="text-right">Objectifs</h3>
         <KadoTable borderless plain-header class="w-full">
           <thead>
             <tr>
@@ -200,12 +209,12 @@ const menus = [
     </div>
 
     <div>
-      <h3 v-if="isZoomed" class="text-center">Classement</h3>
+      <h3 v-if="isZoomed" :class="heading" class="text-center">Classement</h3>
 
-      <article id="gameRanking" :class="selectedTab === 'gameRanking' ? '' : notZoomedHiddenState">
+      <article id="gameRanking" class="m-2" :class="selectedTab === 'gameRanking' ? '' : notZoomedHiddenState">
         <Loader v-if="isLoading">Chargement des scores...</Loader>
-        <GamesGameScoreTable v-else :scores="scores" style="margin:0 auto" />
-        <p class="text-center font-bold">
+        <GamesGameScoreTable v-else :scores="scores" class="mx-auto" />
+        <p class="my-2 text-center font-bold">
           <RouterLink :to="{ name: 'games.ranking', params: { id: game.id }, query: { period: periodStore.period?.id, league: league?.id } }">
             Classement de ce jeu
           </RouterLink>
@@ -214,9 +223,9 @@ const menus = [
     </div>
 
     <div v-if="achievementStore.enabled">
-      <h3 v-if="isZoomed" class="text-center">Succès</h3>
+      <h3 v-if="isZoomed" :class="heading" class="text-center">Succès</h3>
 
-      <article id="achievements" :class="selectedTab === 'achievements' ? '' : notZoomedHiddenState">
+      <article id="achievements" class="m-2" :class="selectedTab === 'achievements' ? '' : notZoomedHiddenState">
         <Loader v-if="achievementStore.isLoading">Chargement des succès...</Loader>
         <template v-else>
           <GamesGameAchievements :game="game" />
@@ -226,48 +235,3 @@ const menus = [
   </div>
 </template>
 
-<style scoped>
-@reference "@/../css/app.css";
-article {
-  margin: 8px;
-}
-
-hr {
-  width: 200px;
-  margin: 8px auto;
-  border: 0;
-  border-top: 1px solid var(--color-kado-blue-700);
-}
-
-p {
-  margin: 8px 0;
-}
-
-h3 {
-  width: 100%;
-  margin: 8px 0 8px 0;
-  font-weight: bold;
-  font-size: 1.3em;
-  color: var(--color-kado-blue-700);
-  border-bottom: 3px double var(--color-kado-blue-700);
-  letter-spacing: 1px;
-}
-
-.bordernormal {
-  @apply border-t-2 border-t-white
-  border-l border-l-white
-  border-r border-r-kado-teal-400
-  border-b border-b-kado-teal-400
-  hover:border-t-2 hover:border-t-kado-teal-400
-  hover:border-l hover:border-l-kado-teal-400
-  hover:border-r hover:border-r-white
-  hover:border-b hover:border-b-white;
-}
-
-.borderactive {
-  @apply border-t-0
-  border-l-0
-  border-r-0
-  border-b border-b-kado-orange-500;
-}
-</style>

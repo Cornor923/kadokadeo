@@ -23,7 +23,7 @@ const game = toRef(dailyGameStore, 'game')
           </h3>
         </div>
       </div>
-      <div class="relative min-h-[142px] flex-1 bg-gameBoxDayRight bg-no-repeat bg-[length:100%_100%] text-sm font-normal text-kado-pink-900">
+      <div class="relative min-h-[142px] flex-1 daily-game-frame text-sm font-normal text-kado-pink-900">
         <div class="absolute -top-8 text-kado-pink-100 font-junegull text-shadow-sm text-shadow-kado-pink-300 text-lg w-full text-center">JEU DU JOUR</div>
         Le jeu du jour est choisi aléatoirement chaque jour à minuit (UTC). La partie est identique pour tous les joueurs.
         <div class="flex items-center gap-1">
@@ -47,12 +47,3 @@ const game = toRef(dailyGameStore, 'game')
   </div>
 </template>
 
-<style scoped>
-.bg-gameBoxDayRight {
-  border-style: solid;
-  border-width: 35px 15px 30px 15px;
-  border-image-source: url("/gfx/gameBoxDayRight.png");
-  border-image-slice: 35 15 30 15 fill;
-  border-image-repeat: repeat stretch;
-}
-</style>
