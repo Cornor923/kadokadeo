@@ -45,7 +45,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', d
     <MessageError v-if="error">{{ error }}</MessageError>
 
     <template v-if="message">
-      <h2 class="normal-case">{{ message.subject }}</h2>
+      <KadoSectionTitle>{{ message.subject }}</KadoSectionTitle>
       <p class="mx-0 text-sm">
         <template v-if="received">
           De

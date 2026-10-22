@@ -28,7 +28,7 @@ fetchGameRanking()
 <template>
   <Loader v-if="isGameLoading" />
   <div v-else-if="game" class="relative w-full">
-    <h2>Classement général de {{ game.name }}</h2>
+    <KadoSectionTitle>Classement général de {{ game.name }}</KadoSectionTitle>
 
     <div class="flex gap-4 my-4 justify-center items-center">
       <select id="period" v-model="period">

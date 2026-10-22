@@ -37,7 +37,7 @@ const endPeriod = () => {
   <NavTabs :items="[{ label: 'Debug clans', value: 'debug' }]" />
 
   <div class="relative px-2 space-y-4">
-    <h1 class="mt-0 text-center">Debug clans</h1>
+    <KadoPageTitle>Debug clans</KadoPageTitle>
     <p class="mx-0 text-sm">
       Outils de test (variable <code>KADO_DEBUG_TOOLS</code>, jamais en production) : les parties sont simulées avec le
       score choisi, par vous si vous êtes membre du clan, sinon par son chef.
@@ -54,7 +54,7 @@ const endPeriod = () => {
     <template v-if="data">
       <p class="mx-0 text-sm">Période {{ data.period?.id ?? '—' }}, fin le {{ data.period ? new Date(data.period.end_at).toLocaleString('fr-FR') : '—' }}</p>
 
-      <h2 class="normal-case">Lancer une attaque</h2>
+      <KadoSectionTitle>Lancer une attaque</KadoSectionTitle>
       <form class="flex flex-wrap items-end gap-2" @submit.prevent="run('/debug/clans/attack', attack)">
         <label class="flex flex-col text-sm">Clan attaquant
           <FormSelect v-model="attack.attacker_clan_id" class="p-1">
@@ -81,7 +81,7 @@ const endPeriod = () => {
         <FormButton type="submit" size="lg" variant="pink">Attaquer</FormButton>
       </form>
 
-      <h2 class="normal-case">Attaques en cours</h2>
+      <KadoSectionTitle>Attaques en cours</KadoSectionTitle>
       <p v-if="!data.attacks.length" class="mx-0 italic text-sm">Aucune attaque en cours.</p>
       <table v-else class="w-full text-sm">
         <thead>
@@ -111,7 +111,7 @@ const endPeriod = () => {
         </tbody>
       </table>
 
-      <h2 class="normal-case">Mission de mon clan</h2>
+      <KadoSectionTitle>Mission de mon clan</KadoSectionTitle>
       <p v-if="!data.mission" class="mx-0 italic text-sm">Vous ne faites partie d'aucun clan.</p>
       <template v-else>
         <p class="mx-0 text-sm">Mission {{ data.mission.number }} ({{ data.mission.steps.length }} étapes, {{ data.mission.reward }} points si elle est réussie), fin dans <ClanCountdown :until="data.mission.expires_at" /></p>
@@ -124,7 +124,7 @@ const endPeriod = () => {
         </ul>
       </template>
 
-      <h2 class="normal-case">Le temps</h2>
+      <KadoSectionTitle>Le temps</KadoSectionTitle>
       <p class="flex flex-wrap gap-2">
         <FormButton v-for="h in [1, 6, 12, 24]"
                     :key="h"

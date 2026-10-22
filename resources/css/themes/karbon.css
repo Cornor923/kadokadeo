@@ -24,12 +24,6 @@ html[data-theme='karbon'] #bodySection {
     0 0 30px 1px --alpha(var(--color-black) / 70%);
 }
 
-/* the titles: grey instead of blue */
-html[data-theme='karbon'] h2 {
-  background: url('/gfx/themes/karbon/greyh2_bg.jpg') no-repeat;
-  color: var(--color-kado-slate-700);
-}
-
 /* the tabs */
 html[data-theme='karbon'] .kTabFrame {
   background-color: var(--color-kado-slate-700);
@@ -50,40 +44,6 @@ html[data-theme='karbon'] .kTab.kTabActive {
 html[data-theme='karbon'] .kTab:not(.kTabActive):hover {
   color: var(--color-kado-slate-900);
   background-image: url('/gfx/themes/karbon/folder_active.jpg');
-}
-
-/* the boxes of the sidebar */
-html[data-theme='karbon'] #containerSide .sideBoxGreen,
-html[data-theme='karbon'] #containerSide .sideBoxBlue,
-html[data-theme='karbon'] #containerSide .sideBoxPink,
-html[data-theme='karbon'] #containerSide .sideBoxViolet {
-  box-shadow: 10px 10px 10px --alpha(var(--color-black) / 35%);
-}
-
-/* their titles: the grey title, placed like the titles of the base theme (the h2 rule above puts it at 0 0, which shows
-   a wider frame instead of the square and leaves out the dark line under it); the green and pink boxes have their own,
-   the violet box of the clan missions keeps this one */
-html[data-theme='karbon'] #containerSide h2 {
-  background: url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -5px no-repeat;
-}
-
-html[data-theme='karbon'] #containerSide .sideBoxGreen h2 {
-  background: url('/gfx/themes/karbon/greenh2_bg.jpg') -15px -5px no-repeat;
-}
-
-html[data-theme='karbon'] #containerSide .sideBoxBlue {
-  background: var(--color-kado-slate-50) url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -40px no-repeat;
-  border-color: var(--color-kado-slate-500);
-}
-
-html[data-theme='karbon'] #containerSide .sideBoxBlue h2 {
-  background: url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -5px no-repeat;
-  color: var(--color-kado-slate-700);
-  border-bottom-color: var(--color-kado-slate-500);
-}
-
-html[data-theme='karbon'] #containerSide .sideBoxPink h2 {
-  background: url('/gfx/themes/karbon/pinkh2_bg.jpg') -15px -5px no-repeat;
 }
 
 /* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css): the shadow of inputBg.jpg

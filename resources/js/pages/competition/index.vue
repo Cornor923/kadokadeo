@@ -135,7 +135,7 @@ const scoreOn1500 = computed(() => {
   ]">
     <template #panel="{ item }">
       <div v-if="item.value === 'rankingv1'">
-        <h1 class="mt-0 text-center">Le classement V1</h1>
+        <KadoPageTitle class="mb-5">Le classement V1</KadoPageTitle>
 
         <CompetitionPeriodNavigator
           :label="periodLabel"
@@ -147,7 +147,7 @@ const scoreOn1500 = computed(() => {
         />
 
         <section class="mx-2 mb-4 grid gap-3 border border-kado-teal-500 p-3 md:grid-cols-3">
-          <h2 class="col-span-full">Calculateur 1500</h2>
+          <KadoSectionTitle class="col-span-full">Calculateur 1500</KadoSectionTitle>
           <label for="score-game" class="flex flex-col gap-1">
             Jeu
             <select id="score-game"
@@ -243,7 +243,7 @@ const scoreOn1500 = computed(() => {
       </div>
 
       <div v-else>
-        <h1 class="mt-0 text-center">Poids plumes</h1>
+        <KadoPageTitle class="mb-5">Poids plumes</KadoPageTitle>
         <CompetitionPeriodNavigator
           :label="periodLabel"
           :can-go-previous="canGoPrevious"

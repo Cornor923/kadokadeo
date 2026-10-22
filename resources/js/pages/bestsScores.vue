@@ -12,7 +12,7 @@ get('/site-records')
 
 <template>
   <div>
-    <h1 class="mt-0 text-center">Records du site</h1>
+    <KadoPageTitle class="mb-5">Records du site</KadoPageTitle>
 
     <Loader v-if="isLoading">Chargement des records...</Loader>
     <MessageError v-else-if="error">Error: {{ error }}</MessageError>

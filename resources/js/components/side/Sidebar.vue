@@ -12,43 +12,42 @@ const otherGames = [
   { name: 'EternalKingdom', url: 'https://kingdom.eternaltwin.org' },
   { name: 'DinoCard', url: 'https://dinocard.eternaltwin.org/' },
 ]
+// the menu: each link with its icon
+const menu = [
+  { label: 'Nouveautés', to: '/', icon: 'bg-[url(/gfx/menuIconNews.gif)] bg-[position:0_2px]', disabled: true },
+  { label: 'Mes scores', to: { name: 'profile.index' }, icon: 'bg-[url(/gfx/menuIconScores.gif)] bg-[position:-2px_3px]' },
+  { label: 'Records du site', to: { name: 'site-records' }, icon: 'bg-[url(/gfx/iconKingPiou.png)] bg-[position:-2px_-1px] bg-size-[auto_22px]' },
+  { label: 'Mon compte', to: { name: 'account' }, icon: 'bg-[url(/gfx/menuIconAccount.gif)] bg-[position:0_3px]' },
+  { label: 'Discord', href: 'https://discord.gg/cqasFsD', icon: 'bg-[url(/gfx/menuIconForum.gif)] bg-[position:0_1px]' },
+  { label: 'Aide', to: { name: 'help' }, icon: 'bg-[url(/gfx/menuIconHelp.gif)] bg-[position:-3px_0]' },
+]
+const menuLinkClasses = 'my-px block w-full bg-no-repeat pl-6.25 hover:pl-6.75 hover:no-underline'
 </script>
 
 <template>
-  <aside id="containerSide" class="z-10">
-    <nav class="sideBoxGreen">
-      <h2>Menu</h2>
-      <ul id="menuSide">
-        <li class="news grayscale">
-          <RouterLink to="/" title="Nouveautés">Nouveautés</RouterLink>
-        </li>
-        <li class="scores">
-          <RouterLink :to="{ name: 'profile.index' }" title="Mes scores">Mes scores</RouterLink>
-        </li>
-        <li class="worldrecords">
-          <RouterLink :to="{ name: 'site-records' }" title="Records du site">Records du site</RouterLink>
-        </li>
-        <li class="account">
-          <RouterLink :to="{ name: 'account' }" title="Mon compte">Mon compte</RouterLink>
-        </li>
-        <li class="forum">
-          <a href="https://discord.gg/cqasFsD"
-             title="Discord"
+  <aside class="z-10">
+    <KadoSideBox title="Menu" color="green" as="nav">
+      <ul class="m-1.25 text-[1.5em]">
+        <li v-for="item in menu" :key="item.label" :class="{ grayscale: item.disabled }">
+          <a v-if="item.href"
+             :href="item.href"
+             :title="item.label"
+             :class="[menuLinkClasses, item.icon]"
              target="_blank"
-             rel="noopener noreferrer">Discord</a>
-        </li>
-        <li class="help">
-          <RouterLink :to="{ name: 'help' }" title="Aide">Aide</RouterLink>
+             rel="noopener noreferrer">{{ item.label }}</a>
+          <RouterLink v-else
+                      :to="item.to"
+                      :title="item.label"
+                      :class="[menuLinkClasses, item.icon]">{{ item.label }}</RouterLink>
         </li>
       </ul>
-    </nav>
+    </KadoSideBox>
     <!-- the clans turned off in the admin: the boxes greyed, without their rankings -->
-    <aside class="sideBoxBlue" :class="{ grayscale: !clanStore.enabled }">
-      <h2>Top 3 clans de guerre</h2>
-      <ul v-if="!clanStore.enabled">
+    <KadoSideBox title="Top 3 clans de guerre" color="blue" :class="{ grayscale: !clanStore.enabled }">
+      <ul v-if="!clanStore.enabled" class="m-1.25">
         <li class="text-center italic">Prochainement disponible</li>
       </ul>
-      <ul v-else>
+      <ul v-else class="m-1.25">
         <li v-for="clan in clanStore.top" :key="clan.id" class="flex justify-between gap-1">
           <RouterLink :to="{ name: 'clans.show', params: { id: clan.id } }" class="truncate">{{ clan.rank }}. {{ clan.name }}</RouterLink>
           <Number :value="clan.war_score" color="orange" />
@@ -58,13 +57,12 @@ const otherGames = [
           <RouterLink :to="{ name: 'clans.index', query: { tab: 'war' } }">Classement des attaques</RouterLink>
         </li>
       </ul>
-    </aside>
-    <aside class="sideBoxViolet" :class="{ grayscale: !clanStore.enabled }">
-      <h2>Top 3 clans de mission</h2>
-      <ul v-if="!clanStore.enabled">
+    </KadoSideBox>
+    <KadoSideBox title="Top 3 clans de mission" color="violet" :class="{ grayscale: !clanStore.enabled }">
+      <ul v-if="!clanStore.enabled" class="m-1.25">
         <li class="text-center italic">Prochainement disponible</li>
       </ul>
-      <ul v-else>
+      <ul v-else class="m-1.25">
         <li v-for="clan in clanStore.topMissions" :key="clan.id" class="flex justify-between gap-1">
           <RouterLink :to="{ name: 'clans.show', params: { id: clan.id } }" class="truncate">{{ clan.rank }}. {{ clan.name }}</RouterLink>
           <Number :value="clan.mission_score" color="violet" />
@@ -74,10 +72,9 @@ const otherGames = [
           <RouterLink :to="{ name: 'clans.index', query: { tab: 'missions' } }">Classement des missions</RouterLink>
         </li>
       </ul>
-    </aside>
-    <aside class="sideBoxPink">
-      <h2>Nos autres jeux</h2>
-      <ul>
+    </KadoSideBox>
+    <KadoSideBox title="Nos autres jeux" color="pink">
+      <ul class="m-1.25">
         <li class="text-center mb-1">
           <a href="https://eternaltwin.org"
              title="Projet EternalTwin"
@@ -99,6 +96,6 @@ const otherGames = [
           </template>
         </li>
       </ul>
-    </aside>
+    </KadoSideBox>
   </aside>
 </template>

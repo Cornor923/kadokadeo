@@ -37,9 +37,9 @@ const use = (theme) => {
   <NavTabs :items="[{ label: 'Mon compte', value: 'account' }]" />
 
   <div class="relative px-2 space-y-4">
-    <h1 class="mt-0 text-center">Mon compte</h1>
+    <KadoPageTitle>Mon compte</KadoPageTitle>
 
-    <h2 class="normal-case">Thème du site</h2>
+    <KadoSectionTitle>Thème du site</KadoSectionTitle>
     <p class="mx-0">
       Changez l'apparence de KadoKadéo ! Le thème KadoKado est offert à tous les joueurs, les autres thèmes s'achètent
       une seule fois avec vos points Kado. Vous pouvez ensuite changer de thème quand vous le voulez.

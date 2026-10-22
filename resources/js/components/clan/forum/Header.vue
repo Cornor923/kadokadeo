@@ -15,8 +15,8 @@ const tabs = computed(() => [
 
 <template>
   <NavTabs :items="tabs" :selected-index="0" />
-  <h2 class="mb-3">
+  <KadoSectionTitle class="mb-3">
     <RouterLink v-if="linked" :to="forumRoute">Le forum privé de votre clan</RouterLink>
     <template v-else>Le forum privé de votre clan</template>
-  </h2>
+  </KadoSectionTitle>
 </template>

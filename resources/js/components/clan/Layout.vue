@@ -73,7 +73,7 @@ const paidGames = computed(() => authStore.user?.clan_games ?? 0)
     </div>
 
     <div class="min-w-0 flex-1">
-      <h1 class="m-0 mb-4 flex items-center gap-2 text-3xl [-webkit-text-stroke:0]">
+      <h1 class="mb-4 flex items-center gap-2 font-junegull text-3xl text-kado-blue-500">
         <img src="/gfx/clan/h1_tristar.gif" alt="" class="shrink-0" />
         <ClanName :name="clan.name" />
       </h1>

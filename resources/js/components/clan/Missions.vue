@@ -79,7 +79,7 @@ const confirmBonus = () => {
       </p>
 
       <template v-if="mission">
-        <h2 class="normal-case">Mission {{ mission.number }}</h2>
+        <KadoSectionTitle>Mission {{ mission.number }}</KadoSectionTitle>
         <p v-if="isMember" class="mx-0">
           Réussissez toutes les étapes avant la fin du temps imparti
           (<ClanCountdown :until="mission.expires_at" class="font-bold" @done="load" />) : votre clan remportera
@@ -148,7 +148,7 @@ const confirmBonus = () => {
         <span v-if="data.forced_games.length">{{ data.forced_games.length > 1 ? 'Jeux cool' : 'Jeu cool' }} : <strong>{{ gameNames(data.forced_games) }}</strong>.</span>
       </p>
 
-      <h2 v-if="isMember" class="normal-case">Options du clan</h2>
+      <KadoSectionTitle v-if="isMember">Options du clan</KadoSectionTitle>
       <p v-if="isMember && !data.bonuses.length" class="italic mx-0">
         Votre clan n'a aucune option. Chaque mission réussie peut vous en faire gagner une !
       </p>
@@ -164,7 +164,7 @@ const confirmBonus = () => {
         </div>
 
         <div v-if="selectedBonus" class="absolute z-20 left-5 -top-6 w-[470px] max-w-full min-h-[150px] border-2 border-solid border-twinoid-900 bg-twinoid-600 text-kado-blue-50">
-          <h3 class="m-0 h-[35px] bg-twinoid-900 px-2 text-[26px] leading-[35px] text-kado-blue-50">{{ selectedBonus.label }}</h3>
+          <h3 class="h-[35px] bg-twinoid-900 px-2 text-[26px] font-semibold leading-[35px] text-kado-blue-50">{{ selectedBonus.label }}</h3>
           <img :src="selectedBonus.icon" :alt="selectedBonus.label" class="float-left py-0.5 pr-2.5 pl-0.5" />
           <p class="m-1 text-xs">{{ selectedBonus.description }}</p>
 
@@ -196,7 +196,7 @@ const confirmBonus = () => {
       </div>
 
       <template v-if="data.missions.length">
-        <h2 class="normal-case">Missions de la période</h2>
+        <KadoSectionTitle>Missions de la période</KadoSectionTitle>
         <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1">
           <li v-for="m in data.missions" :key="m.id">
             Mission {{ m.number }} : {{ statusLabels[m.status] ?? m.status }}

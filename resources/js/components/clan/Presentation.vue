@@ -7,10 +7,11 @@ defineProps({
 })
 
 // the presentation written in Markdown, turned into HTML by the server (App\Support\ClanMarkdown: the HTML of the
-// players is escaped): the titles keep the style of the site, the lists get back their bullets
+// players is escaped): the titles take the ones of the site, the lists get back their bullets
 const markdownClasses = [
   'break-words [&_p]:my-2 [&_img]:inline [&_img]:max-w-full',
-  '[&_h1]:mx-0 [&_h1]:mt-4 [&_h1]:mb-3 [&_h1]:text-[2em] [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:mt-3 [&_h3]:mb-2',
+  '[&_h1]:kado-page-title [&_h1]:mt-4 [&_h1]:mb-3 [&_h1]:text-[2em] [&_h2]:kado-section-title [&_h2]:mt-4 [&_h2]:mb-2',
+  '[&_h3]:mt-3 [&_h3]:mb-2 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-kado-blue-800',
   '[&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-inside [&_ul]:list-image-[url(/gfx/puce.jpg)]',
   '[&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-inside [&_ol]:list-decimal [&_li]:my-0.5',
   '[&_blockquote]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-kado-teal-400 [&_blockquote]:pl-3 [&_blockquote]:italic',
@@ -40,7 +41,7 @@ const markdownClasses = [
     </ul>
 
     <template v-if="clan.history.length">
-      <h2>Historique</h2>
+      <KadoSectionTitle>Historique</KadoSectionTitle>
       <!-- the closed periods: the rank and the score in each ranking (— when not ranked), the Kado points won -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm [&_td]:px-2 [&_td]:py-1">

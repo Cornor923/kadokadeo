@@ -82,7 +82,7 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
     <Loader v-else-if="!action">Chargement ...</Loader>
 
     <template v-else>
-      <h1 class="mt-0 text-center">{{ action.type_label }}</h1>
+      <KadoPageTitle class="mb-5">{{ action.type_label }}</KadoPageTitle>
 
       <template v-if="result">
         <MessageSuccess v-if="isSuccess">{{ result.message }}</MessageSuccess>
@@ -103,7 +103,7 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
         <Loader>Chargement du jeu ...</Loader>
       </div>
       <template v-else-if="game">
-        <h2 class="text-center">{{ game.name }}</h2>
+        <KadoSectionTitle class="text-center">{{ game.name }}</KadoSectionTitle>
         <GamesGamePlayer :game="game" :goals="goals" />
       </template>
 

@@ -85,7 +85,7 @@ const doDissolve = () => {
   <div class="space-y-4">
     <MessageError v-if="error">{{ error }}</MessageError>
 
-    <h2 class="normal-case">Candidatures</h2>
+    <KadoSectionTitle>Candidatures</KadoSectionTitle>
     <p v-if="!applications.length" class="italic mx-0">Aucune candidature en attente.</p>
     <div v-else class="overflow-x-auto">
       <table class="w-full">
@@ -107,7 +107,7 @@ const doDissolve = () => {
       </table>
     </div>
 
-    <h2 class="normal-case">Présentation du clan</h2>
+    <KadoSectionTitle>Présentation du clan</KadoSectionTitle>
     <form @submit.prevent="save">
       <FormTextarea v-model="description" rows="10" maxlength="5000" />
       <p class="mx-0 mt-1 mb-2 text-xs text-kado-blue-800">
@@ -123,7 +123,7 @@ const doDissolve = () => {
       <FormButton type="submit" size="lg">Enregistrer</FormButton>
     </form>
 
-    <h2 class="normal-case">Membres</h2>
+    <KadoSectionTitle>Membres</KadoSectionTitle>
     <p class="mx-0 text-sm">
       Un <strong>bras droit</strong> a tous les droits du chef de clan, sauf dissoudre le clan et nommer un nouveau chef.
       Un siège choisi ne peut plus changer avant la prochaine période.
@@ -181,7 +181,7 @@ const doDissolve = () => {
     </div>
 
     <template v-if="isLeader">
-      <h2 class="normal-case">Dissoudre le clan</h2>
+      <KadoSectionTitle>Dissoudre le clan</KadoSectionTitle>
       <p class="mx-0 text-sm">Tous les membres quitteront le clan, et ses scores de la période seront perdus.</p>
       <FormButton variant="pink" @click="doDissolve">Dissoudre le clan</FormButton>
     </template>

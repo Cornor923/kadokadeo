@@ -27,7 +27,7 @@ onUnmounted(() => {
 
     <div class="relative">
       <Loader v-if="dailyGameStore.isScoresLoading">Chargement des scores...</Loader>
-      <h2>Scores</h2>
+      <KadoSectionTitle>Scores</KadoSectionTitle>
       <GamesGameScoreTable :scores="dailyGameStore.scores" />
     </div>
 
@@ -35,7 +35,7 @@ onUnmounted(() => {
       <Loader>Chargement ...</Loader>
     </div>
     <div v-else class="relative">
-      <h2>{{ game.name }}</h2>
+      <KadoSectionTitle>{{ game.name }}</KadoSectionTitle>
       <GamesGameScript :game="game"
                        :args="{ isDaily: true }"
                        :game-width="600"

@@ -61,7 +61,7 @@ const distribute = () => {
         points Kado.
       </p>
 
-      <h2 class="normal-case">Acheter des parties</h2>
+      <KadoSectionTitle>Acheter des parties</KadoSectionTitle>
       <div class="space-y-2">
         <FormButton v-for="pack in data.packs"
                     :key="pack.count"
@@ -73,7 +73,7 @@ const distribute = () => {
         </FormButton>
       </div>
 
-      <h2 class="normal-case">Donner au clan</h2>
+      <KadoSectionTitle>Donner au clan</KadoSectionTitle>
       <p class="mx-0 text-sm">
         Vous pouvez donner à votre clan les parties que vous avez achetées (pas vos parties gratuites du jour). Le chef et ses bras
         droits les distribueront aux membres. Le clan possède <Number :value="data.clan.games" color="orange" /> <img src="/gfx/gemOrange.svg" class="w-5 max-w-none"> parties en stock.
@@ -88,7 +88,7 @@ const distribute = () => {
       </form>
 
       <template v-if="data.clan.can_distribute">
-        <h2 class="normal-case">Distribuer les parties du clan</h2>
+        <KadoSectionTitle>Distribuer les parties du clan</KadoSectionTitle>
         <form class="flex flex-wrap items-center gap-2" @submit.prevent="distribute">
           <FormSelect v-model="distribution.member">
             <option :value="null" disabled>Choisir un joueur</option>
@@ -104,7 +104,7 @@ const distribute = () => {
       </template>
 
       <template v-if="data.clan.transfers.length">
-        <h2 class="normal-case">Derniers dons</h2>
+        <KadoSectionTitle>Derniers dons</KadoSectionTitle>
         <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1 text-sm">
           <li v-for="(transfer, index) in data.clan.transfers" :key="index">
             <template v-if="transfer.type === 'donation'">{{ transfer.from?.display_name }} a donné {{ transfer.count }} partie(s) au clan</template>

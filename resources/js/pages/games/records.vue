@@ -76,10 +76,10 @@ const chartLabels = computed(() => {
     <Loader v-if="isLoading">Chargement des scores...</Loader>
     <MessageError v-else-if="error">Error: {{ error }}</MessageError>
     <template v-else-if="history">
-      <h1 class="mt-0 text-center">{{ history.game.name }}</h1>
+      <KadoPageTitle class="mb-5">{{ history.game.name }}</KadoPageTitle>
       <div class="grid gap-8 px-4 py-4 sm:px-6 lg:grid-cols-2">
         <section>
-          <h2>Historique</h2>
+          <KadoSectionTitle>Historique</KadoSectionTitle>
           <table class="w-full">
             <thead>
               <tr class="text-kado-orange-500 uppercase text-sm *:px-2">
@@ -100,7 +100,7 @@ const chartLabels = computed(() => {
         </section>
 
         <section>
-          <h2>Évolution</h2>
+          <KadoSectionTitle>Évolution</KadoSectionTitle>
           <svg
             v-if="scoredChartPoints.length"
             viewBox="0 0 720 340"

@@ -7,8 +7,8 @@ defineProps({
 </script>
 
 <template>
-  <h1 class="mt-0 text-center">Votre dernière période</h1>
-  <h2 class="normal-case">Résumé de vos points Kado</h2>
+  <KadoPageTitle class="mb-5">Votre dernière période</KadoPageTitle>
+  <KadoSectionTitle>Résumé de vos points Kado</KadoSectionTitle>
   <ul class="list-inside list-image-[url(/gfx/puce.jpg)] mt-6 mb-6 ml-10">
     <li>Le classement de votre clan vous a rapporté <Number :value="11538" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
     <li>Votre progression sur les jeux vous a rapporté <Number :value="5000" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
@@ -19,7 +19,7 @@ defineProps({
     <li class="font-bold">Total période : <Number :value="28309" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
   </ul>
 
-  <h2 class="normal-case">Améliorations aux jeux</h2>
+  <KadoSectionTitle>Améliorations aux jeux</KadoSectionTitle>
   <table class="w-75/100 thinTitles">
     <thead>
       <tr>
@@ -45,7 +45,7 @@ defineProps({
     </tbody>
   </table>
 
-  <h2 class="normal-case">Classement</h2>
+  <KadoSectionTitle>Classement</KadoSectionTitle>
   <table class="w-60/100 thinTitles">
     <thead>
       <tr>

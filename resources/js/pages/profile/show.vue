@@ -122,7 +122,7 @@ const gameAchievements = computed(() => {
         <MessageError v-else-if="error">Error: {{ error }}</MessageError>
         <div v-else-if="profile">
           <div v-if="item.value === 'me'" class="space-y-4">
-            <h1 class="mt-0 text-center">Profil de {{ profile.data.display_name }}</h1>
+            <KadoPageTitle>Profil de {{ profile.data.display_name }}</KadoPageTitle>
             <p v-if="profile.data.etwin_id !== authSore.user?.etwin_id" class="text-center">
               <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
                 <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
@@ -135,7 +135,7 @@ const gameAchievements = computed(() => {
                    alt="Plume de Piou"
                    class="inline-block" />
             </div>
-            <h2>Statut</h2>
+            <KadoSectionTitle>Statut</KadoSectionTitle>
 
             <div class="grid md:grid-cols-2">
               <div class="grid grid-cols-3 justify-items-center">
@@ -188,7 +188,7 @@ const gameAchievements = computed(() => {
               </div>
             </div>
 
-            <h2>Classements</h2>
+            <KadoSectionTitle>Classements</KadoSectionTitle>
             <div class="px-2">
               <table class="w-full">
                 <thead>
@@ -246,10 +246,10 @@ const gameAchievements = computed(() => {
             </div>
 
             <template v-if="achievementStore.enabled">
-              <h2>Succès</h2>
+              <KadoSectionTitle>Succès</KadoSectionTitle>
               <div class="px-4" v-lazy-container="{ selector: 'img', attempt: 1 }">
                 <div v-for="(gameAs, game) in gameAchievements" :key="game">
-                  <h3>{{ game }}</h3>
+                  <h3 class="text-2xl font-semibold text-kado-blue-800">{{ game }}</h3>
                   <div class="flex flex-wrap gap-2 py-2">
                     <div v-for="ac in gameAs" :key="ac.id" class="flex flex-wrap">
                       <div class="relative"
@@ -273,7 +273,7 @@ const gameAchievements = computed(() => {
               </div>
             </template>
 
-            <h2>Historique</h2>
+            <KadoSectionTitle>Historique</KadoSectionTitle>
             <GamesGameScoreTable :show-pos="false"
                                  :show-player="false"
                                  show-game
@@ -294,7 +294,7 @@ const gameAchievements = computed(() => {
             <ProfileLastPeriod :profile="profile" />
           </div>
           <div v-else-if="item.value === 'stats'">
-            <h1 class="mt-0 text-center">Records de {{ authSore.user.display_name }}</h1>
+            <KadoPageTitle class="mb-5">Records de {{ authSore.user.display_name }}</KadoPageTitle>
             <Loader v-if="isRecordsLoading">Chargement des records...</Loader>
             <MessageError v-else-if="recordsError">Error: {{ recordsError }}</MessageError>
             <div v-else class="px-8 sm:px-16">

@@ -59,7 +59,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
   <NavTabs :items="tabs" :selected-index="selectedIndex" />
 
   <div class="px-2 space-y-4">
-    <h1 class="mt-0 text-center">Les clans</h1>
+    <KadoPageTitle>Les clans</KadoPageTitle>
     <ClanPeriodBanner :tournament="tournament ?? clanStore.tournament" />
     <p v-if="clanStore.debug" class="mx-0 text-right text-xs">
       <RouterLink :to="{ name: 'clans.debug' }">🔧 Outils de test des clans</RouterLink>

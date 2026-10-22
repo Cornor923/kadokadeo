@@ -291,58 +291,6 @@
     background: none transparent;
   }
 
-  h1 {
-    /* Mozilla Firefox and IE doesn't support the background-clip:text; and -webkit-text-stroke properties */
-    margin: 25px 10px 20px 10px;
-    padding: 0;
-    font-family:
-      'Junegull-Regular',
-      Trebuchet MS,
-      Arial,
-      sans-serif;
-    font-size: 2.5em;
-    letter-spacing: 0.1em;
-    color: var(--color-kado-blue-500);
-    font-weight: bold;
-    text-shadow:
-      -1px -1px 0 var(--color-kado-blue-800),
-      1px -1px 0 var(--color-kado-blue-800),
-      -1px 1px 0 var(--color-kado-blue-800),
-      1px 1px 0 var(--color-kado-blue-800);
-  }
-
-  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-    /* For compatible browsers */
-    h1 {
-      -webkit-text-stroke: 1px var(--color-kado-blue-800);
-      background: linear-gradient(
-        to bottom,
-        var(--color-white) 15%,
-        var(--color-kado-blue-300) 55%,
-        var(--color-kado-blue-400) 56%,
-        var(--color-kado-blue-200) 85%
-      );
-      background-color: var(--color-kado-blue-100);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow: none;
-    }
-  }
-
-  h2 {
-    width: 100%;
-    height: 35px;
-    padding: 4px 5px 0 40px;
-    font-size: 1.5em;
-    background: url('/gfx/bgTitleBlue.svg') no-repeat;
-    text-transform: capitalize;
-  }
-
-  h3 {
-    @apply font-semibold text-2xl text-kado-blue-800;
-  }
-
   /* HEADER, TOP NAV, TOP BANNER */
 
   nav.kalendrier {
@@ -469,120 +417,6 @@
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-  }
-
-  #containerSide h2 {
-    width: 100%;
-    height: 18px;
-    margin: 0;
-    padding: 0 0 0 20px;
-    font-size: 1.15em;
-    text-transform: none;
-  }
-
-  #containerSide ul {
-    margin: 5px;
-    list-style-type: none;
-    padding: 0;
-  }
-
-  #containerSide .sideBoxGreen,
-  #containerSide .sideBoxBlue,
-  #containerSide .sideBoxPink,
-  #containerSide .sideBoxViolet {
-    margin: 30px 0 0 0;
-    box-shadow: 10px 10px 10px --alpha(var(--color-kado-teal-500) / 25%);
-  }
-
-  #containerSide .sideBoxGreen {
-    background: url('/gfx/bgContainerTopGreen.svg') -205px 13px no-repeat;
-    background-color: var(--color-kado-green-50);
-    border: 3px solid var(--color-kado-green-500);
-  }
-
-  #containerSide .sideBoxGreen h2 {
-    background: url('/gfx/bgTitleGreen.svg') -15px -5px no-repeat;
-    color: var(--color-kado-green-600);
-    border-bottom: 3px solid var(--color-kado-green-500);
-  }
-
-  #containerSide ul#menuSide {
-    font-size: 1.5em;
-  }
-
-  #containerSide ul#menuSide li a {
-    width: 100%;
-    display: block;
-    box-sizing: border-box;
-    margin: 1px 0;
-    padding: 0 0 0 25px;
-    text-decoration: none;
-  }
-
-  #containerSide ul#menuSide li a:hover {
-    padding: 0 0 0 27px;
-  }
-
-  #containerSide ul#menuSide li.news a {
-    background: url('/gfx/menuIconNews.gif') 0px 2px no-repeat;
-  }
-
-  #containerSide ul#menuSide li.scores a {
-    background: url('/gfx/menuIconScores.gif') -2px 3px no-repeat;
-  }
-
-  #containerSide ul#menuSide li.worldrecords a {
-    background: url('/gfx/iconKingPiou.png') -2px -1px no-repeat;
-    background-size: auto 22px;
-  }
-
-  #containerSide ul#menuSide li.account a {
-    background: url('/gfx/menuIconAccount.gif') 0px 3px no-repeat;
-  }
-
-  #containerSide ul#menuSide li.forum a {
-    background: url('/gfx/menuIconForum.gif') 0px 1px no-repeat;
-  }
-
-  #containerSide ul#menuSide li.help a {
-    background: url('/gfx/menuIconHelp.gif') -3px 0px no-repeat;
-  }
-
-  #containerSide .sideBoxBlue {
-    background: url('/gfx/bgContainerTopBlue.svg') -205px 13px no-repeat;
-    background-color: var(--color-kado-blue-100);
-    border: 3px solid var(--color-kado-teal-500);
-  }
-
-  #containerSide .sideBoxBlue h2 {
-    background: url('/gfx/bgTitleBlue.svg') -15px -5px no-repeat;
-    color: var(--color-kado-blue-700);
-    border-bottom: 3px solid var(--color-kado-teal-500);
-  }
-
-  #containerSide .sideBoxPink {
-    background: url('/gfx/bgContainerTopPink.svg') -205px 13px no-repeat;
-    background-color: var(--color-kado-pink-50);
-    border: 3px solid var(--color-kado-pink-400);
-  }
-
-  #containerSide .sideBoxPink h2 {
-    background: url('/gfx/bgTitlePink.svg') -15px -5px no-repeat;
-    color: var(--color-kado-pink-400);
-    border-bottom: 3px solid var(--color-kado-pink-400);
-  }
-
-  /* (the images: scripts/side-box-svg.py) */
-  #containerSide .sideBoxViolet {
-    background: url('/gfx/bgContainerTopViolet.svg') -205px 13px no-repeat;
-    background-color: var(--color-kado-violet-50);
-    border: 3px solid var(--color-kado-violet-400);
-  }
-
-  #containerSide .sideBoxViolet h2 {
-    background: url('/gfx/bgTitleViolet.svg') -15px -5px no-repeat;
-    color: var(--color-kado-violet-400);
-    border-bottom: 3px solid var(--color-kado-violet-400);
   }
 
   /* HOME PAGE */
@@ -811,6 +645,38 @@
   html.kado-game-mounted,
   html.kado-game-mounted body {
     -webkit-touch-callout: none;
+  }
+}
+
+/* the titles of KadoKado (components/kado/PageTitle.vue, SectionTitle.vue), also given to the titles of the HTML of
+   the players (the presentation of a clan) */
+@utility kado-page-title {
+  font-family: var(--font-junegull);
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-white) 15%,
+    var(--color-kado-blue-300) 55%,
+    var(--color-kado-blue-400) 56%,
+    var(--color-kado-blue-200) 85%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1px var(--color-kado-blue-800);
+}
+
+@utility kado-section-title {
+  width: 100%;
+  height: 35px;
+  padding: 4px 5px 0 40px;
+  font-size: 1.5em;
+  background: url('/gfx/bgTitleBlue.svg') no-repeat;
+
+  @variant karbon {
+    color: var(--color-kado-slate-700);
+    background-image: url('/gfx/themes/karbon/greyh2_bg.jpg');
   }
 }
 

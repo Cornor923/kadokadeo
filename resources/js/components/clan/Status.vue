@@ -118,7 +118,7 @@ const doCancel = (attack) => {
 
     <!-- the wars declared by the clan (its targets) and against it -->
     <template v-if="status?.wars?.length">
-      <h2 class="normal-case">Clans en guerre</h2>
+      <KadoSectionTitle>Clans en guerre</KadoSectionTitle>
       <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1">
         <li v-for="war in status.wars" :key="war.id">
           <template v-for="(side, index) in [war.clan, war.target]" :key="side.id">

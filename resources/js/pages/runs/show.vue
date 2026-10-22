@@ -101,13 +101,13 @@ watch(clock.frame, (frame, previous) => {
 <template>
   <template v-if="isLoading || !run">Chargement...</template>
   <template v-else>
-    <h1 class="text-center">Replay</h1>
-    <h2 class="m-0!">Vous regardez {{ run.user?.display_name }}</h2>
-    <h2 class="m-0!">Score: {{ run.score }}</h2>
-    <h2 class="m-0!">Jeu: {{ run.game.name }}</h2>
-    <h2 class="m-0!">Date: {{ dayjs(run.completed_at).format('DD/MM/YYYY HH:mm') }}</h2>
-    <h2 class="m-0!">Temps: {{ formatTime(run.play_time_seconds) }}</h2>
-    <h2 class="m-0!">Vues: {{ run.views_count }} · Commentaires: {{ run.comments_count }}</h2>
+    <KadoPageTitle class="mt-6.25 mb-5">Replay</KadoPageTitle>
+    <KadoSectionTitle>Vous regardez {{ run.user?.display_name }}</KadoSectionTitle>
+    <KadoSectionTitle>Score: {{ run.score }}</KadoSectionTitle>
+    <KadoSectionTitle>Jeu: {{ run.game.name }}</KadoSectionTitle>
+    <KadoSectionTitle>Date: {{ dayjs(run.completed_at).format('DD/MM/YYYY HH:mm') }}</KadoSectionTitle>
+    <KadoSectionTitle>Temps: {{ formatTime(run.play_time_seconds) }}</KadoSectionTitle>
+    <KadoSectionTitle>Vues: {{ run.views_count }} · Commentaires: {{ run.comments_count }}</KadoSectionTitle>
 
     <div ref="gameBox" class="max-w-full w-fit max-h-full h-fit m-auto overflow-y-auto pt-5">
       <div class="flex flex-col">
@@ -138,7 +138,7 @@ watch(clock.frame, (frame, previous) => {
     </div>
 
     <section class="mx-auto mt-4 max-w-2xl space-y-2">
-      <h3 class="m-0 border border-solid border-kado-green-600 bg-kado-green-500 bg-[url(/assets/img/gfx/gui/base/greenh2_bg.jpg)] bg-[position:-25px_-5px] bg-no-repeat px-2 text-base tracking-widest text-kado-green-600">
+      <h3 class="m-0 border border-solid border-kado-green-600 font-semibold bg-kado-green-500 bg-[url(/assets/img/gfx/gui/base/greenh2_bg.jpg)] bg-[position:-25px_-5px] bg-no-repeat px-2 text-base tracking-widest text-kado-green-600">
         Commentaires
       </h3>
       <RunsCommentsComposer v-if="canComment"

@@ -51,7 +51,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
   <NavTabs :items="tabs" :selected-index="selectedIndex" />
 
   <div class="relative px-2 space-y-4">
-    <h1 class="mt-0 text-center">Messages</h1>
+    <KadoPageTitle>Messages</KadoPageTitle>
 
     <template v-if="box === 'new'">
       <form class="max-w-xl space-y-3" @submit.prevent="send">

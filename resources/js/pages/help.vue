@@ -80,7 +80,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
 <template>
   <div class="p-2">
-    <h1 class="mt-0 text-center">Aide</h1>
+    <KadoPageTitle class="mb-5">Aide</KadoPageTitle>
 
     <!-- the table of content: the parts as the tabs of the site, the sections of the open part below -->
     <nav class="mb-3">
@@ -109,7 +109,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                  :aria-hidden="index !== current">
           <img :src="section.art" alt="" class="hidden h-[400px] w-[275px] shrink-0 sm:block" />
           <div class="h-[400px] min-w-0 flex-1 overflow-y-auto [&_h3]:mt-0 [&_h3]:mb-1.5 [&_p]:mt-1 [&_p]:mb-2.5 [&_p]:text-[13px] [&_p]:leading-4 [&_table]:mt-1 [&_table]:mb-2.5 [&_table]:text-[13px] [&_table]:leading-4 [&_ul]:mt-1 [&_ul]:mb-2.5 [&_ul]:pl-2.5 [&_ul]:text-[13px] [&_ul]:leading-4">
-            <h3>{{ section.title }}</h3>
+            <h3 class="text-2xl font-semibold text-kado-blue-800">{{ section.title }}</h3>
             <!-- the sections of the part (the clans), as small links -->
             <nav v-if="partOf(index).children.length" class="mb-2 text-xs">
               <template v-for="(s, i) in [partOf(index), ...partOf(index).children]" :key="s.id">
