@@ -28,7 +28,7 @@ watch(() => route.fullPath, () => nextTick(revealSelectedTab))
 function tabMenuLinkClasses(item) {
   const defaultClasses = 'border-solid text-center min-w-0 px-4 md:px-0 md:min-w-40 text-kado-blue-700 font-bold block no-underline bg-repeat-x'
   const bgClasses = item.disabled ? 'grayscale cursor-not-allowed' : 'cursor-pointer hover:text-kado-teal-500 hover:bg-[url(/gfx/bgTabmenuHover.jpg)]'
-  const activeClasses = 'bg-[url(/gfx/bgTabmenuActive.jpg)] leading-[24px] bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl [font-variant:small-caps] tracking-normal p-0.5'
+  const activeClasses = 'bg-[url(/gfx/bgTabmenuActive.jpg)] leading-[24px] bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl small-caps tracking-normal p-0.5'
   const inactiveClasses = 'h-7 border border-kado-blue-100 bg-[url(/gfx/bgTabmenu.jpg)]'
   // Karbon: grey folders (also when a disabled tab is hovered)
   const karbonActiveClasses = 'karbon:border-kado-slate-200 karbon:bg-kado-slate-700 karbon:bg-[url(/gfx/themes/karbon/folder_active.jpg)] karbon:text-kado-slate-500'
@@ -55,7 +55,7 @@ function tabMenuLinkClasses(item) {
           :index="index"
           :selected="selected"
         >
-          <div class="outline-none shrink-0 karbon:bg-kado-slate-700 whitespace-nowrap h-8 bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl [font-variant:small-caps] tracking-normal p-0.5" :class="item.disabled ? 'grayscale' : ''">
+          <div class="outline-none shrink-0 karbon:bg-kado-slate-700 whitespace-nowrap h-8 bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl small-caps tracking-normal p-0.5" :class="item.disabled ? 'grayscale' : ''">
             <div v-if="!item.route" :class="tabMenuLinkClasses({ ...item, selected })">
               {{ item.label }}
             </div>

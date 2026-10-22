@@ -73,7 +73,7 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
       </button>
       <RouterLink v-if="comment.author"
                   :to="{ name: 'profile.show', params: { id: comment.author.etwin_id } }"
-                  class="text-xs font-bold [font-variant:small-caps] break-all">
+                  class="text-xs font-bold small-caps break-all">
         {{ comment.author.display_name }}
       </RouterLink>
       <span v-else class="text-xs italic">Ancien joueur</span>

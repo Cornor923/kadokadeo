@@ -37,7 +37,7 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
     <div class="flex shrink-0 flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-teal-400 bg-kado-teal-100 bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat p-2 text-2xs text-kado-slate-700 sm:w-32 sm:flex-col sm:border-r sm:border-b-0 sm:text-center">
       <RouterLink v-if="message.author"
                   :to="{ name: 'profile.show', params: { id: message.author.etwin_id } }"
-                  class="text-sm font-bold [font-variant:small-caps] break-all">
+                  class="text-sm font-bold small-caps break-all">
         {{ message.author.display_name }}
       </RouterLink>
       <span v-else class="text-sm italic">Ancien joueur</span>

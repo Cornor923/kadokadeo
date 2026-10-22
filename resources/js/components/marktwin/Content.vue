@@ -26,7 +26,7 @@ const contentClasses = [
   '[&_.mkt-spoiler.mkt-spoiler-shown]:text-kado-pink-600',
   '[&_.strikethrough]:line-through [&_.mkt-inline-code]:bg-kado-blue-100 [&_.mkt-inline-code]:px-1 [&_.mkt-inline-code]:font-mono',
   '[&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:bg-kado-blue-100 [&_pre]:p-2 [&_pre]:font-mono [&_pre]:text-sm',
-  '[&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-inside [&_ul]:list-image-[url(/gfx/puce.jpg)] [&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-inside [&_ol]:list-decimal',
+  '[&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-inside [&_ul]:list-kado [&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-inside [&_ol]:list-decimal',
 ]
 
 // a spoiler is shown (or hidden again) when clicked

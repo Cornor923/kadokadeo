@@ -295,7 +295,7 @@ const scoreOn1500 = computed(() => {
                 <td class="text-right whitespace-nowrap">
                   <template v-if="player.reward > 0">
                     <Number :value="player.reward" color="green" />
-                    <KadoPoints class="inline size-[17px]" />
+                    <KadoPoints class="inline size-4.25" />
                   </template>
                 </td>
               </tr>

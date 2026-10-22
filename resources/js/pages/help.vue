@@ -87,7 +87,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
       <ul class="flex flex-wrap justify-center gap-1">
         <li v-for="(part, i) in toc" :key="part.id">
           <button type="button"
-                  class="h-[26px] cursor-pointer border border-solid bg-repeat-x px-2.5 font-[inherit] text-[15px] leading-6 font-bold whitespace-nowrap [font-variant:small-caps]"
+                  class="h-[26px] cursor-pointer border border-solid bg-repeat-x px-2.5 font-[inherit] text-[15px] leading-6 font-bold whitespace-nowrap small-caps"
                   :class="openPart?.id === part.id
                     ? 'border-white bg-kado-teal-500 bg-[url(/gfx/bgTabmenuActive.jpg)] text-white bg-blend-multiply'
                     : 'border-kado-teal-500 bg-[url(/gfx/bgTabmenu.jpg)] text-kado-blue-700 hover:bg-[url(/gfx/bgTabmenuHover.jpg)] hover:text-kado-teal-500'"
@@ -151,13 +151,13 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                 </thead>
                 <tbody>
                   <tr v-for="league in leagueStore.leagues" :key="league.level">
-                    <td class="!text-left">
+                    <td class="text-left">
                       <div class="flex items-center gap-1">
                         <img :src="`/gfx/leagues/${league.level}.svg`" :alt="league.name" class="h-5">
                         <div>{{ league.name }}</div>
                       </div>
                     </td>
-                    <td class="!text-left">
+                    <td class="text-left">
                       <span v-if="league.promotion_ratio">{{ league.promotion_ratio }}% (max {{ league.promotion_max_slots }})</span>
                       <span v-else>{{ league.promotion_max_slots }}</span>
                     </td>
@@ -167,7 +167,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                            :alt="stars[league.promotion_min_stars].name"
                            class="inline h-5">
                     </td>
-                    <td class="!text-right whitespace-nowrap">
+                    <td class="text-right whitespace-nowrap">
                       {{ formatScore(league.promotion_reward) }} <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4">
                     </td>
                   </tr>
@@ -207,7 +207,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
               <KadoTable class="w-full">
                 <thead>
                   <tr>
-                    <th class="!text-left">Rôle</th>
+                    <th class="text-left">Rôle</th>
                     <th>Attaques en même temps</th>
                     <th>Défendre avec une attaque en cours</th>
                     <th>Sièges</th>
@@ -215,19 +215,19 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="!text-left"><strong>Attaquant</strong></td>
+                    <td class="text-left"><strong>Attaquant</strong></td>
                     <td>2</td>
                     <td>Non</td>
                     <td>{{ rules.attacker_seats }} % des membres</td>
                   </tr>
                   <tr>
-                    <td class="!text-left"><strong>Défenseur</strong></td>
+                    <td class="text-left"><strong>Défenseur</strong></td>
                     <td>1</td>
                     <td>Oui</td>
                     <td>{{ rules.defender_seats }} % des membres</td>
                   </tr>
                   <tr>
-                    <td class="!text-left"><strong>Membre</strong></td>
+                    <td class="text-left"><strong>Membre</strong></td>
                     <td>1</td>
                     <td>Non</td>
                     <td>Les autres</td>
@@ -251,7 +251,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                 <tbody>
                   <tr v-for="bonus in rules.bonuses ?? []" :key="bonus.type">
                     <td class="w-10"><img :src="bonus.icon" :alt="bonus.label" class="size-9 max-w-none"></td>
-                    <td class="!text-left text-xs"><strong>{{ bonus.label }}</strong> : {{ bonus.description }}</td>
+                    <td class="text-left text-xs"><strong>{{ bonus.label }}</strong> : {{ bonus.description }}</td>
                   </tr>
                 </tbody>
               </KadoTable>
@@ -266,8 +266,8 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                   </thead>
                   <tbody>
                     <tr v-for="reward in ranking.rewards" :key="reward.from">
-                      <td class="!text-left">{{ ranks(reward) }}</td>
-                      <td class="!text-right">{{ formatScore(reward.points) }} <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4"></td>
+                      <td class="text-left">{{ ranks(reward) }}</td>
+                      <td class="text-right">{{ formatScore(reward.points) }} <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4"></td>
                     </tr>
                   </tbody>
                 </KadoTable>

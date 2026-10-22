@@ -12,14 +12,14 @@ const thinTitles = '[&_th]:text-xs [&_th]:font-normal [&_th]:uppercase [&_td]:bo
 <template>
   <KadoPageTitle class="mb-5">Votre dernière période</KadoPageTitle>
   <KadoSectionTitle>Résumé de vos points Kado</KadoSectionTitle>
-  <ul class="list-inside list-image-[url(/gfx/puce.jpg)] mt-6 mb-6 ml-10">
-    <li>Le classement de votre clan vous a rapporté <Number :value="11538" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li>Votre progression sur les jeux vous a rapporté <Number :value="5000" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li>Vos plumes ont rapporté <Number :value="9091" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li>23 x <img src="/gfx/iconGreenStar.gif" alt="Etoile verte" /> vous rapportent <Number :value="230" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li>7 x <img src="/gfx/iconOrangeStar.gif" alt="Etoile orange" /> vous rapportent <Number :value="350" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li>21 x <img src="/gfx/iconRedStar.gif" alt="Etoile rouge" /> vous rapportent <Number :value="2100" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
-    <li class="font-bold">Total période : <Number :value="28309" color="green" /> <KadoPoints class="inline size-[17px]" /></li>
+  <ul class="list-inside list-kado mt-6 mb-6 ml-10">
+    <li>Le classement de votre clan vous a rapporté <Number :value="11538" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li>Votre progression sur les jeux vous a rapporté <Number :value="5000" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li>Vos plumes ont rapporté <Number :value="9091" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li>23 x <img src="/gfx/iconGreenStar.gif" alt="Etoile verte" /> vous rapportent <Number :value="230" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li>7 x <img src="/gfx/iconOrangeStar.gif" alt="Etoile orange" /> vous rapportent <Number :value="350" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li>21 x <img src="/gfx/iconRedStar.gif" alt="Etoile rouge" /> vous rapportent <Number :value="2100" color="green" /> <KadoPoints class="inline size-4.25" /></li>
+    <li class="font-bold">Total période : <Number :value="28309" color="green" /> <KadoPoints class="inline size-4.25" /></li>
   </ul>
 
   <KadoSectionTitle>Améliorations aux jeux</KadoSectionTitle>
@@ -43,7 +43,7 @@ const thinTitles = '[&_th]:text-xs [&_th]:font-normal [&_th]:uppercase [&_td]:bo
         <td><Number :value="1" color="orange" /><sup> er</sup></td>
         <td><img src="/gfx/leagues/old/8.png" alt="Ligue or" /></td>
         <td><Number :value="53800" color="blue" /></td>
-        <td><Number :value="5000" color="green" /> <KadoPoints class="inline size-[17px]" /></td>
+        <td><Number :value="5000" color="green" /> <KadoPoints class="inline size-4.25" /></td>
       </tr>
     </tbody>
   </KadoTable>

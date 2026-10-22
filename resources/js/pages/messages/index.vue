@@ -113,7 +113,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
               <td class="w-8">
                 <img :src="box === 'inbox' && !message.is_read ? '/assets/img/gfx/icons/newMail.gif' : '/assets/img/gfx/icons/readedMail.gif'" :alt="message.is_read ? 'lu' : 'nouveau'" />
               </td>
-              <td class="text-left [font-variant:small-caps]">
+              <td class="text-left small-caps">
                 <template v-if="box === 'sent'">{{ message.recipient.display_name }}</template>
                 <template v-else-if="message.sender">{{ message.sender.display_name }}</template>
                 <template v-else><span class="text-kado-orange-500">KadoKadéo</span></template>

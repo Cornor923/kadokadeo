@@ -55,29 +55,29 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
     <div class="overflow-x-auto">
       <KadoTable class="w-full">
         <thead>
-          <tr class="text-[10px] uppercase *:cursor-pointer">
-            <th class="min-w-28 text-right" @click="sortBy('names')">Joueur</th>
-            <th title="Points dans le clan : 1 point par étape de mission réussie + les points de ses attaques et de ses défenses réussies." @click="sortBy('points')">
+          <tr class="text-[10px] uppercase">
+            <th class="min-w-28 cursor-pointer text-right" @click="sortBy('names')">Joueur</th>
+            <th class="cursor-pointer" title="Points dans le clan : 1 point par étape de mission réussie + les points de ses attaques et de ses défenses réussies." @click="sortBy('points')">
               Points
             </th>
-            <th title="Performance en attaque et défense : nombre de points rapportés par ses attaques + nombre de points sauvés par ses défenses." @click="sortBy('performances')">
+            <th class="cursor-pointer" title="Performance en attaque et défense : nombre de points rapportés par ses attaques + nombre de points sauvés par ses défenses." @click="sortBy('performances')">
               <img src="/assets/img/gfx/icons/clan_points.gif" alt="performance" class="h-5" />
             </th>
-            <th title="Étapes de mission réussies" @click="sortBy('missions')">
+            <th class="cursor-pointer" title="Étapes de mission réussies" @click="sortBy('missions')">
               <img src="/assets/img/gfx/icons/sgame.gif" alt="missions" class="h-5" />
             </th>
-            <th title="Attaques réussies / lancées" @click="sortBy('attacks')">
+            <th class="cursor-pointer" title="Attaques réussies / lancées" @click="sortBy('attacks')">
               <img src="/assets/img/gfx/icons/atk.gif" alt="attaques" class="h-5" />
             </th>
-            <th title="Défenses réussies / tentées" @click="sortBy('defenses')">
+            <th class="cursor-pointer" title="Défenses réussies / tentées" @click="sortBy('defenses')">
               <img src="/assets/img/gfx/icons/def.gif" alt="défenses" class="h-5" />
             </th>
-            <th v-if="showStatus" class="min-w-40 cursor-default! text-left" title="Visible uniquement par les membres du clan">Statut</th>
+            <th v-if="showStatus" class="min-w-40 text-left" title="Visible uniquement par les membres du clan">Statut</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(m, index) in sorted" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
-            <td class="text-right [font-variant:small-caps]">
+            <td class="text-right small-caps">
               <img v-if="m.is_leader"
                    src="/gfx/clan/clanleader.gif"
                    alt="Chef de Clan"
@@ -115,7 +115,7 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
         </tbody>
         <tfoot v-if="members.length > 1">
           <tr class="border-t-2 border-solid border-kado-teal-500 font-bold">
-            <td class="text-right [font-variant:small-caps]">Total</td>
+            <td class="text-right small-caps">Total</td>
             <td class="text-right"><Number :value="total('points')" color="blue" /></td>
             <td class="text-right"><Number :value="total('performance')" color="orange" /></td>
             <td class="text-right"><Number :value="total('mission_steps')" color="green" /></td>

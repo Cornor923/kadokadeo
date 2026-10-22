@@ -48,6 +48,15 @@
 - Clans on/off: `ClanSettings::$enabled` (admin « Paramètres > Clans », off by default). New clan API routes go inside the `EnsureClansAreEnabled` group of `routes/api.php`, new clan pages get the `clans` router middleware; the front reads `window.Kado.clans_enabled` (`useClanStore().enabled`). The admin manages the clans either way; tests of the clans use `Tests\Concerns\EnablesClans`.
 - Clan forum (`App\Services\ClanForumService`, `/api/clans/{clan}/forum`) and private messages (`App\Services\MessageService`): texts are stored as raw Marktwin and rendered client-side only (`resources/js/marktwin/render.js`: `useMarktwin` on the site, `<kado-marktwin text>` in the admin via `resources/js/admin/marktwin.js` loaded by a Filament render hook; grammar in `resources/js/marktwin/grammar.js`). Admin « Modération > Messages privés »: every message, and the system messages (signed KadoKado) to a player or to all. The `@eternaltwin/marktwin` 0.6.0 WASM panics (and corrupts its memory) on non-ASCII input: `useMarktwin` sends it ASCII only (entities put back after). It is loaded through `vite-plugin-wasm`, whose dev helper `/__vite-plugin-wasm-helper` must be proxied to Vite (`docker/app/conf/kadokadeo.conf`).
 
+## Front-end Styles
+
+- Colours, fonts, shadows, animations: the `@theme` of `resources/css/app.css` only (the palette `kado-*`, from `public/assets/original_style.css`; a colour that is not in it says where it comes from). No hex in the classes, no default palette of Tailwind (`text-gray-500`...).
+- No `<style>` in the components, no global class, no `!important`: Tailwind utilities. A look shared by several components: `@utility` in `app.css` when it styles the element itself (`kado-page-title`, `game-interface-1`), `@layer components` when it reaches its children or gives default margins (`.kado-table`, `.kado-notice`), under the utilities so that the classes of a page win.
+- `@layer base` styles the document only (`html`, `body`, `a`, `img` inline): nothing by tag. The looks of KadoKado are components in `resources/js/components/kado/` (`KadoPageTitle`, `KadoSectionTitle`, `KadoTable`, `KadoSideBox`, `KadoNotice`) and `form/` (`FormButton`, `FormInput`...): use them rather than raw tags.
+- A component sets no outer margin as a utility (it would beat the `space-y` of its parent): the page places it.
+- Karbon (`<html data-theme="karbon">`): the `karbon:` variant, in the components.
+- Checked by `npm run lint:css` (`scripts/lint-css.mjs`, in the CI).
+
 ## Existing Agent Guidance
 
 - Keep `CLAUDE.md` as the companion high-level map; this file is the short, high-signal checklist.

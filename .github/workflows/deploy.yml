@@ -53,6 +53,10 @@ jobs:
       - name: ESLint
         run: yarn eslint ./resources/js
 
+      # the rules of the styles (AGENTS.md « Front-end styles »)
+      - name: CSS rules
+        run: node scripts/lint-css.mjs
+
   tests:
     runs-on: ubuntu-latest
     steps:

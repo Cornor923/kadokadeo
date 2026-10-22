@@ -181,7 +181,7 @@ const gameAchievements = computed(() => {
                 <div class="mx-auto relative">
                   <img src="/gfx/maxiuser_bar_bg_disabled.gif" alt="Barre de progression du profil" class="w-[355px] h-[18px]" />
                   <div class="absolute top-0.5 h-[18px] overflow-hidden" :style="{ width: barWidth + 'px' }">
-                    <div class="w-[355px] h-[18px] contrast-200 bg-gradient-to-r from-[#A500CD] to-[#84FF7A] via-[#F6941E] mask-[url('/gfx/maxiuser_bar_mask.png')]"></div>
+                    <div class="w-[355px] h-[18px] contrast-200 bg-gradient-to-r from-kado-gauge-violet via-kado-gauge-orange to-kado-gauge-green mask-[url('/gfx/maxiuser_bar_mask.png')]"></div>
                   </div>
                   <div class="absolute right-1.5 top-1.5 text-white text-2xs">{{ Math.floor(myStars / profile.max_stars * 100) }}</div>
                 </div>

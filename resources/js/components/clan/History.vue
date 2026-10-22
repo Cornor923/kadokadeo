@@ -28,12 +28,12 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â
       <KadoTable v-if="meta" class="w-full text-sm [&_td]:px-2 [&_td]:py-1">
         <thead>
           <tr class="uppercase text-2xs">
-            <th class="text-left!">Date</th>
+            <th class="text-left">Date</th>
             <th class="min-w-10" title="A : attaque du clan, D : attaque reÃ§ue par le clan">Type</th>
-            <th class="min-w-16 text-left!">Joueur</th>
-            <th class="min-w-20 text-left!">Clan</th>
-            <th class="min-w-16 text-left!">Jeu</th>
-            <th class="text-right!">Score</th>
+            <th class="min-w-16 text-left">Joueur</th>
+            <th class="min-w-20 text-left">Clan</th>
+            <th class="min-w-16 text-left">Jeu</th>
+            <th class="text-right">Score</th>
             <th>Statut</th>
             <th class="text-center"><img src="/assets/img/gfx/icons/clan_points.gif" alt="Points" class="w-5"></th>
           </tr>
@@ -49,7 +49,7 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â
                    :alt="row.type === 'attack' ? 'Attaque' : 'DÃ©fense'"
                    class="w-5" />
             </td>
-            <td class="text-left [font-variant:small-caps]">
+            <td class="text-left small-caps">
               <RouterLink v-if="row.player" :to="{ name: 'profile.show', params: { id: row.player.etwin_id } }">{{ row.player.display_name }}</RouterLink>
               <template v-else>â€”</template>
             </td>

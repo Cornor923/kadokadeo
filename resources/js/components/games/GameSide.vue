@@ -199,7 +199,7 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
               <td class="text-right">
                 <template v-if="pallier.points !== null">
                   <Number :value="pallier.points" color="green" />
-                  <KadoPoints class="inline size-[17px]" />
+                  <KadoPoints class="inline size-4.25" />
                 </template>
               </td>
             </tr>

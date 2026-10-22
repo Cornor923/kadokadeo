@@ -105,7 +105,7 @@ const distribute = () => {
 
       <template v-if="data.clan.transfers.length">
         <KadoSectionTitle>Derniers dons</KadoSectionTitle>
-        <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1 text-sm">
+        <ul class="list-inside list-kado ml-4 space-y-1 text-sm">
           <li v-for="(transfer, index) in data.clan.transfers" :key="index">
             <template v-if="transfer.type === 'donation'">{{ transfer.from?.display_name }} a donné {{ transfer.count }} partie(s) au clan</template>
             <template v-else>{{ transfer.from?.display_name }} a donné {{ transfer.count }} partie(s) à {{ transfer.to?.display_name }}</template>

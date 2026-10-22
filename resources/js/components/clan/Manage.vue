@@ -135,7 +135,7 @@ const doDissolve = () => {
       <KadoTable class="w-full">
         <tbody>
           <tr v-for="(m, index) in members" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
-            <td class="min-w-28 text-left [font-variant:small-caps]">
+            <td class="min-w-28 text-left small-caps">
               <img v-if="m.is_leader"
                    src="/gfx/clan/clanleader.gif"
                    alt="Chef de Clan"

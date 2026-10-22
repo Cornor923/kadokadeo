@@ -10,6 +10,7 @@
         "dev": "vite --host",
         "games:bundle": "node resources/js/games/build-games.mjs",
         "lint": "eslint ./resources/js --fix --cache",
+        "lint:css": "node scripts/lint-css.mjs",
         "format": "prettier --write ./resources/js"
     },
     "dependencies": {

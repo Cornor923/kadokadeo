@@ -45,7 +45,7 @@ const cellClasses = (thread, align = 'text-left') => [
       </tr>
       <template v-for="row in rows" :key="row.key">
         <tr v-if="row.separator">
-          <td colspan="4" class="bg-kado-slate-700 py-0.5 pr-1.25 pl-5 text-left text-2xs font-bold text-white [font-variant:small-caps]">{{ row.separator }}</td>
+          <td colspan="4" class="bg-kado-slate-700 py-0.5 pr-1.25 pl-5 text-left text-2xs font-bold text-white small-caps">{{ row.separator }}</td>
         </tr>
         <tr v-else class="cursor-pointer hover:shadow-[inset_0_0_2px_rgba(0,0,0,0.4)]" :class="row.thread.self?.is_unread ? '' : 'opacity-75'">
           <td :class="cellClasses(row.thread, 'text-center')">

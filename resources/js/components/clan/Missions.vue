@@ -197,7 +197,7 @@ const confirmBonus = () => {
 
       <template v-if="data.missions.length">
         <KadoSectionTitle>Missions de la période</KadoSectionTitle>
-        <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1">
+        <ul class="list-inside list-kado ml-4 space-y-1">
           <li v-for="m in data.missions" :key="m.id">
             Mission {{ m.number }} : {{ statusLabels[m.status] ?? m.status }}
             <template v-if="m.status === 'completed'">

@@ -197,6 +197,11 @@
   --color-kado-violet-600: #7d099a;
   --color-kado-violet-900: #4f0a62;
 
+  /* the gauge of the profile (maxiuser_bar_mask.png): violet, orange, green */
+  --color-kado-gauge-violet: #a500cd;
+  --color-kado-gauge-orange: #f6941e;
+  --color-kado-gauge-green: #84ff7a;
+
   /* the forum of Eternaltwin in the look of the forum of Twinoid (data.twinoid.com/css/bar.css), and the dark panels
      of the clans (#1d2024 / #3d4045 in the original stylesheet) */
   --color-twinoid-500: #4e5162;
@@ -385,4 +390,14 @@
   border-image-source: url('/gfx/gameBoxDayRight.png');
   border-image-slice: 35 15 30 15 fill;
   border-image-repeat: repeat stretch;
+}
+
+/* the small capitals of the tabs and of the titles of KadoKado */
+@utility small-caps {
+  font-variant: small-caps;
+}
+
+/* the bullet of the lists of KadoKado */
+@utility list-kado {
+  list-style-image: url('/gfx/puce.jpg');
 }
