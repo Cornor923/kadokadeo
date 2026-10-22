@@ -50,7 +50,14 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    // the token of Eternaltwin may write in its forum (scope forum:write, App\Http\Controllers\Api\EtwinForumController)
+    // the token of Eternaltwin may read its forum as the player (scope forum:read): the embedded forum is given it
+    // (App\Http\Controllers\Api\EtwinForumController)
+    public function canReadEtwinForum(): bool
+    {
+        return $this->etwin_access_token !== null && ($this->etwin_scopes['forum_read'] ?? false) === true;
+    }
+
+    // the token of Eternaltwin may write in its forum (scope forum:write)
     public function canWriteEtwinForum(): bool
     {
         return $this->etwin_access_token !== null && ($this->etwin_scopes['forum_write'] ?? false) === true;

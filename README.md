@@ -82,6 +82,9 @@ Per-game analyzers of the moves (`resources/js/replay-verifier/analyzers/<game_k
 | `ETERNALTWIN_URL`           | URL of Eternaltwin (OAuth login)                    | `https://eternaltwin.com/`          |
 | `ETERNALTWIN_CLIENT_ID`     | OAuth client id of the site on Eternaltwin          |                                     |
 | `ETERNALTWIN_CLIENT_SECRET` | OAuth client secret                                 |                                     |
+| `ETERNALTWIN_PUBLIC_URL`    | URL of Eternaltwin for the browser (embedded forum) | `ETERNALTWIN_URL`                   |
+| `ETERNALTWIN_SCOPE`         | Scope asked at the login (`forum:read forum:write`) | `base`                              |
+| `ETERNALTWIN_FORUM_CATEGORY`| Groupement the forum of the site opens on           | `kadokadeo`                         |
 | `DISCORD_WEBHOOK`           | Webhook url for error reporting                     |                                     |
 | `DISCORD_SCORE`             | Webhook url for daily score recap                   |                                     |
 | `DISCORD_ALERT_QUEUE`       | Queue of the Discord messages                       | `default`                           |

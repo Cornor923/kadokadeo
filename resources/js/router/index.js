@@ -15,8 +15,6 @@ import ClansPlay from '@/pages/clans/play.vue'
 import ClansShow from '@/pages/clans/show.vue'
 import Competition from '@/pages/competition/index.vue'
 import ForumIndex from '@/pages/forum/index.vue'
-import ForumSection from '@/pages/forum/section.vue'
-import ForumThread from '@/pages/forum/thread.vue'
 import GamesDaily from '@/pages/games/daily.vue'
 import GamesIndex from '@/pages/games/index.vue'
 import GamesRanking from '@/pages/games/ranking.vue'
@@ -35,10 +33,11 @@ const router = createRouter({
   routes: [
     { path: '/', redirect: '/games', meta: {} },
     { path: '/login', name: 'login', component: Login, meta: {} },
-    // the forum of Eternaltwin (its category of the site)
+    // the forum of Eternaltwin, embedded: the page shown is in the address after #! (#!t/123)
     { path: '/forum', name: 'forum.index', component: ForumIndex, meta: { middleware: ['auth'], title: 'Forum - KadoKadéo' } },
-    { path: '/forum/sections/:section', name: 'forum.section', component: ForumSection, meta: { middleware: ['auth'], title: 'Forum - KadoKadéo' } },
-    { path: '/forum/threads/:thread', name: 'forum.thread', component: ForumThread, meta: { middleware: ['auth'], title: 'Forum - KadoKadéo' } },
+    // the addresses of the former forum pages of the site
+    { path: '/forum/sections/:section', redirect: '/forum' },
+    { path: '/forum/threads/:thread', redirect: '/forum' },
     { path: '/oauth/callback', component: LoginCallback, meta: {} },
     { path: '/help', name: 'help', component: Help, meta: { middleware: ['auth'] } },
     { path: '/daily', name: 'games.daily', component: GamesDaily, meta: { middleware: ['auth'] } },

@@ -38,12 +38,16 @@ return [
     'etwin' => [
         'identityServerUri' => env('ETERNALTWIN_URL', 'https://identity.eternaltwin.com/'),
         'eternaltwinUrl' => env('ETERNALTWIN_URL', 'https://eternaltwin.com/'),
+        // the address of Eternaltwin for the browser, which loads the embedded forum from it: the server may reach
+        // Eternaltwin at another one (the name of its container)
+        'publicUrl' => env('ETERNALTWIN_PUBLIC_URL', env('ETERNALTWIN_URL', 'https://eternaltwin.com/')),
         'oauthId' => env('ETERNALTWIN_CLIENT_ID', ''),
         'oauthSecret' => env('ETERNALTWIN_CLIENT_SECRET', ''),
-        // the scope asked at the login: "forum:write" to post in the forum of Eternaltwin as the player (the app must be
-        // allowed it on Eternaltwin, or the login is refused), "base" otherwise
+        // the scope asked at the login: "forum:read forum:write" for the embedded forum to read and post as the player
+        // (the app must be allowed them on Eternaltwin, or the login is refused), "base" otherwise: the forum is then
+        // read as a guest
         'scope' => env('ETERNALTWIN_SCOPE', 'base'),
-        // the category of the forum of Eternaltwin shown in the "Forum" of the site (its sections)
+        // the groupement of the forum of Eternaltwin the "Forum" of the site opens on
         'forumCategory' => env('ETERNALTWIN_FORUM_CATEGORY', 'kadokadeo'),
     ],
 
