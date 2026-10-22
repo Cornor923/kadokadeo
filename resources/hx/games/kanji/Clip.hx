@@ -245,6 +245,19 @@ class Clip extends ASprite {
 		_yscale = sy;
 	}
 
+	// A scale that changes its sign is a flip (the hero turning round): in Flash it is instant, interpolated between two
+	// steps it would show the picture squeezed flat
+	override public function updateGraphics(a:Float) {
+		var p = _prevState;
+		if (p != null) {
+			if (p.xscale * _curState.xscale < 0)
+				p.xscale = _curState.xscale;
+			if (p.yscale * _curState.yscale < 0)
+				p.yscale = _curState.yscale;
+		}
+		super.updateGraphics(a);
+	}
+
 	// ---------------------------------------------------------------- playhead
 	override public function update() {
 		if (frozen) {

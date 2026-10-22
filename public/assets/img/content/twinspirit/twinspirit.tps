@@ -424,6 +424,24 @@
             <key type="filename">src/c143_0/1.png</key>
             <key type="filename">src/c143_0/2.png</key>
             <key type="filename">src/c143_0/3.png</key>
+            <key type="filename">src/c143_0/4.png</key>
+            <key type="filename">src/c143_0/5.png</key>
+            <key type="filename">src/c143_0/6.png</key>
+            <key type="filename">src/c143_0/7.png</key>
+            <key type="filename">src/c143_0/8.png</key>
+            <key type="filename">src/c143_0/9.png</key>
+            <key type="filename">src/c143_0/10.png</key>
+            <key type="filename">src/c143_0/11.png</key>
+            <key type="filename">src/c143_0/12.png</key>
+            <key type="filename">src/c143_0/13.png</key>
+            <key type="filename">src/c143_0/14.png</key>
+            <key type="filename">src/c143_0/15.png</key>
+            <key type="filename">src/c143_0/16.png</key>
+            <key type="filename">src/c143_0/17.png</key>
+            <key type="filename">src/c143_0/18.png</key>
+            <key type="filename">src/c143_0/19.png</key>
+            <key type="filename">src/c143_0/20.png</key>
+            <key type="filename">src/c143_0/21.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -441,6 +459,24 @@
             <key type="filename">src/c143_0W/1.png</key>
             <key type="filename">src/c143_0W/2.png</key>
             <key type="filename">src/c143_0W/3.png</key>
+            <key type="filename">src/c143_0W/4.png</key>
+            <key type="filename">src/c143_0W/5.png</key>
+            <key type="filename">src/c143_0W/6.png</key>
+            <key type="filename">src/c143_0W/7.png</key>
+            <key type="filename">src/c143_0W/8.png</key>
+            <key type="filename">src/c143_0W/9.png</key>
+            <key type="filename">src/c143_0W/10.png</key>
+            <key type="filename">src/c143_0W/11.png</key>
+            <key type="filename">src/c143_0W/12.png</key>
+            <key type="filename">src/c143_0W/13.png</key>
+            <key type="filename">src/c143_0W/14.png</key>
+            <key type="filename">src/c143_0W/15.png</key>
+            <key type="filename">src/c143_0W/16.png</key>
+            <key type="filename">src/c143_0W/17.png</key>
+            <key type="filename">src/c143_0W/18.png</key>
+            <key type="filename">src/c143_0W/19.png</key>
+            <key type="filename">src/c143_0W/20.png</key>
+            <key type="filename">src/c143_0W/21.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>

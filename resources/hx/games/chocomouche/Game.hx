@@ -167,17 +167,27 @@ class Game implements kado.GameInterface {
 		}
 	}
 
-	// the slot whose square (0..SLOT_SIZE in its clip) holds the point of the game (its state, not the picture shown)
+	// the slot under the point of the game, as the hit test of the clips in Flash: the topmost one (the last created)
+	// whose shapes hold it, its transparent square (0..SLOT_SIZE in its clip) or its picture (centered on the clip,
+	// pressed: 92%). The pictures of the next slots cover the right / bottom half of a square: the picture shown wins
 	function slotAt(x:Float, y:Float):Slot {
 		if (grid == null)
 			return null;
 		var p = new pixi.core.math.Point(x, y);
-		for (column in grid) {
-			for (s in column) {
+		var half = Cs.SLOT_SIZE / 2;
+		var gx = grid.length;
+		while (gx-- > 0) {
+			var column = grid[gx];
+			var gy = column.length;
+			while (gy-- > 0) {
+				var s = column[gy];
 				if (s == null || s.root == null || s.root.parent == null)
 					continue;
 				var l = s.root.toLocal(p);
 				if (l.x >= 0 && l.x < Cs.SLOT_SIZE && l.y >= 0 && l.y < Cs.SLOT_SIZE)
+					return s;
+				var lp = s.slot.toLocal(p);
+				if (lp.x >= -half && lp.x < half && lp.y >= -half && lp.y < half)
 					return s;
 			}
 		}

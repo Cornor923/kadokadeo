@@ -766,6 +766,9 @@ class Game implements kado.GameInterface {
 		#if debug
 		cov.turn++;
 		#end
+		// (hand is null when handDown put it down on this frame, SPACE held: Flash calls nothing)
+		if (hand == null)
+			return;
 		hand.destroy();
 		var mx = 9999;
 		var my = 9999;

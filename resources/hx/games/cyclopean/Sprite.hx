@@ -18,6 +18,7 @@ class Sprite {
 	public function update():Void {
 		root._x = x;
 		root._y = y;
+		placed();
 	}
 
 	public function kill():Void {
@@ -28,6 +29,19 @@ class Sprite {
 	public function updatePos():Void {
 		root._x = x;
 		root._y = y;
+		placed();
+	}
+
+	// the first position given to the clip (it waits at -1000 until then): a sprite created during the loop of
+	// Game.main (sList copied before it: a bille born from an egg, the particles) gets it on the next Flash frame only,
+	// and the display would slide it from -1000 across the screen. Shown there at once (display only)
+	var flPlaced:Bool = false;
+
+	inline function placed():Void {
+		if (!flPlaced) {
+			flPlaced = true;
+			root.teleport();
+		}
 	}
 
 	public function getDist(o:{x:Float, y:Float}):Float {
