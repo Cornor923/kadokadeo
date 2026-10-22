@@ -9,11 +9,12 @@
         window.Kado = { public_key: '' }
         window.evts = new EventTarget();
     </script>
+    {{-- the PIXI of the site (layouts/default.blade.php), before the module of Vite --}}
+    <script defer src="/vendor/pixi.js/6.0.2/pixi.min.js"></script>
+    <script defer src="/vendor/pixi-filters/5.0.0/pixi-filters.min.js"></script>
     @if ($player && (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))))
         @vite(['resources/js/replay-player.js'])
     @endif
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.0.2/browser/pixi.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pixi-filters@5.0.0/dist/browser/pixi-filters.min.js"></script>
     <style>
         {!! $fontFaces !!}
         html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }

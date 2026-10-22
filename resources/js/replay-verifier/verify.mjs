@@ -8,12 +8,12 @@
 //            gameOverAtFrame?: tests only, the replays of the test harness (rc.mjs) end with a game over forced there }
 //   output (stdout, one JSON line): { ok: true, score, frames, analysis? } or { ok: false, error }
 //            analysis: { analyzer, version, metrics, suspicious, reasons } or { analyzer, error } (never fails the run)
-//   env: BROWSER (Chrome / Chromium, see browser.mjs), KADO_VERIFIER_CACHE (cache of PIXI and of the downloaded browser,
+//   env: BROWSER (Chrome / Chromium, see browser.mjs), KADO_VERIFIER_CACHE (cache of the downloaded browser,
 //        default storage/app/replay-verifier), KADO_VERIFIER_TIMEOUT (seconds: then it fails, its browser killed)
-// The game runs like on the site (same PIXI from the same CDN, pixi-tween, fonts), the physics is stepped by hand.
+// The game runs like on the site (the same files of PIXI, pixi-tween, fonts), the physics is stepped by hand.
 // Needs Node 22+ and Chrome / Chromium (downloaded when there is none: package @puppeteer/browsers).
 import { existsSync } from 'node:fs'
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { basename, dirname, extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -27,30 +27,16 @@ const PIXI_TWEEN = join(ROOT, 'resources/js/pixi-tween')
 // one analyzer of the moves by game (optional): analyzers/<game_key>.mjs
 const ANALYZERS = join(dirname(fileURLToPath(import.meta.url)), 'analyzers')
 const CACHE = process.env.KADO_VERIFIER_CACHE || join(ROOT, 'storage/app/replay-verifier')
-// the versions of the site (resources/views/layouts/default.blade.php)
+// the files of the site (resources/views/layouts/default.blade.php)
 const VENDOR = {
-  'pixi.js': 'https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.0.2/browser/pixi.js',
-  'pixi-filters.min.js': 'https://cdn.jsdelivr.net/npm/pixi-filters@5.0.0/dist/browser/pixi-filters.min.js',
+  'pixi.js': join(PUBLIC, 'vendor/pixi.js/6.0.2/pixi.min.js'),
+  'pixi-filters.min.js': join(PUBLIC, 'vendor/pixi-filters/5.0.0/pixi-filters.min.js'),
 }
 const STEP_MS = 1000 / 32
 // the game goes on after the last frame of the replay: end animation, then the fade of kado.GameOver (80 frames),
 // during which points can still be won (the score sent is the one at the end of the fade)
 const EXTRA_FRAMES = 32 * 60
 const TYPES = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.otf': 'font/otf', '.woff': 'font/woff', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.fnt': 'text/xml', '.xml': 'text/xml' }
-
-async function vendorFile(name) {
-  const path = join(CACHE, 'vendor', name)
-  try {
-    return await readFile(path)
-  } catch {
-    const res = await fetch(VENDOR[name])
-    if (!res.ok) throw new Error(`cannot download ${VENDOR[name]}: ${res.status}`)
-    const data = Buffer.from(await res.arrayBuffer())
-    await mkdir(dirname(path), { recursive: true })
-    await writeFile(path, data)
-    return data
-  }
-}
 
 async function page(input) {
   // the fonts of the site: some games measure their texts
@@ -116,7 +102,7 @@ async function serve(input) {
   for (const name of await readdir(PIXI_TWEEN)) {
     files['/__pixi-tween/' + name] = files['/__pixi-tween/' + basename(name, '.js')] = [await readFile(join(PIXI_TWEEN, name)), 'text/javascript']
   }
-  for (const name of Object.keys(VENDOR)) files['/__vendor/' + name] = [await vendorFile(name), 'text/javascript']
+  for (const name of Object.keys(VENDOR)) files['/__vendor/' + name] = [await readFile(VENDOR[name]), 'text/javascript']
 
   const server = createServer(async(req, res) => {
     const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)

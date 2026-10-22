@@ -65,7 +65,7 @@ The replays of the runs that count (personal best, contract, daily game, clan) a
 | -------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
 | `KADO_REPLAY_VERIFIER_NODE`            | Node binary used to run `resources/js/replay-verifier/verify.mjs`                  | `node`                          |
 | `KADO_REPLAY_VERIFIER_BROWSER`         | Path of Chrome / Chromium. Empty: looked for at the usual places, then a chrome-headless-shell is downloaded | (auto)  |
-| `KADO_VERIFIER_CACHE`                  | Cache folder of the Node scripts (PIXI, downloaded browser)                         | `storage/app/replay-verifier`   |
+| `KADO_VERIFIER_CACHE`                  | Cache folder of the Node scripts (downloaded browser)                               | `storage/app/replay-verifier`   |
 
 ### Replay analysis
 

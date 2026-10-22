@@ -18,11 +18,13 @@
         // window.evts.addEventListener('gameFinished', console.log);
     </script>
 
+    {{-- PIXI and its filters, served by the site (public/vendor/<package>/<version>); deferred, they still run before
+         the modules of Vite below (in the order of the page): main.js and the games find PIXI --}}
+    <script defer src="/vendor/pixi.js/6.0.2/pixi.min.js"></script>
+    <script defer src="/vendor/pixi-filters/5.0.0/pixi-filters.min.js"></script>
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/main.js'])
     @endif
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.0.2/browser/pixi.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pixi-filters@5.0.0/dist/browser/pixi-filters.min.js"></script>
 </head>
 
 <body>

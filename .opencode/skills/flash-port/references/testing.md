@@ -32,8 +32,8 @@ open "http://127.0.0.1:8765/game.html?game=<game>&cls=Game<Name>&seed=123"
   to replays too), `replay=<data>` (watch a replay), `test=<mode>` (below), `js=<bundle>` (another build).
 - At the end of a game KadoKadeo logs `Replay data: <data>` (debug builds), collected by the page in
   `window.__logs`; the game's own end state is in `window.__over` (see `code.md`).
-- PixiJS 6.0.2 and pixi-filters 5.0.0 (the versions of the site) are downloaded once by the server into
-  `$KKP_WORK/vendor`: tests then run offline.
+- PixiJS 6.0.2 and pixi-filters 5.0.0 are the files of the site (`public/vendor`), served by the server: tests run
+  offline.
 
 ## cdp.mjs
 
