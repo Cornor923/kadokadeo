@@ -7,6 +7,7 @@ use App\Http\Resources\RunResource;
 use App\Http\Resources\UserLightResource;
 use App\Models\Game;
 use App\Models\Period;
+use App\Models\User;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
@@ -26,7 +27,7 @@ class GameScoreController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware('auth:sanctum', only: ['index', 'show', 'daily', 'dailyScores', 'siteRecords', 'personalRecords', 'userPeriodRecords', 'competition', 'poidsPlumes']),
+            new Middleware('auth:sanctum', only: ['index', 'show', 'daily', 'dailyScores', 'siteRecords', 'userRecords', 'userPeriodRecords', 'competition', 'poidsPlumes']),
         ];
     }
 
@@ -82,9 +83,10 @@ class GameScoreController extends Controller implements HasMiddleware
         return response()->json($records);
     }
 
-    public function personalRecords(ScoreService $scoreService, LeagueService $leagueService)
+    // the records of a player (the stats of their profile): by active game, their best score, the one of the current
+    // period and their league in it
+    public function userRecords(User $user, ScoreService $scoreService, LeagueService $leagueService)
     {
-        $user = Auth::user();
         $currentPeriod = Period::current()->first();
         $games = Game::query()
             ->where('is_active', true)

@@ -8,6 +8,7 @@ Route::post('/logout', [App\Http\Controllers\LoginController::class, 'logout']);
 Route::get('/user', [App\Http\Controllers\Api\UserController::class, 'index']);
 Route::get('/users/{user:etwin_id}', [App\Http\Controllers\Api\UserController::class, 'show'])->whereUuid('etwin_id');
 Route::get('/users/{user:etwin_id}/history', [App\Http\Controllers\Api\UserController::class, 'showHistory'])->whereUuid('etwin_id');
+Route::get('/users/{user:etwin_id}/records', [App\Http\Controllers\Api\GameScoreController::class, 'userRecords'])->whereUuid('etwin_id');
 
 Route::get('/announcement', [App\Http\Controllers\Api\AnnouncementController::class, 'show'])
     ->middleware('cache.headers:public;max_age=60;etag');
@@ -20,7 +21,6 @@ Route::get('/competition/poids-plumes', [App\Http\Controllers\Api\GameScoreContr
 Route::get('/daily/game', [App\Http\Controllers\Api\GameController::class, 'daily']);
 Route::get('/daily/scores', [App\Http\Controllers\Api\GameScoreController::class, 'dailyScores']);
 Route::get('/site-records', [App\Http\Controllers\Api\GameScoreController::class, 'siteRecords']);
-Route::get('/user-records', [App\Http\Controllers\Api\GameScoreController::class, 'personalRecords']);
 
 Route::resource('/games', App\Http\Controllers\Api\GameController::class)->only(['index', 'show'])->whereNumber('game');
 Route::put('/games/{game}/favorite', [App\Http\Controllers\Api\GameController::class, 'setFavorite'])->whereNumber('game');

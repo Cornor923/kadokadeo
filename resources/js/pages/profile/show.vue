@@ -4,9 +4,11 @@ import OrangeStar from '@svg/orangeStar.svg'
 import RedStar from '@svg/redStar.svg'
 
 const route = useRoute()
-const userId = computed(() => route.params.id)
-const authSore = useAuthStore()
-const { isLoading: isHistoryLoading, error: historyError, results: historyResults, hasNextPage: historyHasNextPage, fetchGameHistory } = useUserGameHistory(userId.value ?? authSore.user.etwin_id)
+const authStore = useAuthStore()
+// the player of the page: the one of the url, or the player logged in (/profile)
+const playerId = computed(() => route.params.id ?? authStore.user?.etwin_id)
+const isMe = computed(() => playerId.value === authStore.user?.etwin_id)
+const { isLoading: isHistoryLoading, error: historyError, results: historyResults, hasNextPage: historyHasNextPage, fetchGameHistory } = useUserGameHistory(playerId)
 
 const { fetchProfile, isLoading, error } = useProfile()
 const { isLoading: isRecordsLoading, error: recordsError, get } = useApi()
@@ -14,7 +16,7 @@ const leagueStore = useLeagueStore()
 const achievementStore = useAchievementStore()
 
 const profile = ref(null)
-const personalRecords = ref([])
+const playerRecords = ref([])
 const rankingSort = ref({ key: 'game', direction: 'asc' })
 
 const sortedRankingRuns = computed(() => {
@@ -39,15 +41,27 @@ function sortRankingsBy(key) {
   }
 }
 
-watchEffect(() => {
-  fetchProfile(userId.value).then((data) => {
-    profile.value = data
-  })
-})
-
-get('/user-records').then((response) => {
-  personalRecords.value = response.data
-}).catch(() => {})
+// the profile and the records (the stats) of the player, loaded again when the page shows another one; an answer for
+// the previous player is ignored
+let request = 0
+watch(playerId, (id) => {
+  const current = ++request
+  profile.value = null
+  playerRecords.value = []
+  if (!id) {
+    return
+  }
+  fetchProfile(id).then((data) => {
+    if (current === request) {
+      profile.value = data
+    }
+  }).catch(() => {}) // (shown by error)
+  get(`/users/${id}/records`).then((response) => {
+    if (current === request) {
+      playerRecords.value = response.data
+    }
+  }).catch(() => {}) // (shown by recordsError)
+}, { immediate: true })
 
 const starsByColor = computed(() => {
   return Object.values(profile.value.best_period_runs).reduce((acc, run) => {
@@ -78,8 +92,6 @@ const feathersCount = computed(() => {
   if (!profile.value) return 0
   return profile.value.best_period_runs.reduce((count, run) => run.league_rank === 1 && run.league_id === leagueStore.paradiseLeagueId ? count + 1 : count, 0)
 })
-
-fetchGameHistory()
 
 function getStarImage(run) {
   const { getStarFromScore } = useGameModel(run.game)
@@ -123,7 +135,7 @@ const gameAchievements = computed(() => {
         <div v-else-if="profile">
           <div v-if="item.value === 'me'" class="space-y-4">
             <KadoPageTitle>Profil de {{ profile.data.display_name }}</KadoPageTitle>
-            <p v-if="profile.data.etwin_id !== authSore.user?.etwin_id" class="mx-2.5 text-center">
+            <p v-if="!isMe" class="mx-2.5 text-center">
               <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
                 <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
               </RouterLink>
@@ -294,7 +306,7 @@ const gameAchievements = computed(() => {
             <ProfileLastPeriod :profile="profile" />
           </div>
           <div v-else-if="item.value === 'stats'">
-            <KadoPageTitle class="mb-5">Records de {{ authSore.user.display_name }}</KadoPageTitle>
+            <KadoPageTitle class="mb-5">Records de {{ profile.data.display_name }}</KadoPageTitle>
             <Loader v-if="isRecordsLoading">Chargement des records...</Loader>
             <MessageError v-else-if="recordsError">Error: {{ recordsError }}</MessageError>
             <div v-else class="px-8 sm:px-16">
@@ -303,21 +315,23 @@ const gameAchievements = computed(() => {
                   <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-center">
                     <th>Jeu</th>
                     <th>Score actuel</th>
-                    <th>Votre record</th>
+                    <th>Record</th>
                     <th>Progression</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="record in personalRecords" :key="record.game.id">
+                  <tr v-for="record in playerRecords" :key="record.game.id">
                     <td class="text-left">
                       <div class="flex items-center gap-2">
                         <img v-if="record.league"
                              :src="`/gfx/leagues/${record.league.id}s.svg`"
                              :alt="record.league.name"
                              class="size-6 shrink-0 object-contain" />
-                        <RouterLink :to="{ name: 'games.records', params: { id: record.game.id } }">
+                        <!-- (the history of the scores by period: the one of the player logged in) -->
+                        <RouterLink v-if="isMe" :to="{ name: 'games.records', params: { id: record.game.id } }">
                           {{ record.game.name }}
                         </RouterLink>
+                        <span v-else>{{ record.game.name }}</span>
                       </div>
                     </td>
                     <td class="text-left">
