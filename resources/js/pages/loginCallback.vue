@@ -12,7 +12,7 @@ authStore.login(route.query?.code, route.query?.state).then(() => {
 </script>
 
 <template>
-  <div class="inColumns">
+  <div class="flex flex-wrap items-start justify-center">
     <p class="mx-2.5 my-4" v-if="!error">Veuillez patienter...</p>
     <MessageError v-else>{{ error }}</MessageError>
   </div>

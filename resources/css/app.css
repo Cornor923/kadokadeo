@@ -4,13 +4,6 @@
 /* the Karbon theme (App.vue: <html data-theme="karbon">), for the components: karbon:bg-... */
 @custom-variant karbon (html[data-theme='karbon'] &);
 
-@layer base {
-  html,
-  :host {
-    line-height: unset;
-  }
-}
-
 /* CUSTOMIZED FONT */
 
 @font-face {
@@ -90,6 +83,7 @@
 }
 
 @theme {
+  --font-sans: 'Trebuchet MS', Arial, sans-serif;
   --font-junegull: 'Junegull-Regular', sans-serif;
   --font-fredoka: 'Fredoka Bold', sans-serif;
   --font-chubby-cheeks: 'Chubby Cheeks', sans-serif;
@@ -106,6 +100,10 @@
   --aspect-arkadeo: 1.2;
 
   --text-2xs: 0.625rem;
+
+  /* the frame of the content of the pages (layouts/default.vue), in the base theme and in Karbon */
+  --shadow-kado-page: 0 0 0 2px var(--color-white), 0 0 30px 1px --alpha(var(--color-black) / 50%);
+  --shadow-kado-page-karbon: 0 0 0 2px var(--color-kado-slate-100), 0 0 30px 1px --alpha(var(--color-black) / 70%);
 
   /*
    * The palette of KadoKado: the colours of its stylesheet (public/assets/original_style.css), by family, light to
@@ -192,7 +190,25 @@
   --color-twinoid-900: #1d2028;
 }
 
+/* the document: the font (--font-sans), the colours and the background of KadoKado; nothing else is styled by tag */
 @layer base {
+  html,
+  :host {
+    line-height: unset;
+  }
+
+  body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    background:
+      url('/gfx/bgHeader.png') top repeat-x,
+      url('/gfx/bgBodyPattern.jpg') repeat;
+    background-color: var(--color-kado-blue-200);
+    color: var(--color-kado-blue-700);
+  }
+
   a {
     color: var(--color-kado-orange-500);
     text-decoration: none;
@@ -202,240 +218,14 @@
     text-decoration: underline;
   }
 
-  body {
-    /* width: 1010px; */
-    margin: 0 auto;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    background:
-      url('/gfx/bgHeader.png') top repeat-x,
-      url('/gfx/bgBodyPattern.jpg') repeat;
-    background-color: var(--color-kado-blue-200);
-    font-size: 1em;
-    font-family:
-      Trebuchet MS,
-      Arial,
-      sans-serif;
-    color: var(--color-kado-blue-700);
-  }
-
+  /* Preflight puts the images in blocks: the ones of KadoKado are icons in the text */
   img {
-    border: 0;
-    margin: 0;
-    padding: 0;
-    vertical-align: middle;
     display: inline;
   }
 
-
-  /* HEADER, TOP NAV, TOP BANNER */
-
-  nav.kalendrier {
-    width: 201px;
-    height: 141px;
-    margin: 2px 0 0 0;
-    padding: 0;
-    background: url('/gfx/bgKalendrier.png') no-repeat;
-    font-size: 0.75em;
-    position: relative;
-  }
-
-  nav.kalendrier .kalendrierDays {
-    width: 140px;
-    height: 36px;
-    position: absolute;
-    top: 47px;
-    left: 18px;
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  nav.kalendrier .kalendrierPreviousDay,
-  nav.kalendrier .kalendrierPresentDay {
-    width: 15px;
-    height: 15px;
-    margin: 0 5px 6px 0;
-  }
-
-  nav.kalendrier .kalendrierPreviousDay {
-    background: url('/gfx/kalendarPreviousDay.gif') no-repeat;
-  }
-
-  nav.kalendrier .kalendrierPresentDay {
-    background: url('/gfx/kalendarPresentDay.gif') no-repeat;
-  }
-
-  nav.kalendrier p.kalUser {
-    position: absolute;
-    top: 8px;
-    left: 15px;
-    margin: 0;
-    padding: 0;
-  }
-
-  nav.kalendrier p.kalendrierText {
-    width: 103px;
-    height: 12px;
-    position: absolute;
-    top: 87px;
-    left: 54px;
-    margin: 0;
-    padding: 0;
-    color: var(--color-kado-slate-400);
-    text-align: center;
-    font-size: 0.8em;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsRight,
-  nav.kalendrier ul.navKalendrierButtonsBottom {
-    list-style: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
-    display: flex;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsRight {
-    top: 6px;
-    left: 166px;
-    flex-direction: column;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsBottom {
-    top: 110px;
-    left: 7px;
-    flex-direction: row;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsRight li a,
-  nav.kalendrier ul.navKalendrierButtonsBottom li a {
-    display: block;
-    width: 25px;
-    height: 21px;
-    background: url('/gfx/kalendarButton.gif') no-repeat;
-    text-align: center;
-    line-height: 17px;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsRight li a {
-    margin: 0 0 5px 0;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsBottom li a {
-    margin: 0 5px 0 0;
-  }
-
-  nav.kalendrier ul.navKalendrierButtonsRight li a:hover,
-  nav.kalendrier ul.navKalendrierButtonsBottom li a:hover {
-    background: url('/gfx/kalendarButtonHover.gif') no-repeat;
-  }
-
-  /* CONTAINER AND RIGHT SIDE BOXES */
-
-  #container {
-    /* width: 1010px; */
-    margin: 30px auto;
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  #bodySection {
-    background:
-      url('/gfx/bgContainerTopBlue.svg') top left no-repeat,
-      url('/gfx/bgContainerTopRepeat.jpg') top repeat-x;
-    box-shadow:
-      0 0 0 2px var(--color-white),
-      0 0 30px 1px --alpha(var(--color-black) / 50%);
-  }
-
-  .inColumns {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-  }
-
-  /* HOME PAGE */
-
-  .inColumns .homeLeftColumn {
-    width: 488px;
-    height: 475px;
-    background: url('/gfx/bgIntroHomePage.png') no-repeat;
-    margin: 0;
-  }
-
-  .inColumns .homeRightColumn {
-    width: 360px;
-    margin: 0 16px;
-  }
-
-  p.btnHomepagePlay {
-    width: 362px;
-    height: 52px;
-    background: url('/gfx/btnHomepagePlay.png') no-repeat;
-    margin: 40px 0 0 0;
-    padding: 5px 0 0 0;
-    font-family:
-      'Junegull-Regular',
-      Trebuchet MS,
-      Arial,
-      sans-serif;
-    font-size: 2em;
-    letter-spacing: 0.1em;
-    text-align: center;
-  }
-
-  p.btnHomepagePlay:hover {
-    background: url('/gfx/btnHomepagePlayHover.png') no-repeat;
-    padding: 8px 0 0 0;
-    text-decoration: none;
-  }
-
-  .btnHomepagePlay a {
-    /* Mozilla Firefox and IE doesn't support the background-clip:text; property */
-    width: 290px;
-    margin: 0 10px 0 62px;
-    font-weight: bold;
-    color: var(--color-kado-play-700);
-    text-shadow: var(--color-kado-yellow-500) 0 3px 0;
-  }
-
-  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-    /* For compatible browsers */
-    .btnHomepagePlay a {
-      background: -webkit-linear-gradient(
-        to bottom,
-        var(--color-kado-play-400) 0%,
-        var(--color-kado-play-500) 40%,
-        var(--color-kado-play-900) 41%,
-        var(--color-kado-play-700) 100%
-      );
-      background: linear-gradient(
-        to bottom,
-        var(--color-kado-play-400) 0%,
-        var(--color-kado-play-500) 40%,
-        var(--color-kado-play-900) 41%,
-        var(--color-kado-play-700) 100%
-      );
-      background-color: var(--color-kado-play-700);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-      text-shadow: none;
-      filter: drop-shadow(0 3px 0 var(--color-kado-yellow-500));
-    }
-  }
-}
-
-/* iOS : le menu « Enregistrer l'image » d'un appui long sur le canvas vise l'image de fond
-   d'un ancêtre (#bodySection), dont le -webkit-touch-callout est celui de cet ancêtre.
-   Posé par GameScript.vue tant qu'un jeu est monté. */
-@layer base {
+  /* iOS : le menu « Enregistrer l'image » d'un appui long sur le canvas vise l'image de fond
+     d'un ancêtre (#bodySection), dont le -webkit-touch-callout est celui de cet ancêtre.
+     Posé par GameScript.vue tant qu'un jeu est monté. */
   html.kado-game-mounted,
   html.kado-game-mounted body {
     -webkit-touch-callout: none;

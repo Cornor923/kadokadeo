@@ -33,7 +33,9 @@ const sidebarOpen = ref(false)
         <PendingRuns class="w-full" />
       </div>
 
-      <section id="bodySection" class="w-full md:mx-4 lg:mx-8 flex max-w-4xl border-2 border-solid border-kado-teal-500 bg-kado-blue-100 pb-4 md:mb-10">
+      <!-- the frame of the content: in Karbon the light panel of its frame (its dark top band and sides are outside) -->
+      <section id="bodySection"
+               class="flex w-full max-w-4xl border-2 border-kado-teal-500 bg-kado-blue-100 bg-[url(/gfx/bgContainerTopBlue.svg),url(/gfx/bgContainerTopRepeat.jpg)] [background-position:left_top,center_top] [background-repeat:no-repeat,repeat-x] pb-4 shadow-kado-page md:mx-4 md:mb-10 lg:mx-8 karbon:border-kado-slate-700 karbon:bg-kado-slate-50 karbon:bg-[url(/gfx/themes/karbon/content_top.jpg),url(/gfx/themes/karbon/background.jpg)] karbon:[background-position:center_-30px,center_top] karbon:[background-repeat:no-repeat,repeat-y] karbon:shadow-kado-page-karbon">
         <div class="flex-1 min-w-0">
           <slot />
         </div>
@@ -50,7 +52,7 @@ const sidebarOpen = ref(false)
 
     <KadoAchievementNotifications v-if="achievementsEnabled && authStore.isAuthenticated" />
 
-    <div v-if="authStore.isAuthenticated" class="bgBack border-t-2 border-solid border-kado-blue-50">
+    <div v-if="authStore.isAuthenticated" class="border-t-2 border-kado-blue-50 bg-[url(/gfx/bgHeader.png)] bg-top bg-repeat-x">
       <Navbar class="md:hidden">
         <li class="min-w-0">
           <button type="button"
@@ -74,8 +76,3 @@ const sidebarOpen = ref(false)
   </div>
 </template>
 
-<style scoped>
-.bgBack {
-  background: url('/gfx/bgHeader.png') top repeat-x;
-}
-</style>

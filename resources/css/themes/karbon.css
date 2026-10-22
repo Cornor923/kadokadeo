@@ -12,18 +12,6 @@ html[data-theme='karbon'] body {
   background-color: var(--color-kado-slate-800);
 }
 
-/* the content: the light panel of the frame of Karbon (its dark top band and sides are outside the section) */
-html[data-theme='karbon'] #bodySection {
-  border-color: var(--color-kado-slate-700);
-  background:
-    url('/gfx/themes/karbon/content_top.jpg') center -30px no-repeat,
-    url('/gfx/themes/karbon/background.jpg') center top repeat-y;
-  background-color: var(--color-kado-slate-50);
-  box-shadow:
-    0 0 0 2px var(--color-kado-slate-100),
-    0 0 30px 1px --alpha(var(--color-black) / 70%);
-}
-
 /* the tabs */
 html[data-theme='karbon'] .kTabFrame {
   background-color: var(--color-kado-slate-700);
