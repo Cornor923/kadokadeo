@@ -30,8 +30,12 @@ function tabMenuLinkClasses(item) {
   const bgClasses = item.disabled ? 'grayscale cursor-not-allowed' : 'cursor-pointer hover:text-kado-teal-500 hover:bg-[url(/gfx/bgTabmenuHover.jpg)]'
   const activeClasses = 'bg-[url(/gfx/bgTabmenuActive.jpg)] leading-[24px] bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl [font-variant:small-caps] tracking-normal p-0.5'
   const inactiveClasses = 'h-7 border border-kado-blue-100 bg-[url(/gfx/bgTabmenu.jpg)]'
-  // kTab / kTabActive: for the themes of the site (resources/css/themes)
-  return `kTab ${item.selected ? 'kTabActive' : ''} ${defaultClasses} ${bgClasses} ${item.selected ? activeClasses : inactiveClasses}`
+  // Karbon: grey folders (also when a disabled tab is hovered)
+  const karbonActiveClasses = 'karbon:border-kado-slate-200 karbon:bg-kado-slate-700 karbon:bg-[url(/gfx/themes/karbon/folder_active.jpg)] karbon:text-kado-slate-500'
+  const karbonInactiveClasses = 'karbon:border-kado-slate-200 karbon:bg-[url(/gfx/themes/karbon/folder_up.jpg)] karbon:text-kado-slate-700 karbon:hover:bg-[url(/gfx/themes/karbon/folder_active.jpg)] karbon:hover:text-kado-slate-900'
+  return item.selected
+    ? `${defaultClasses} ${bgClasses} ${activeClasses} ${karbonActiveClasses}`
+    : `${defaultClasses} ${bgClasses} ${inactiveClasses} ${karbonInactiveClasses}`
 }
 </script>
 
@@ -51,7 +55,7 @@ function tabMenuLinkClasses(item) {
           :index="index"
           :selected="selected"
         >
-          <div class="kTabFrame outline-none shrink-0 whitespace-nowrap h-8 bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl [font-variant:small-caps] tracking-normal p-0.5" :class="item.disabled ? 'grayscale' : ''">
+          <div class="outline-none shrink-0 karbon:bg-kado-slate-700 whitespace-nowrap h-8 bg-kado-teal-500 border-2 border-white border-solid border-b-0 text-xl [font-variant:small-caps] tracking-normal p-0.5" :class="item.disabled ? 'grayscale' : ''">
             <div v-if="!item.route" :class="tabMenuLinkClasses({ ...item, selected })">
               {{ item.label }}
             </div>

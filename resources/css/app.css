@@ -1,7 +1,12 @@
 @import 'tailwindcss';
-@import './themes/karbon.css';
 
-/* the Karbon theme (App.vue: <html data-theme="karbon">), for the components: karbon:bg-... */
+/*
+ * Karbon: the second theme of KadoKado, bought with Kado points (App\Http\Controllers\Api\ThemeController), applied
+ * by App.vue (<html data-theme="karbon">). Its images (public/gfx/themes/karbon) come from dat.kadokado.com/gfx/gui/karbon
+ * (the archives kept 17 of them): the carbon pattern, the grey header, the frame of the content, the tabs, the titles and
+ * the inputs; the rest of the site keeps the images of the base theme, as on KadoKado. The components give it with
+ * this variant: karbon:bg-...
+ */
 @custom-variant karbon (html[data-theme='karbon'] &);
 
 /* CUSTOMIZED FONT */
@@ -216,6 +221,13 @@
       url('/gfx/bgBodyPattern.jpg') repeat;
     background-color: var(--color-kado-blue-200);
     color: var(--color-kado-blue-700);
+
+    @variant karbon {
+      background:
+        url('/gfx/themes/karbon/bg_header.jpg') top repeat-x,
+        url('/gfx/themes/karbon/patternBG.jpg') repeat;
+      background-color: var(--color-kado-slate-800);
+    }
   }
 
   a {
