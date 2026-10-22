@@ -43,7 +43,7 @@ const topicRoute = (topic, page = 1) => ({
 const lastMessageTime = (topic) => dayjs(topic.last_message_at).format(topic.is_pinned ? 'DD/MM à HH:mm' : 'HH:mm')
 
 const headerClasses = 'border border-solid border-kado-green-600 bg-kado-green-500 bg-[url(/assets/img/gfx/gui/base/greenh2_bg.jpg)] bg-[position:-25px_-5px] bg-no-repeat px-2 text-left text-sm font-normal tracking-widest text-kado-green-600'
-const greyCellClasses = 'border border-t-0 border-solid border-kado-cyan-750 bg-white bg-[url(/assets/img/gfx/gui/base/greyh2_bg.jpg)] bg-[position:top_right] bg-no-repeat px-2 pb-1 text-kado-slate-600'
+const greyCellClasses = 'border border-t-0 border-solid border-kado-teal-400 bg-white bg-[url(/assets/img/gfx/gui/base/greyh2_bg.jpg)] bg-[position:top_right] bg-no-repeat px-2 pb-1 text-kado-slate-700'
 </script>
 
 <template>
@@ -68,7 +68,7 @@ const greyCellClasses = 'border border-t-0 border-solid border-kado-cyan-750 bg-
             </td>
           </tr>
           <tr v-else>
-            <td class="border border-t-0 border-solid border-kado-cyan-750 p-0 text-right">
+            <td class="border border-t-0 border-solid border-kado-teal-400 p-0 text-right">
               <RouterLink :to="topicRoute(row.topic)"
                           class="block min-h-6 bg-white bg-[position:top_right] bg-no-repeat py-1 pr-2.5 pl-2 font-bold hover:bg-[url(/assets/img/gfx/gui/base/greyh2_bg.jpg)] hover:no-underline"
                           :class="row.topic.is_unread ? 'bg-[url(/assets/img/gfx/gui/base/greenh2_bg.jpg)]' : 'bg-[url(/assets/img/gfx/gui/base/blueh2_bg.jpg)]'"

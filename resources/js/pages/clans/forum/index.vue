@@ -45,7 +45,7 @@ const pageRoute = (page) => ({ query: { ...route.query, page } })
       </form>
       <p v-if="query" class="m-0 text-sm">
         Sujets contenant « {{ query }} »
-        <button type="button" class="cursor-pointer border-0 bg-transparent p-0 font-bold text-kado-orange underline" @click="clearSearch">tous les sujets</button>
+        <button type="button" class="cursor-pointer border-0 bg-transparent p-0 font-bold text-kado-orange-500 underline" @click="clearSearch">tous les sujets</button>
       </p>
 
       <MessageError v-if="error">{{ error }}</MessageError>

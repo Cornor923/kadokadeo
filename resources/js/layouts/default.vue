@@ -42,7 +42,7 @@ const sidebarOpen = ref(false)
         <PendingRuns class="w-full" />
       </div>
 
-      <section id="bodySection" class="w-full md:mx-4 lg:mx-8 flex max-w-4xl border-2 border-solid border-kado-cyan-800 bg-kado-cyan-200 pb-4 md:mb-10">
+      <section id="bodySection" class="w-full md:mx-4 lg:mx-8 flex max-w-4xl border-2 border-solid border-kado-teal-500 bg-kado-blue-100 pb-4 md:mb-10">
         <div class="flex-1 min-w-0">
           <slot />
         </div>
@@ -59,7 +59,7 @@ const sidebarOpen = ref(false)
 
     <KadoAchievementNotifications v-if="achievementsEnabled && authStore.isAuthenticated" />
 
-    <div v-if="authStore.isAuthenticated" class="bgBack border-t-2 border-solid border-kado-cyan-50">
+    <div v-if="authStore.isAuthenticated" class="bgBack border-t-2 border-solid border-kado-blue-50">
       <Navbar class="md:hidden">
         <li class="min-w-0">
           <button type="button"
@@ -70,7 +70,7 @@ const sidebarOpen = ref(false)
             <svg width="117"
                  height="95"
                  viewBox="0 0 117 95"
-                 class="h-auto max-w-full fill-kado-cyan-700 stroke-white stroke-[3]"
+                 class="h-auto max-w-full fill-kado-blue-600 stroke-white stroke-[3]"
                  aria-hidden="true">
               <path d="M36.5 13h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11zM36.5 31h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11zM36.5 49h44a5.5 5.5 0 0 1 0 11h-44a5.5 5.5 0 0 1 0-11z" />
             </svg>

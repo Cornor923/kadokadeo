@@ -108,7 +108,7 @@ const menus = [
             :key="menu.id"
             @click="selectedTab = menu.id"
             class="flex items-center justify-center text-center gap-1 pt-0.5 cursor-pointer h-7 px-2 @md:flex-1"
-            :class="selectedTab === menu.id ? 'flex-1 bg-kado-cream borderactive text-kado-orange font-bold' : 'text-kado-blue bordernormal bg-kado-cyan-700/10 hover:bg-kado-cyan-200 hover:text-kado-orange hover:pt-1'"
+            :class="selectedTab === menu.id ? 'flex-1 bg-kado-cream-200 borderactive text-kado-orange-500 font-bold' : 'text-kado-blue-700 bordernormal bg-kado-blue-600/10 hover:bg-kado-blue-100 hover:text-kado-orange-500 hover:pt-1'"
             :title="menu.label">
           <img v-if="menu.icon" :src="menu.icon" :alt="menu.label" />
           <div class="overflow-hidden" :class="selectedTab === menu.id ? 'w-full' : 'w-0 @md:w-full'">{{ menu.label }}</div>
@@ -233,7 +233,7 @@ hr {
   width: 200px;
   margin: 8px auto;
   border: 0;
-  border-top: 1px solid var(--color-kado-blue);
+  border-top: 1px solid var(--color-kado-blue-700);
 }
 
 p {
@@ -245,18 +245,18 @@ h3 {
   margin: 8px 0 8px 0;
   font-weight: bold;
   font-size: 1.3em;
-  color: var(--color-kado-blue);
-  border-bottom: 3px double var(--color-kado-blue);
+  color: var(--color-kado-blue-700);
+  border-bottom: 3px double var(--color-kado-blue-700);
   letter-spacing: 1px;
 }
 
 .bordernormal {
   @apply border-t-2 border-t-white
   border-l border-l-white
-  border-r border-r-kado-cyan-750
-  border-b border-b-kado-cyan-750
-  hover:border-t-2 hover:border-t-kado-cyan-750
-  hover:border-l hover:border-l-kado-cyan-750
+  border-r border-r-kado-teal-400
+  border-b border-b-kado-teal-400
+  hover:border-t-2 hover:border-t-kado-teal-400
+  hover:border-l hover:border-l-kado-teal-400
   hover:border-r hover:border-r-white
   hover:border-b hover:border-b-white;
 }
@@ -265,6 +265,6 @@ h3 {
   @apply border-t-0
   border-l-0
   border-r-0
-  border-b border-b-kado-orange;
+  border-b border-b-kado-orange-500;
 }
 </style>

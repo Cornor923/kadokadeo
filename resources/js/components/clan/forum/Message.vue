@@ -33,8 +33,8 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
 </script>
 
 <template>
-  <article class="flex flex-col border border-solid border-kado-cyan-750 sm:flex-row">
-    <div class="flex shrink-0 flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-cyan-750 bg-kado-cyan-muted bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat p-2 text-2xs text-kado-slate-600 sm:w-32 sm:flex-col sm:border-r sm:border-b-0 sm:text-center">
+  <article class="flex flex-col border border-solid border-kado-teal-400 sm:flex-row">
+    <div class="flex shrink-0 flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-teal-400 bg-kado-teal-100 bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat p-2 text-2xs text-kado-slate-700 sm:w-32 sm:flex-col sm:border-r sm:border-b-0 sm:text-center">
       <RouterLink v-if="message.author"
                   :to="{ name: 'profile.show', params: { id: message.author.etwin_id } }"
                   class="text-sm font-bold [font-variant:small-caps] break-all">
@@ -53,7 +53,7 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
       <MessageError v-if="error">{{ error }}</MessageError>
 
       <template v-if="message.is_deleted">
-        <p class="m-0 font-bold text-red-600">Ce message a été supprimé par un modérateur.</p>
+        <p class="m-0 font-bold text-kado-pink-600">Ce message a été supprimé par un modérateur.</p>
         <MarktwinContent v-if="canModerate && message.content" :text="message.content" class="mt-2 opacity-50" />
       </template>
       <form v-else-if="editing" class="space-y-2" @submit.prevent="save">

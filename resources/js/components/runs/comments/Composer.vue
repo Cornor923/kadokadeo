@@ -51,7 +51,7 @@ defineExpose({ focus: () => input.value?.$el?.focus() })
 <template>
   <form class="flex flex-wrap items-center gap-2" @submit.prevent="send">
     <span v-if="!parent"
-          class="shrink-0 border border-solid border-kado-orange bg-kado-orange-50 px-1 text-2xs leading-4 font-bold text-kado-slate-600"
+          class="shrink-0 border border-solid border-kado-orange-500 bg-kado-orange-50 px-1 text-2xs leading-4 font-bold text-kado-slate-700"
           :title="`Frame ${at}`">{{ formatFrame(at) }}</span>
     <FormInput ref="input"
                v-model="draft"

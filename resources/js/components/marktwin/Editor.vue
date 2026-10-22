@@ -39,7 +39,7 @@ const insertSmiley = (smiley) => {
   <div class="space-y-1">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
       <div class="min-w-0 flex-1">
-        <div v-if="preview" class="min-h-32 border-2 border-l-[7px] border-solid border-kado-cyan-800 bg-white p-2">
+        <div v-if="preview" class="min-h-32 border-2 border-l-[7px] border-solid border-kado-teal-500 bg-white p-2">
           <MarktwinContent v-if="model.trim()"
                            :text="model"
                            :grammar="grammar"
@@ -53,7 +53,7 @@ const insertSmiley = (smiley) => {
                       :rows="rows"
                       :maxlength="maxlength" />
       </div>
-      <ul class="m-0 grid max-h-40 w-fit shrink-0 list-none grid-cols-8 content-start gap-1 overflow-y-auto border-2 border-l-[10px] border-solid border-kado-orange bg-kado-orange-50 p-1 sm:grid-cols-5">
+      <ul class="m-0 grid max-h-40 w-fit shrink-0 list-none grid-cols-8 content-start gap-1 overflow-y-auto border-2 border-l-[10px] border-solid border-kado-orange-500 bg-kado-orange-50 p-1 sm:grid-cols-5">
         <li v-for="icon in boxIcons" :key="icon.key">
           <button type="button"
                   class="block cursor-pointer border-0 bg-transparent p-0.5 hover:bg-white"

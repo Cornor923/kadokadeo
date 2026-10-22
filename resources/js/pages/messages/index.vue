@@ -100,13 +100,13 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!messages.length && !isLoading" class="bg-kado-cyan-200">
+            <tr v-if="!messages.length && !isLoading" class="bg-kado-blue-100">
               <td colspan="4" class="py-4 italic">{{ box === 'sent' ? 'Vous n\'avez envoyé aucun message.' : 'Vous n\'avez aucun message.' }}</td>
             </tr>
             <tr
               v-for="(message, index) in messages"
               :key="message.id"
-              :class="[index % 2 ? 'bg-white' : 'bg-kado-cyan-200', { 'font-bold': box === 'inbox' && !message.is_read }]"
+              :class="[index % 2 ? 'bg-white' : 'bg-kado-blue-100', { 'font-bold': box === 'inbox' && !message.is_read }]"
               class="cursor-pointer"
               @click="router.push({ name: 'messages.show', params: { id: message.id } })"
             >
@@ -116,7 +116,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { day: '2-digit', mo
               <td class="text-left [font-variant:small-caps]">
                 <template v-if="box === 'sent'">{{ message.recipient.display_name }}</template>
                 <template v-else-if="message.sender">{{ message.sender.display_name }}</template>
-                <template v-else><span class="text-kado-orange">KadoKadéo</span></template>
+                <template v-else><span class="text-kado-orange-500">KadoKadéo</span></template>
               </td>
               <td class="text-left">
                 <RouterLink :to="{ name: 'messages.show', params: { id: message.id } }">{{ message.subject }}</RouterLink>

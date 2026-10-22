@@ -21,7 +21,7 @@ const rows = computed(() => {
 })
 const cellClasses = (thread) => [
   'border-0 border-b border-solid border-white/15 px-1 py-1 text-left text-white',
-  thread.is_pinned ? 'bg-kado-slate-600' : 'bg-kado-slate-450',
+  thread.is_pinned ? 'bg-kado-slate-700' : 'bg-kado-slate-500',
   thread.self?.is_unread ? 'font-bold' : 'italic',
 ]
 </script>
@@ -30,7 +30,7 @@ const cellClasses = (thread) => [
   <!-- (the tables of the site have borders and gradient headers: not these ones) -->
   <table class="mb-4 w-full border-collapse border-0 text-xs [&_th]:border-0 [&_th]:bg-none [&_th]:px-1 [&_th]:text-left [&_th]:font-normal">
     <thead>
-      <tr class="text-2xs text-kado-blue">
+      <tr class="text-2xs text-kado-blue-700">
         <th class="w-5"></th>
         <th>Sujets</th>
         <th class="w-10 text-center!">Rép.</th>
@@ -39,11 +39,11 @@ const cellClasses = (thread) => [
     </thead>
     <tbody>
       <tr v-if="!threads.length">
-        <td colspan="4" class="border-0 bg-kado-slate-450 p-3 text-center text-white italic">Aucun sujet pour le moment.</td>
+        <td colspan="4" class="border-0 bg-kado-slate-500 p-3 text-center text-white italic">Aucun sujet pour le moment.</td>
       </tr>
       <template v-for="row in rows" :key="row.key">
         <tr v-if="row.separator">
-          <td colspan="4" class="border-0 bg-kado-slate-600 py-0.5 pl-5 text-left text-2xs font-bold text-white [font-variant:small-caps]">{{ row.separator }}</td>
+          <td colspan="4" class="border-0 bg-kado-slate-700 py-0.5 pl-5 text-left text-2xs font-bold text-white [font-variant:small-caps]">{{ row.separator }}</td>
         </tr>
         <tr v-else class="cursor-pointer hover:shadow-[inset_0_0_2px_rgba(0,0,0,0.4)]" :class="row.thread.self?.is_unread ? '' : 'opacity-75'">
           <td :class="cellClasses(row.thread)" class="text-center!">

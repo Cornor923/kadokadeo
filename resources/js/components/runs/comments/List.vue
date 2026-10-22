@@ -63,7 +63,7 @@ const answered = () => {
                         :max-length="maxLength"
                         :reasons="reasons"
                         @changed="emit('changed')" />
-      <div v-if="answering === comment.id" class="ml-6 border border-t-0 border-solid border-kado-cyan-750 bg-white px-2 py-1 sm:ml-10">
+      <div v-if="answering === comment.id" class="ml-6 border border-t-0 border-solid border-kado-teal-400 bg-white px-2 py-1 sm:ml-10">
         <RunsCommentsComposer :run-id="runId"
                               :parent="comment"
                               :max-length="maxLength"

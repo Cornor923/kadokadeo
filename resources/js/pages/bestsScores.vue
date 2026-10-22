@@ -19,7 +19,7 @@ get('/site-records')
     <div v-else class="px-8 sm:px-16">
       <table class="w-full">
         <thead>
-          <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-center">
+          <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-center">
             <th>Nom du jeu</th>
             <th>Record du site</th>
             <th>Joueur</th>

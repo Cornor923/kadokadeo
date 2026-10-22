@@ -89,7 +89,7 @@ function getStarImage(game) {
               class="w-full"
             />
           </div>
-          <h3 class="absolute top-[78.87%] left-[55%] z-10 w-[77.88%] -translate-x-1/2 text-center text-base md:text-xl font-normal text-kado-cyan-900 sm:top-28 sm:w-44 text-nowrap">
+          <h3 class="absolute top-[78.87%] left-[55%] z-10 w-[77.88%] -translate-x-1/2 text-center text-base md:text-xl font-normal text-kado-blue-800 sm:top-28 sm:w-44 text-nowrap">
             {{ game.name }}
           </h3>
         </RouterLink>

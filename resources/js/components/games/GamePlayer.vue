@@ -78,7 +78,7 @@ watchEffect((onInvalidate) => {
                 <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                   <button
                     type="button"
-                    class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange cursor-pointer disabled:cursor-wait"
+                    class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange-500 cursor-pointer disabled:cursor-wait"
                     :title="isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
                     :aria-pressed="isFavorite"
                     :disabled="isFavoriteLoading"
@@ -91,8 +91,8 @@ watchEffect((onInvalidate) => {
                 <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                   <button
                     type="button"
-                    class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-inherit"
-                    :class="{ 'text-kado-orange': gameScript?.confirmingChangeRun }"
+                    class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-inherit"
+                    :class="{ 'text-kado-orange-500': gameScript?.confirmingChangeRun }"
                     :title="gameScript?.confirmingChangeRun
                       ? `Cliquez à nouveau pour abandonner cette partie et tirer un nouveau contrat (${gameScript.CHANGE_RUN_SHORTCUT})`
                       : `Changer de partie (${gameScript?.CHANGE_RUN_SHORTCUT})`"
@@ -115,7 +115,7 @@ watchEffect((onInvalidate) => {
                   </button>
                 </li>
                 <li v-if="!isArkadeo" class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
-                  <div class="pt-1 font-bold text-center hover:text-kado-orange cursor-pointer"
+                  <div class="pt-1 font-bold text-center hover:text-kado-orange-500 cursor-pointer"
                        title="Zoom / dézoom"
                        @click.prevent="isZoomed = !isZoomed">
                     <img src="/gfx/iconGameZoom.gif" alt="zoom" class="size-4" />
@@ -124,7 +124,7 @@ watchEffect((onInvalidate) => {
                 </li>
               </ul>
             </nav>
-            <p v-if="gameScript?.changeRunError" class="absolute -top-5 right-0 text-xs text-pink-700">{{ gameScript.changeRunError }}</p>
+            <p v-if="gameScript?.changeRunError" class="absolute -top-5 right-0 text-xs text-kado-pink-600">{{ gameScript.changeRunError }}</p>
             <GamesGameScript ref="gameScript" :game="game" />
           </div>
           <div v-if="!game.is_arkadeo"

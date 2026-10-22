@@ -192,7 +192,7 @@ const gameAchievements = computed(() => {
             <div class="px-2">
               <table class="w-full">
                 <thead>
-                  <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-right">
+                  <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                     <th :aria-sort="rankingSort.key === 'level' ? (rankingSort.direction === 'asc' ? 'ascending' : 'descending') : 'none'">
                       <button type="button" class="inline-flex items-center gap-1 cursor-pointer" @click="sortRankingsBy('level')">
                         Niveau <span aria-hidden="true">{{ rankingSort.key === 'level' ? (rankingSort.direction === 'asc' ? '▲' : '▼') : '' }}</span>
@@ -282,7 +282,7 @@ const gameAchievements = computed(() => {
               <button
                 @click="fetchGameHistory()"
                 :disabled="isHistoryLoading"
-                class="py-2 text-orange-400 underline cursor-pointer hover:text-orange-500"
+                class="py-2 text-kado-orange-500 underline cursor-pointer hover:text-kado-orange-700"
               >
                 Charger plus de résultats
               </button>
@@ -300,7 +300,7 @@ const gameAchievements = computed(() => {
             <div v-else class="px-8 sm:px-16">
               <table class="w-full">
                 <thead>
-                  <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-center">
+                  <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-center">
                     <th>Jeu</th>
                     <th>Score actuel</th>
                     <th>Votre record</th>
@@ -340,7 +340,7 @@ const gameAchievements = computed(() => {
                           aria-valuemin="0"
                           aria-valuemax="100"
                           :aria-valuenow="getProgressPercent(record)"
-                          class="h-2.5 w-20 overflow-hidden rounded border border-kado-cyan-700 bg-kado-cyan-400"
+                          class="h-2.5 w-20 overflow-hidden rounded border border-kado-blue-600 bg-kado-blue-200"
                         >
                           <div class="h-full bg-kado-green-500 transition-[width]" :style="{ width: `${getProgressPercent(record)}%` }"></div>
                         </div>

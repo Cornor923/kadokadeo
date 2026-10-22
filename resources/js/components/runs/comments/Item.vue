@@ -61,12 +61,12 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
 </script>
 
 <template>
-  <article class="border border-solid border-kado-cyan-750 bg-white text-xs"
-           :class="[isReply ? 'ml-6 border-t-0 sm:ml-10' : '', active ? 'outline-2 outline-kado-orange outline-solid' : '']">
-    <div class="flex flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-cyan-750 bg-kado-cyan-muted bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat px-2 py-0.5 text-2xs text-kado-slate-600">
+  <article class="border border-solid border-kado-teal-400 bg-white text-xs"
+           :class="[isReply ? 'ml-6 border-t-0 sm:ml-10' : '', active ? 'outline-2 outline-kado-orange-500 outline-solid' : '']">
+    <div class="flex flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-teal-400 bg-kado-teal-100 bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat px-2 py-0.5 text-2xs text-kado-slate-700">
       <button v-if="!isReply"
               type="button"
-              class="cursor-pointer border border-solid border-kado-orange bg-kado-orange-50 px-1 leading-4 font-bold text-kado-slate-600 hover:bg-kado-orange hover:text-white"
+              class="cursor-pointer border border-solid border-kado-orange-500 bg-kado-orange-50 px-1 leading-4 font-bold text-kado-slate-700 hover:bg-kado-orange-500 hover:text-white"
               :title="`Aller à ${formatFrame(comment.frame)} dans le replay`"
               @click="emit('seek', comment.frame)">
         {{ formatFrame(comment.frame) }}

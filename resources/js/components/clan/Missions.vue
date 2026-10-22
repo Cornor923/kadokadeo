@@ -101,7 +101,7 @@ const confirmBonus = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(step, index) in mission.steps" :key="step.id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+              <tr v-for="(step, index) in mission.steps" :key="step.id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
                 <td class="text-left font-bold">
                   <RouterLink :to="{ name: 'games.show', params: { id: step.game.id } }">{{ step.game.name }}</RouterLink>
                 </td>
@@ -155,7 +155,7 @@ const confirmBonus = () => {
       <div v-if="isMember" class="relative flex flex-wrap gap-2">
         <div v-for="bonus in data.bonuses" :key="bonus.id" class="w-[81px] text-center">
           <button type="button"
-                  class="border-0 bg-transparent p-0.5 hover:p-0 hover:border-2 hover:border-solid hover:border-[#ffffaf] hover:bg-[#ff9a00] cursor-pointer"
+                  class="border-0 bg-transparent p-0.5 hover:p-0 hover:border-2 hover:border-solid hover:border-kado-yellow-100 hover:bg-kado-orange-500 cursor-pointer"
                   :title="bonus.label"
                   @click="openBonus(bonus)">
             <img :src="bonus.icon" :alt="bonus.label" class="w-[77px] h-[68px]" />
@@ -163,8 +163,8 @@ const confirmBonus = () => {
           <div class="text-2xs leading-tight">{{ bonus.label }}</div>
         </div>
 
-        <div v-if="selectedBonus" class="absolute z-20 left-5 -top-6 w-[470px] max-w-full min-h-[150px] border-2 border-solid border-[#1d2024] bg-[#3d4045] text-[#f0feff]">
-          <h3 class="m-0 h-[35px] bg-[#1d2024] px-2 text-[26px] leading-[35px] text-[#f0feff]">{{ selectedBonus.label }}</h3>
+        <div v-if="selectedBonus" class="absolute z-20 left-5 -top-6 w-[470px] max-w-full min-h-[150px] border-2 border-solid border-twinoid-900 bg-twinoid-600 text-kado-blue-50">
+          <h3 class="m-0 h-[35px] bg-twinoid-900 px-2 text-[26px] leading-[35px] text-kado-blue-50">{{ selectedBonus.label }}</h3>
           <img :src="selectedBonus.icon" :alt="selectedBonus.label" class="float-left py-0.5 pr-2.5 pl-0.5" />
           <p class="m-1 text-xs">{{ selectedBonus.description }}</p>
 

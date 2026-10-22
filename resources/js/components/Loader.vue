@@ -21,7 +21,7 @@ const attrs = useAttrs()
   display: inline-block;
   position: relative;
   border: 3px solid;
-  border-color: #4A4A4A #4A4A4A transparent transparent;
+  border-color: var(--color-kado-slate-700) var(--color-kado-slate-700) transparent transparent;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
 }
@@ -36,7 +36,7 @@ const attrs = useAttrs()
   bottom: 0;
   margin: auto;
   border: 3px solid;
-  border-color: transparent transparent #ffa400 #ffa400;
+  border-color: transparent transparent var(--color-kado-orange-500) var(--color-kado-orange-500);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -47,7 +47,7 @@ const attrs = useAttrs()
 .loader::before {
   width: 32px;
   height: 32px;
-  border-color: #22bc00 #22bc00 transparent transparent;
+  border-color: var(--color-kado-play-400) var(--color-kado-play-400) transparent transparent;
   animation: rotation 1.5s linear infinite;
 }
 

@@ -32,7 +32,7 @@ const paidGames = computed(() => authStore.user?.clan_games ?? 0)
     <div class="grid grid-cols-2 gap-x-2 py-2.5 md:block md:w-[161px] md:shrink-0">
       <div class="min-w-0">
         <ClanMenuTitle>Infos</ClanMenuTitle>
-        <ul class="m-0 mb-2.5 ml-1 list-none border border-solid border-[#738e93] bg-[url(/gfx/clan/greyBg.jpg)] bg-[position:-650px_-8px] bg-no-repeat p-0">
+        <ul class="m-0 mb-2.5 ml-1 list-none border border-solid border-kado-slate-500 bg-[url(/gfx/clan/greyBg.jpg)] bg-[position:-650px_-8px] bg-no-repeat p-0">
           <div class="flex justify-around items-center gap-2 border-b border-solid border-white">
             <ClanMenuStat icon="/gfx/clan/clan_rank.svg" title="Position du clan dans le classement des attaques.">
               <Number :value="stats.war_rank ?? 0" color="green" />

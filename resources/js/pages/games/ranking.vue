@@ -50,7 +50,7 @@ fetchGameRanking()
       <button
         @click="fetchGameRanking()"
         :disabled="isLoading"
-        class="text-orange-400 underline cursor-pointer hover:text-orange-500"
+        class="text-kado-orange-500 underline cursor-pointer hover:text-kado-orange-700"
       >
         Charger plus de résultats
       </button>

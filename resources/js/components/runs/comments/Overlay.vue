@@ -90,9 +90,9 @@ watch([shown, waiting, () => props.inGame], ([comment, more, inGame]) => {
               leave-active-class="transition-opacity duration-300">
     <div v-if="shown && !inGame"
          :key="shown.id"
-         class="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center gap-2 border-0 border-b border-l-4 border-solid border-kado-cyan-750 border-l-kado-orange bg-white/95 px-2 py-1 text-xs text-kado-slate-600 shadow-md"
+         class="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center gap-2 border-0 border-b border-l-4 border-solid border-kado-teal-400 border-l-kado-orange-500 bg-white/95 px-2 py-1 text-xs text-kado-slate-700 shadow-md"
          role="status">
-      <span class="shrink-0 text-2xs font-bold text-kado-orange">{{ formatFrame(shown.frame) }}</span>
+      <span class="shrink-0 text-2xs font-bold text-kado-orange-500">{{ formatFrame(shown.frame) }}</span>
       <span class="shrink-0 font-bold [font-variant:small-caps]">{{ shown.author?.display_name ?? 'Ancien joueur' }}</span>
       <span class="min-w-0 flex-1 truncate">{{ shown.content }}</span>
       <span v-if="waiting" class="shrink-0 text-2xs text-kado-slate-400">+{{ waiting }}</span>

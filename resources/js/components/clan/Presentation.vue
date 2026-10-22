@@ -13,9 +13,9 @@ const markdownClasses = [
   '[&_h1]:mx-0 [&_h1]:mt-4 [&_h1]:mb-3 [&_h1]:text-[2em] [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:mt-3 [&_h3]:mb-2',
   '[&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-inside [&_ul]:list-image-[url(/gfx/puce.jpg)]',
   '[&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-inside [&_ol]:list-decimal [&_li]:my-0.5',
-  '[&_blockquote]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-kado-cyan-750 [&_blockquote]:pl-3 [&_blockquote]:italic',
-  '[&_hr]:mx-auto [&_hr]:my-3 [&_hr]:w-48 [&_hr]:border-0 [&_hr]:border-t [&_hr]:border-solid [&_hr]:border-kado-blue',
-  '[&_code]:bg-kado-cyan-200 [&_code]:px-1',
+  '[&_blockquote]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-kado-teal-400 [&_blockquote]:pl-3 [&_blockquote]:italic',
+  '[&_hr]:mx-auto [&_hr]:my-3 [&_hr]:w-48 [&_hr]:border-0 [&_hr]:border-t [&_hr]:border-solid [&_hr]:border-kado-blue-700',
+  '[&_code]:bg-kado-blue-100 [&_code]:px-1',
 ]
 </script>
 
@@ -27,7 +27,7 @@ const markdownClasses = [
          id="clanPresentation"
          :class="markdownClasses"
          v-html="clan.description_html" />
-    <p v-else class="italic text-kado-cyan-900">Bienvenue sur la page du clan {{ clan.name }}.</p>
+    <p v-else class="italic text-kado-blue-800">Bienvenue sur la page du clan {{ clan.name }}.</p>
 
     <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1">
       <li v-if="clan.leader">
@@ -58,7 +58,7 @@ const markdownClasses = [
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(h, index) in clan.history" :key="h.period_id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+            <tr v-for="(h, index) in clan.history" :key="h.period_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
               <td class="text-left font-bold whitespace-nowrap">Période {{ h.period_id }}</td>
               <td class="whitespace-nowrap">
                 <template v-if="h.war_rank">TOP {{ h.war_rank }} (<Number :value="h.war_score" color="orange" />)</template>

@@ -24,7 +24,7 @@ const game = toRef(dailyGameStore, 'game')
         </div>
       </div>
       <div class="relative min-h-[142px] flex-1 bg-gameBoxDayRight bg-no-repeat bg-[length:100%_100%] text-sm font-normal text-kado-pink-900">
-        <div class="absolute -top-8 text-[#F8D3E1] font-junegull text-shadow-sm text-shadow-[#ED7DA9] text-lg w-full text-center">JEU DU JOUR</div>
+        <div class="absolute -top-8 text-kado-pink-100 font-junegull text-shadow-sm text-shadow-kado-pink-300 text-lg w-full text-center">JEU DU JOUR</div>
         Le jeu du jour est choisi aléatoirement chaque jour à minuit (UTC). La partie est identique pour tous les joueurs.
         <div class="flex items-center gap-1">
           Contrat :

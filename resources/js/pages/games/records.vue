@@ -82,7 +82,7 @@ const chartLabels = computed(() => {
           <h2>Historique</h2>
           <table class="w-full">
             <thead>
-              <tr class="text-kado-orange uppercase text-sm *:px-2">
+              <tr class="text-kado-orange-500 uppercase text-sm *:px-2">
                 <th class="text-left">Période</th>
                 <th class="text-right">Meilleur score</th>
               </tr>
@@ -113,24 +113,24 @@ const chartLabels = computed(() => {
                     :x2="chartFrame.right"
                     :y1="tick.y"
                     :y2="tick.y"
-                    stroke="#d1d5db"
+                    class="stroke-kado-slate-200"
                     stroke-dasharray="4 4" />
               <text :x="chartFrame.left - 10"
                     :y="tick.y + 4"
                     text-anchor="end"
-                    class="fill-gray-600 text-xs">{{ tick.score }}</text>
+                    class="fill-kado-slate-700 text-xs">{{ tick.score }}</text>
             </g>
             <line :x1="chartFrame.left"
                   :x2="chartFrame.right"
                   :y1="chartFrame.bottom"
                   :y2="chartFrame.bottom"
-                  stroke="#6b7280" />
+                  class="stroke-kado-slate-500" />
             <polyline
               v-for="(line, index) in chartLines"
               :key="index"
               :points="line"
               fill="none"
-              stroke="#e87824"
+              class="stroke-kado-orange-500"
               stroke-width="3"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -140,13 +140,13 @@ const chartLabels = computed(() => {
                     :cx="point.x"
                     :cy="point.y"
                     r="4"
-                    fill="#078b9b" />
+                    class="fill-kado-blue-700" />
             <text v-for="point in chartLabels"
                   :key="`label-${point.periodId}`"
                   :x="point.x"
                   y="312"
                   text-anchor="middle"
-                  class="fill-gray-600 text-xs">
+                  class="fill-kado-slate-700 text-xs">
               P{{ point.periodId }}
             </text>
           </svg>

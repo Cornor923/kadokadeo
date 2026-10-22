@@ -94,7 +94,7 @@ const endPeriod = () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(a, i) in data.attacks" :key="a.id" :class="i % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+          <tr v-for="(a, i) in data.attacks" :key="a.id" :class="i % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="text-left">{{ a.attacker }} ({{ a.attacker_clan }}) → {{ a.defender_clan }}</td>
             <td>{{ a.game }}</td>
             <td class="font-bold">{{ a.score }}</td>

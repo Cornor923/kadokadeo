@@ -90,7 +90,7 @@ const doDissolve = () => {
     <div v-else class="overflow-x-auto">
       <table class="w-full">
         <tbody>
-          <tr v-for="(application, index) in applications" :key="application.id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+          <tr v-for="(application, index) in applications" :key="application.id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="min-w-28 text-left">
               <RouterLink :to="{ name: 'profile.show', params: { id: application.user.etwin_id } }" class="font-bold">{{ application.user.display_name }}</RouterLink>
               <div v-if="application.message" class="text-sm italic whitespace-pre-line">{{ application.message }}</div>
@@ -110,7 +110,7 @@ const doDissolve = () => {
     <h2 class="normal-case">Présentation du clan</h2>
     <form @submit.prevent="save">
       <FormTextarea v-model="description" rows="10" maxlength="5000" />
-      <p class="mx-0 mt-1 mb-2 text-xs text-kado-cyan-900">
+      <p class="mx-0 mt-1 mb-2 text-xs text-kado-blue-800">
         Mise en forme (Markdown) : <code># Titre</code>, <code>## Sous-titre</code>, <code>### Petit titre</code>,
         <code>- liste</code>, <code>1. liste numérotée</code>, <code>**gras**</code>, <code>*italique*</code>,
         <code>[lien](https://…)</code>, <code>![image](https://….png)</code>.
@@ -134,7 +134,7 @@ const doDissolve = () => {
     <div class="overflow-x-auto">
       <table class="w-full">
         <tbody>
-          <tr v-for="(m, index) in members" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+          <tr v-for="(m, index) in members" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="min-w-28 text-left [font-variant:small-caps]">
               <img v-if="m.is_leader"
                    src="/gfx/clan/clanleader.gif"

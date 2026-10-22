@@ -107,7 +107,7 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
         <GamesGamePlayer :game="game" :goals="goals" />
       </template>
 
-      <div class="flex items-center gap-2 border-l-4 px-2 py-1" :class="action.type === 'attack' ? 'border-kado-pink-400 bg-[#ffe3ec] text-kado-pink-400' : 'border-kado-cyan-800 bg-kado-cyan-100'">
+      <div class="flex items-center gap-2 border-l-4 px-2 py-1" :class="action.type === 'attack' ? 'border-kado-pink-400 bg-kado-pink-50 text-kado-pink-400' : 'border-kado-teal-500 bg-kado-blue-50'">
         <img :src="action.type === 'attack' ? '/assets/img/gfx/icons/atk.gif' : action.type === 'defense' ? '/assets/img/gfx/icons/def.gif' : '/gfx/clan/clan_mission_points.png'" alt="" />
         <div>
           <template v-if="action.is_improvement">

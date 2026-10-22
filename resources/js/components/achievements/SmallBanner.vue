@@ -62,7 +62,7 @@ const achievementImages = computed(() => {
         <div>{{ displayedLevel.description }}</div>
       </div>
     </div>
-    <div class="w-full bg-gray-300 h-1 mt-1">
+    <div class="w-full bg-kado-slate-200 h-1 mt-1">
       <div class="bg-kado-green-500 h-1 transition-all ease-in duration-1000" :style="{ width: barWidth }"></div>
     </div>
   </div>

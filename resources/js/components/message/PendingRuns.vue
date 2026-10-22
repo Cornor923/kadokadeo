@@ -40,7 +40,7 @@ watch(
     <span class="mt-2 flex flex-wrap gap-2">
       <button
         type="button"
-        class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700 disabled:cursor-wait disabled:opacity-60"
+        class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600 disabled:cursor-wait disabled:opacity-60"
         :disabled="isSending"
         @click="pendingRunsStore.retryAll()"
       >
@@ -48,7 +48,7 @@ watch(
       </button>
       <button
         type="button"
-        class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700"
+        class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600"
         @click="showDetails = !showDetails"
       >
         {{ showDetails ? 'Masquer les détails' : 'Voir les détails' }}
@@ -64,7 +64,7 @@ watch(
         </span>
         <button
           type="button"
-          class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700"
+          class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600"
           :disabled="isSending"
           @click="discard(run)"
         >

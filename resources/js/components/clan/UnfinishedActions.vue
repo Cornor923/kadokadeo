@@ -16,7 +16,7 @@ const cancel = (action) => {
 </script>
 
 <template>
-  <div v-if="props.actions.length" class="mx-0 mb-4 space-y-1 border-2 border-l-[10px] border-solid border-kado-orange bg-[#fff4dc] px-3 py-2 text-[#c25e00]">
+  <div v-if="props.actions.length" class="mx-0 mb-4 space-y-1 border-2 border-l-[10px] border-solid border-kado-orange-500 bg-kado-orange-50 px-3 py-2 text-kado-orange-700">
     <MessageError v-if="error">{{ error }}</MessageError>
     <div v-for="action in props.actions" :key="action.id" class="flex flex-wrap items-center gap-2">
       <strong>{{ action.label }}</strong>

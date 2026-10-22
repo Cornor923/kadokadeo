@@ -76,7 +76,7 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(m, index) in sorted" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+          <tr v-for="(m, index) in sorted" :key="m.user.etwin_id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="text-right [font-variant:small-caps]">
               <img v-if="m.is_leader"
                    src="/gfx/clan/clanleader.gif"
@@ -107,14 +107,14 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
                 <span class="break-words">{{ m.status }}</span>
                 <a v-if="m.can_edit_status"
                    href="#"
-                   class="ml-1 text-kado-orange"
+                   class="ml-1 text-kado-orange-500"
                    @click.prevent="editStatus(m)">Éditer</a>
               </template>
             </td>
           </tr>
         </tbody>
         <tfoot v-if="members.length > 1">
-          <tr class="border-t-2 border-solid border-kado-cyan-800 font-bold">
+          <tr class="border-t-2 border-solid border-kado-teal-500 font-bold">
             <td class="text-right [font-variant:small-caps]">Total</td>
             <td class="text-right"><Number :value="total('points')" color="blue" /></td>
             <td class="text-right"><Number :value="total('performance')" color="orange" /></td>

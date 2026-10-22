@@ -98,7 +98,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
                      maxlength="32"
                      required
                      class="w-full" />
-          <p class="m-0 text-xs text-kado-cyan-900">De 3 à 32 caractères : lettres, chiffres, espaces et - ' . ! ? Il ne pourra plus être changé.</p>
+          <p class="m-0 text-xs text-kado-blue-800">De 3 à 32 caractères : lettres, chiffres, espaces et - ' . ! ? Il ne pourra plus être changé.</p>
         </div>
         <div>
           <label for="clanDescription">Présentation (vous pourrez la modifier plus tard)</label>
@@ -160,7 +160,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
           <tbody>
             <tr v-for="(clan, index) in clans"
                 :key="clan.id"
-                :class="[index % 2 ? 'bg-white' : 'bg-kado-cyan-200', { 'font-bold': clan.id === clanStore.clan?.id }]">
+                :class="[index % 2 ? 'bg-white' : 'bg-kado-blue-100', { 'font-bold': clan.id === clanStore.clan?.id }]">
               <td><Number :value="clan.rank" :color="tab === 'war' ? 'green' : 'violet'" /></td>
               <td class="text-left">
                 <RouterLink :to="{ name: 'clans.show', params: { id: clan.id } }">{{ clan.name }}</RouterLink>

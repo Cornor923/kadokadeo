@@ -6,8 +6,6 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
-@source '../** /*.blade.php';
-@source '../** /*.js';
 
 @layer base {
   html,
@@ -116,60 +114,89 @@
 
   --text-2xs: 0.625rem;
 
-  --color-kado-blue: #0687b1;
-  --color-kado-orange: #ffa400;
-  --color-kado-yellow: #fffe03;
-  --color-kado-cream: #eee6d8;
+  /*
+   * The palette of KadoKado: the colours of its stylesheet (public/assets/original_style.css), by family, light to
+   * dark. Every colour of the site comes from here (text-kado-blue-700, var(--color-kado-teal-500)...). A colour that is
+   * not in that stylesheet says where it was picked from.
+   */
 
-  --color-kado-cyan-50: #f1f9fb;
-  --color-kado-cyan-100: #edffff;
-  --color-kado-cyan-200: #eaf8fa;
-  --color-kado-cyan-300: #dcf7ff;
-  --color-kado-cyan-400: #d3f4fa;
-  --color-kado-cyan-500: #caf4fc;
-  --color-kado-cyan-muted: #d8e9eb;
-  --color-kado-cyan-600: #82e1f3;
-  --color-kado-cyan-650: #44cce7;
-  --color-kado-cyan-700: #20a8c3;
-  --color-kado-cyan-750: #56b7c1;
-  --color-kado-cyan-800: #5babbb;
-  --color-kado-cyan-900: #1f6776;
+  /* blue: the text, the titles, the inputs and the light panels (#kkworld) */
+  --color-kado-blue-50: #f0feff; /* inputs and textareas */
+  --color-kado-blue-100: #eaf8fa; /* rows of the tables, fieldsets, content of the blue boxes */
+  --color-kado-blue-200: #dffaff; /* background of the page */
+  --color-kado-blue-300: #c7f6fc; /* selects */
+  --color-kado-blue-400: #82e1f3; /* the gradient of the titles (h1, from the title images) */
+  --color-kado-blue-500: #3ac2dd; /* h3 */
+  --color-kado-blue-600: #20a8c3; /* text of the inputs */
+  --color-kado-blue-700: #0687b1; /* the text of the site, h2, tabs */
+  --color-kado-blue-800: #1f6776; /* outline of the titles (h1, from the title images) */
+  --color-kado-blue-900: #1c5059; /* text of the tooltips */
 
-  --color-kado-slate-400: #7a9ca4;
-  /* the blue-grey of the cells of the tables of the old forum (and of the Karbon theme) */
-  --color-kado-slate-500: #4e7f88;
-  --color-kado-slate-600: #466167;
-  /* the forum of Eternaltwin in the look of the forum of Twinoid (data.twinoid.com/css/bar.css), coloured by KadoKado */
-  --color-kado-slate-450: #738e93;
-  --color-twinoid-500: #4e5162;
-  --color-twinoid-600: #3b4151;
-  --color-twinoid-900: #1d2028;
+  /* teal: the borders of the tables and of the blue boxes, the tabs */
+  --color-kado-teal-100: #deeef1; /* column of the author of a forum post (forum_info_bg.jpg) */
+  --color-kado-teal-400: #56b7c1; /* borders of the forum */
+  --color-kado-teal-500: #5babbb; /* borders of the tables, frame of the blue boxes, tabs */
 
-  /* the light orange of the notices and of the box of the smileys */
-  --color-kado-orange-50: #fff4dc;
+  /* slate: the grey boxes (shop, help, forum) and the Karbon theme (picked from its images, gfx/themes/karbon) */
+  --color-kado-slate-50: #eef3f4; /* Karbon: the panel of the content */
+  --color-kado-slate-100: #d9e2e4; /* Karbon: the outline of the content */
+  --color-kado-slate-200: #b9c8cb; /* Karbon: the borders of the tabs */
+  --color-kado-slate-400: #7a9ca4; /* text of the kalendrier, muted text */
+  --color-kado-slate-500: #738e93; /* borders of the grey boxes */
+  --color-kado-slate-600: #4e7f88; /* grey titles (h2.grey), cells of the forum */
+  --color-kado-slate-700: #466167; /* text of the grey boxes */
+  --color-kado-slate-800: #3b4f54; /* Karbon: the background of the page */
+  --color-kado-slate-900: #2d3f43; /* Karbon: hovered tab */
 
+  /* green: the confirmations, the green boxes, the buttons */
   --color-kado-green-50: #f3ffd7;
-  --color-kado-green-100: #e6ffbd;
-  --color-kado-green-400: #c4e58a;
+  --color-kado-green-100: #e4fcb0;
+  --color-kado-green-300: #b5e850;
   --color-kado-green-500: #89bc24;
   --color-kado-green-600: #6fa20a;
 
+  /* the green of the play button of the home page (btnHomepagePlay.png) */
   --color-kado-play-400: #22bc00;
   --color-kado-play-500: #0c8e06;
   --color-kado-play-700: #037601;
   --color-kado-play-900: #014400;
 
+  /* pink: the errors, the cancel buttons, the pink boxes */
   --color-kado-pink-50: #ffecf2;
+  --color-kado-pink-100: #f8d3e1; /* the title of the daily game (gameBoxDay) */
+  --color-kado-pink-300: #ed7da9; /* its shadow */
   --color-kado-pink-400: #ff6b9c;
+  --color-kado-pink-500: #ff3f72; /* cancel buttons, labels of the fields in error */
   --color-kado-pink-600: #f40b58;
-  --color-kado-pink-900: #860f3f;
+  --color-kado-pink-900: #860f3f; /* text of the daily game box */
 
-  /* the purples of the missions (public/gfx/clan/clan_mission_points.png, the violet typos of scripts/typo-svg.py) */
+  /* orange: the links, the warnings */
+  --color-kado-orange-50: #fff8ca; /* warnings, the box of the smileys */
+  --color-kado-orange-500: #ffa400; /* links */
+  --color-kado-orange-600: #ff6100;
+  --color-kado-orange-700: #bb4c00; /* text on orange-50 */
+
+  /* yellow: the shadow of the play button, the hovered button of the clan missions */
+  --color-kado-yellow-100: #ffffaf;
+  --color-kado-yellow-500: #fffe03;
+
+  /* cream: the forum, the titles of the side boxes, the active tab of a game */
+  --color-kado-cream-50: #fcfbe9;
+  --color-kado-cream-100: #f9f7d2;
+  --color-kado-cream-200: #efeddc;
+
+  /* violet: the clan missions (public/gfx/clan/clan_mission_points.png, the violet typos of scripts/typo-svg.py) */
   --color-kado-violet-50: #f7ecfb;
   --color-kado-violet-200: #e1adf4;
   --color-kado-violet-400: #a637ba;
   --color-kado-violet-600: #7d099a;
   --color-kado-violet-900: #4f0a62;
+
+  /* the forum of Eternaltwin in the look of the forum of Twinoid (data.twinoid.com/css/bar.css), and the dark panels
+     of the clans (#1d2024 / #3d4045 in the original stylesheet) */
+  --color-twinoid-500: #4e5162;
+  --color-twinoid-600: #3b4151;
+  --color-twinoid-900: #1d2028;
 }
 
 @layer base {
@@ -179,7 +206,7 @@
   }
 
   a {
-    color: var(--color-kado-orange);
+    color: var(--color-kado-orange-500);
     text-decoration: none;
   }
 
@@ -198,13 +225,13 @@
     background:
       url('/gfx/bgHeader.png') top repeat-x,
       url('/gfx/bgBodyPattern.jpg') repeat;
-    background-color: var(--color-kado-cyan-50);
+    background-color: var(--color-kado-blue-200);
     font-size: 1em;
     font-family:
       Trebuchet MS,
       Arial,
       sans-serif;
-    color: var(--color-kado-blue);
+    color: var(--color-kado-blue-700);
   }
 
   img {
@@ -217,7 +244,7 @@
 
   table {
     border-collapse: collapse;
-    border: 2px solid var(--color-kado-cyan-800);
+    border: 2px solid var(--color-kado-teal-500);
     text-align: center;
   }
 
@@ -226,26 +253,26 @@
     vertical-align: middle;
     text-align: center;
     padding: 5px;
-    border: 1px solid var(--color-kado-cyan-800);
+    border: 1px solid var(--color-kado-teal-500);
   }
 
   table th {
     font-size: 0.9em;
     font-weight: bold;
-    background: linear-gradient(var(--color-kado-cyan-100), var(--color-kado-cyan-300));
+    background: linear-gradient(var(--color-kado-blue-50), var(--color-kado-blue-200));
     padding: 2px;
   }
 
   table tbody tr {
-    background-color: var(--color-kado-cyan-200);
+    background-color: var(--color-kado-blue-100);
   }
 
   table tbody tr:nth-child(even) {
-    background-color: #fff;
+    background-color: var(--color-white);
   }
 
   table.whiteFirst tbody tr:nth-child(odd) {
-    background-color: #fff;
+    background-color: var(--color-white);
   }
 
   table.thinTitles {
@@ -292,21 +319,27 @@
       sans-serif;
     font-size: 2.5em;
     letter-spacing: 0.1em;
-    color: #44cce7;
+    color: var(--color-kado-blue-500);
     font-weight: bold;
     text-shadow:
-      -1px -1px 0 #1f6776,
-      1px -1px 0 #1f6776,
-      -1px 1px 0 #1f6776,
-      1px 1px 0 #1f6776;
+      -1px -1px 0 var(--color-kado-blue-800),
+      1px -1px 0 var(--color-kado-blue-800),
+      -1px 1px 0 var(--color-kado-blue-800),
+      1px 1px 0 var(--color-kado-blue-800);
   }
 
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
     /* For compatible browsers */
     h1 {
-      -webkit-text-stroke: 1px #1f6776;
-      background: linear-gradient(to bottom, #fff 15%, #caf4fc 55%, #82e1f3 56%, #d3f4fa 85%);
-      background-color: var(--color-kado-cyan-200);
+      -webkit-text-stroke: 1px var(--color-kado-blue-800);
+      background: linear-gradient(
+        to bottom,
+        var(--color-white) 15%,
+        var(--color-kado-blue-300) 55%,
+        var(--color-kado-blue-400) 56%,
+        var(--color-kado-blue-200) 85%
+      );
+      background-color: var(--color-kado-blue-100);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -324,7 +357,7 @@
   }
 
   h3 {
-    @apply font-semibold text-2xl text-kado-cyan-900;
+    @apply font-semibold text-2xl text-kado-blue-800;
   }
 
   .bold {
@@ -417,7 +450,7 @@
     left: 54px;
     margin: 0;
     padding: 0;
-    color: #7a9ca4;
+    color: var(--color-kado-slate-400);
     text-align: center;
     font-size: 0.8em;
   }
@@ -480,8 +513,8 @@
       url('/gfx/bgContainerTopBlue.svg') top left no-repeat,
       url('/gfx/bgContainerTopRepeat.jpg') top repeat-x;
     box-shadow:
-      0 0 0 2px #ffffff,
-      0 0 30px 1px rgba(0, 0, 0, 0.5);
+      0 0 0 2px var(--color-white),
+      0 0 30px 1px --alpha(var(--color-black) / 50%);
   }
 
   .inColumns {
@@ -517,7 +550,7 @@
   #containerSide .sideBoxPink,
   #containerSide .sideBoxViolet {
     margin: 30px 0 0 0;
-    box-shadow: 10px 10px 10px rgba(90, 170, 182, 0.25);
+    box-shadow: 10px 10px 10px --alpha(var(--color-kado-teal-500) / 25%);
   }
 
   #containerSide .sideBoxGreen {
@@ -576,14 +609,14 @@
 
   #containerSide .sideBoxBlue {
     background: url('/gfx/bgContainerTopBlue.svg') -205px 13px no-repeat;
-    background-color: var(--color-kado-cyan-200);
-    border: 3px solid var(--color-kado-cyan-800);
+    background-color: var(--color-kado-blue-100);
+    border: 3px solid var(--color-kado-teal-500);
   }
 
   #containerSide .sideBoxBlue h2 {
     background: url('/gfx/bgTitleBlue.svg') -15px -5px no-repeat;
-    color: var(--color-kado-blue);
-    border-bottom: 3px solid var(--color-kado-cyan-800);
+    color: var(--color-kado-blue-700);
+    border-bottom: 3px solid var(--color-kado-teal-500);
   }
 
   #containerSide .sideBoxPink {
@@ -653,7 +686,7 @@
     margin: 0 10px 0 62px;
     font-weight: bold;
     color: var(--color-kado-play-700);
-    text-shadow: var(--color-kado-yellow) 0 3px 0;
+    text-shadow: var(--color-kado-yellow-500) 0 3px 0;
   }
 
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
@@ -679,7 +712,7 @@
       -webkit-text-fill-color: transparent;
       color: transparent;
       text-shadow: none;
-      filter: drop-shadow(0 3px 0 var(--color-kado-yellow));
+      filter: drop-shadow(0 3px 0 var(--color-kado-yellow-500));
     }
   }
 
@@ -721,11 +754,11 @@
   }
 
   #gameStars table.gameGoals tbody tr {
-    background: var(--color-kado-cyan-200);
+    background: var(--color-kado-blue-100);
   }
 
   #gameStars table.gameGoals tbody tr:nth-child(even) {
-    background-color: #fff;
+    background-color: var(--color-white);
   }
 
   /* FORMS */
@@ -748,9 +781,9 @@
     margin: 5px 0 5px 0;
     padding: 5px;
     box-sizing: border-box;
-    border: 2px solid #fff;
-    border-left: 7px solid #fff;
-    color: #20a8c3;
+    border: 2px solid var(--color-white);
+    border-left: 7px solid var(--color-white);
+    color: var(--color-kado-blue-600);
     background: url('/gfx/bgInput.jpg') repeat-x;
   }
 
@@ -787,8 +820,8 @@
   input.pinkButton[type='submit'],
   input.pinkButton[type='button'],
   input.pinkButton[type='reset'] {
-    border: 1px solid var(--color-kado-pink-600);
-    color: var(--color-kado-pink-600);
+    border: 1px solid var(--color-kado-pink-500);
+    color: var(--color-kado-pink-500);
     background:
       url('/gfx/bgFormButtonPinkLeft.jpg') left no-repeat,
       url('/gfx/bgFormButtonPinkFill.jpg') repeat-x;

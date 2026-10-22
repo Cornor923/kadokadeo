@@ -58,8 +58,8 @@ const doCancel = (attack) => {
         </thead>
         <tbody>
           <!-- no attack: the frame of the table with a single line -->
-          <tr v-if="!sections.length" class="bg-kado-cyan-200">
-            <td colspan="5" class="py-4 italic text-kado-blue">
+          <tr v-if="!sections.length" class="bg-kado-blue-100">
+            <td colspan="5" class="py-4 italic text-kado-blue-700">
               Aucune attaque en cours de ce clan ni contre ce clan.
             </td>
           </tr>
@@ -68,13 +68,13 @@ const doCancel = (attack) => {
               <td colspan="5"
                   class="border border-l border-solid bg-[position:-34px_-6px] bg-no-repeat pl-1! text-left text-[15px] leading-[17px]"
                   :class="section.type === 'atk'
-                    ? 'border-kado-pink-400 bg-[#ffe3ec] bg-[url(/gfx/clan/pinkh2_bg.jpg)] text-kado-pink-400'
-                    : 'border-kado-cyan-800 bg-[url(/gfx/clan/blueh2_bg.jpg)] text-kado-blue'">
+                    ? 'border-kado-pink-400 bg-kado-pink-50 bg-[url(/gfx/clan/pinkh2_bg.jpg)] text-kado-pink-400'
+                    : 'border-kado-teal-500 bg-[url(/gfx/clan/blueh2_bg.jpg)] text-kado-blue-700'">
                 <img :src="section.type === 'atk' ? '/gfx/clan/atksmall.gif' : '/gfx/clan/defsmall.gif'" alt="" class="mr-1" />
                 {{ section.title }}
               </td>
             </tr>
-            <tr v-for="(attack, index) in section.attacks" :key="attack.id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+            <tr v-for="(attack, index) in section.attacks" :key="attack.id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
               <td class="text-left [font-variant:small-caps]">
                 <RouterLink :to="{ name: 'profile.show', params: { id: attack.attacker.etwin_id } }">{{ attack.attacker.display_name }}</RouterLink>
               </td>
@@ -83,9 +83,9 @@ const doCancel = (attack) => {
                 <RouterLink v-else :to="{ name: 'clans.show', params: { id: attack.attacker_clan.id } }">{{ attack.attacker_clan.name }}</RouterLink>
               </td>
               <td class="text-left">
-                <RouterLink :to="{ name: 'games.show', params: { id: attack.game.id } }" class="text-kado-blue">{{ attack.game.name }}</RouterLink>
+                <RouterLink :to="{ name: 'games.show', params: { id: attack.game.id } }" class="text-kado-blue-700">{{ attack.game.name }}</RouterLink>
               </td>
-              <td class="text-right font-bold text-kado-blue whitespace-nowrap">
+              <td class="text-right font-bold text-kado-blue-700 whitespace-nowrap">
                 <Number :value="attack.score" color="blue" />
               </td>
               <td class="whitespace-nowrap">

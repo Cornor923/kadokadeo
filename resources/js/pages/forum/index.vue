@@ -28,11 +28,11 @@ Promise.all([fetchStatus(), fetchSections()]).then(([status, listing]) => {
       <ul class="m-0 list-none space-y-px p-0">
         <li v-for="section in sections" :key="section.id">
           <RouterLink :to="{ name: 'forum.section', params: { section: section.key ?? section.id } }"
-                      class="flex items-center justify-between bg-kado-slate-450 px-3 py-2 text-white no-underline hover:bg-kado-slate-600 hover:text-white hover:no-underline">
+                      class="flex items-center justify-between bg-kado-slate-500 px-3 py-2 text-white no-underline hover:bg-kado-slate-700 hover:text-white hover:no-underline">
             <span class="font-bold">{{ section.display_name }}</span>
             <span class="text-2xs opacity-80">
               {{ section.threads?.count ?? 0 }} sujet(s)
-              <strong v-if="section.self?.unread_threads" class="ml-1 text-kado-orange">{{ section.self.unread_threads }} non lu(s)</strong>
+              <strong v-if="section.self?.unread_threads" class="ml-1 text-kado-orange-500">{{ section.self.unread_threads }} non lu(s)</strong>
             </span>
           </RouterLink>
         </li>

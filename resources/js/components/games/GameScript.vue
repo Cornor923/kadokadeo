@@ -169,14 +169,14 @@ onBeforeUnmount(() => {
         <div class="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
-            class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700"
+            class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600"
             @click="showTechnicalDetails = !showTechnicalDetails"
           >
             {{ showTechnicalDetails ? 'Masquer les détails techniques' : 'Voir les détails techniques' }}
           </button>
           <button
             type="button"
-            class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700"
+            class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600"
             @click="copyTechnicalDetails"
           >
             Copier les détails techniques
@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
           <div v-if="copyFeedback">{{ copyFeedback }}</div>
           <button
             type="button"
-            class="cursor-pointer border border-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-pink-700"
+            class="cursor-pointer border border-kado-pink-400 bg-white px-2.5 py-1.5 text-xs leading-none font-bold text-kado-pink-600"
             @click="crash = null"
           >
             Fermer ce message

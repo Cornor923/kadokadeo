@@ -3,12 +3,12 @@ import { loadRenderer, renderHtml } from '@/marktwin/render'
 // <kado-marktwin text="…">: a text written in Marktwin (a private message, its preview) in the admin panel, rendered as
 // on the site (resources/js/marktwin/render.js). Livewire changes its "text" attribute: it is rendered again. Its own
 // styles (shadow DOM): the classes of the renderer, as resources/js/components/marktwin/Content.vue, without touching
-// the ones of Filament.
+// the ones of Filament. Filament does not load app.css: the colours are the ones of its palette (--color-kado-*), copied.
 const STYLES = `
   :host { display: block; overflow-wrap: anywhere; line-height: 1.5; }
   img { display: inline; vertical-align: text-bottom; }
   a { color: #ffa400; font-weight: bold; }
-  blockquote { margin: 0.5rem 0; padding: 0.25rem; border: 1px dashed #20a8c3; background: #edffff; color: #1f6776; font-style: italic; }
+  blockquote { margin: 0.5rem 0; padding: 0.25rem; border: 1px dashed #20a8c3; background: #f0feff; color: #1f6776; font-style: italic; }
   .mkt-quoteauthor { display: block; font-weight: bold; font-style: normal; }
   .mkt-quoteauthor::after { content: ' :'; }
   .mkt-spoiler { padding: 0 0.25rem; background: #ffecf2; color: transparent; outline: 1px solid #ff6b9c; cursor: pointer; }

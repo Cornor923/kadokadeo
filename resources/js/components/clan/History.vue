@@ -39,10 +39,10 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '�
           </tr>
         </thead>
         <tbody class="text-2xs">
-          <tr v-if="!rows.length" class="bg-kado-cyan-200">
-            <td colspan="8" class="py-4 italic text-kado-blue">Aucune attaque ni défense terminée pour le moment.</td>
+          <tr v-if="!rows.length" class="bg-kado-blue-100">
+            <td colspan="8" class="py-4 italic text-kado-blue-700">Aucune attaque ni défense terminée pour le moment.</td>
           </tr>
-          <tr v-for="(row, index) in rows" :key="row.id" :class="index % 2 ? 'bg-white' : 'bg-kado-cyan-200'">
+          <tr v-for="(row, index) in rows" :key="row.id" :class="index % 2 ? 'bg-white' : 'bg-kado-blue-100'">
             <td class="text-left whitespace-nowrap">{{ formatDate(row.date) }}</td>
             <td class="font-bold">
               <img :src="row.type === 'attack' ? '/gfx/clan/atksmall.gif' : '/gfx/clan/defsmall.gif'"
@@ -57,7 +57,7 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '�
               <RouterLink :to="{ name: 'clans.show', params: { id: row.clan.id } }">{{ row.clan.name }}</RouterLink>
             </td>
             <td class="text-left">
-              <RouterLink :to="{ name: 'games.show', params: { id: row.game.id } }" class="text-kado-blue">{{ row.game.name }}</RouterLink>
+              <RouterLink :to="{ name: 'games.show', params: { id: row.game.id } }" class="text-kado-blue-700">{{ row.game.name }}</RouterLink>
             </td>
             <td class="text-right whitespace-nowrap">
               <Number v-if="row.score !== null" :value="row.score" color="blue" />

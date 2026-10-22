@@ -9,46 +9,46 @@ html[data-theme='karbon'] body {
   background:
     url('/gfx/themes/karbon/bg_header.jpg') top repeat-x,
     url('/gfx/themes/karbon/patternBG.jpg') repeat;
-  background-color: #3b4f54;
+  background-color: var(--color-kado-slate-800);
 }
 
 /* the content: the light panel of the frame of Karbon (its dark top band and sides are outside the section) */
 html[data-theme='karbon'] #bodySection {
-  border-color: #466167;
+  border-color: var(--color-kado-slate-700);
   background:
     url('/gfx/themes/karbon/content_top.jpg') center -30px no-repeat,
     url('/gfx/themes/karbon/background.jpg') center top repeat-y;
-  background-color: #eef3f4;
+  background-color: var(--color-kado-slate-50);
   box-shadow:
-    0 0 0 2px #d9e2e4,
-    0 0 30px 1px rgba(0, 0, 0, 0.7);
+    0 0 0 2px var(--color-kado-slate-100),
+    0 0 30px 1px --alpha(var(--color-black) / 70%);
 }
 
 /* the titles: grey instead of blue */
 html[data-theme='karbon'] h2 {
   background: url('/gfx/themes/karbon/greyh2_bg.jpg') no-repeat;
-  color: #466167;
+  color: var(--color-kado-slate-700);
 }
 
 /* the tabs */
 html[data-theme='karbon'] .kTabFrame {
-  background-color: #466167;
+  background-color: var(--color-kado-slate-700);
 }
 
 html[data-theme='karbon'] .kTab {
-  color: #466167;
+  color: var(--color-kado-slate-700);
   background-image: url('/gfx/themes/karbon/folder_up.jpg');
-  border-color: #b9c8cb;
+  border-color: var(--color-kado-slate-200);
 }
 
 html[data-theme='karbon'] .kTab.kTabActive {
-  color: #738e93;
+  color: var(--color-kado-slate-500);
   background-image: url('/gfx/themes/karbon/folder_active.jpg');
-  background-color: #466167;
+  background-color: var(--color-kado-slate-700);
 }
 
 html[data-theme='karbon'] .kTab:not(.kTabActive):hover {
-  color: #2d3f43;
+  color: var(--color-kado-slate-900);
   background-image: url('/gfx/themes/karbon/folder_active.jpg');
 }
 
@@ -57,7 +57,7 @@ html[data-theme='karbon'] #containerSide .sideBoxGreen,
 html[data-theme='karbon'] #containerSide .sideBoxBlue,
 html[data-theme='karbon'] #containerSide .sideBoxPink,
 html[data-theme='karbon'] #containerSide .sideBoxViolet {
-  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.35);
+  box-shadow: 10px 10px 10px --alpha(var(--color-black) / 35%);
 }
 
 /* their titles: the grey title, placed like the titles of the base theme (the h2 rule above puts it at 0 0, which shows
@@ -72,14 +72,14 @@ html[data-theme='karbon'] #containerSide .sideBoxGreen h2 {
 }
 
 html[data-theme='karbon'] #containerSide .sideBoxBlue {
-  background: #eef3f4 url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -40px no-repeat;
-  border-color: #738e93;
+  background: var(--color-kado-slate-50) url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -40px no-repeat;
+  border-color: var(--color-kado-slate-500);
 }
 
 html[data-theme='karbon'] #containerSide .sideBoxBlue h2 {
   background: url('/gfx/themes/karbon/greyh2_bg.jpg') -15px -5px no-repeat;
-  color: #466167;
-  border-bottom-color: #738e93;
+  color: var(--color-kado-slate-700);
+  border-bottom-color: var(--color-kado-slate-500);
 }
 
 html[data-theme='karbon'] #containerSide .sideBoxPink h2 {
@@ -89,7 +89,7 @@ html[data-theme='karbon'] #containerSide .sideBoxPink h2 {
 /* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css): the shadow of inputBg.jpg
    (18 px high) stretched over the whole height of the input, like the 32 px one of the base theme */
 html[data-theme='karbon'] form div input {
-  color: #466167;
-  background: #fff url('/gfx/themes/karbon/inputBg.jpg') repeat-x;
+  color: var(--color-kado-slate-700);
+  background: var(--color-white) url('/gfx/themes/karbon/inputBg.jpg') repeat-x;
   background-size: auto 100%;
 }

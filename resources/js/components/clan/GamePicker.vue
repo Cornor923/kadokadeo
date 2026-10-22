@@ -35,7 +35,7 @@ fetchGames().then((data) => {
       <div class="absolute left-[15.93%] top-[5.63%] w-[77.88%]">
         <img class="w-full h-auto" :src="game.image_path" :alt="game.name" />
       </div>
-      <span class="absolute top-[78.87%] left-[55%] z-10 w-[77.88%] -translate-x-1/2 text-center text-base font-normal text-kado-cyan-900 text-nowrap">
+      <span class="absolute top-[78.87%] left-[55%] z-10 w-[77.88%] -translate-x-1/2 text-center text-base font-normal text-kado-blue-800 text-nowrap">
         {{ game.name }}
       </span>
     </button>

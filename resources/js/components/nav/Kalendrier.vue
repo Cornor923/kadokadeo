@@ -54,7 +54,7 @@ const logout = () => {
       <li><RouterLink :to="{ name: 'help' }"><img src="/gfx/kalendarIconHelp.gif" alt="aide"></RouterLink></li>
       <!-- the admin panel (Filament), outside of the SPA -->
       <li v-if="authStore.user.is_admin">
-        <a href="/admin" title="Administration" class="text-kado-orange hover:text-kado-pink-600">
+        <a href="/admin" title="Administration" class="text-kado-orange-500 hover:text-kado-pink-600">
           <svg viewBox="0 0 24 24"
                width="15"
                height="15"

@@ -7,8 +7,8 @@ const themes = ref([])
 const notice = ref(null)
 // the look of each theme: its pattern and its title bar
 const previews = {
-  base: { pattern: '/gfx/bgBodyPattern.jpg', title: '/gfx/bgTitleBlue.svg', panel: '#dffaff' },
-  karbon: { pattern: '/gfx/themes/karbon/patternBG.jpg', title: '/gfx/themes/karbon/greyh2_bg.jpg', panel: '#eef3f4' },
+  base: { pattern: '/gfx/bgBodyPattern.jpg', title: '/gfx/bgTitleBlue.svg', panel: 'bg-kado-blue-200' },
+  karbon: { pattern: '/gfx/themes/karbon/patternBG.jpg', title: '/gfx/themes/karbon/greyh2_bg.jpg', panel: 'bg-kado-slate-50' },
 }
 
 const load = () => get('/themes').then((response) => {
@@ -59,11 +59,11 @@ const use = (theme) => {
         v-for="theme in themes"
         :key="theme.key"
         class="border-2 bg-white"
-        :class="theme.active ? 'border-kado-orange' : 'border-kado-cyan-800'"
+        :class="theme.active ? 'border-kado-orange-500' : 'border-kado-teal-500'"
       >
         <!-- the preview: the pattern of the background, around a panel with the title bar of the theme -->
         <div class="p-3" :style="{ background: `url(${previews[theme.key]?.pattern}) repeat` }">
-          <div class="h-20 border-2 border-white" :style="{ backgroundColor: previews[theme.key]?.panel }">
+          <div class="h-20 border-2 border-white" :class="previews[theme.key]?.panel">
             <div class="h-[35px] pl-10 pt-1 text-lg font-bold" :style="{ background: `url(${previews[theme.key]?.title}) no-repeat` }">
               {{ theme.name }}
             </div>
@@ -78,7 +78,7 @@ const use = (theme) => {
               <img src="/gfx/skpoint.gif" alt="Kado" class="ml-1 inline size-4" />
             </template>
           </div>
-          <span v-if="theme.active" class="font-bold text-kado-orange">Thème actuel</span>
+          <span v-if="theme.active" class="font-bold text-kado-orange-500">Thème actuel</span>
           <FormButton v-else-if="theme.owned" size="lg" @click="use(theme)">Utiliser</FormButton>
           <FormButton v-else
                       size="lg"

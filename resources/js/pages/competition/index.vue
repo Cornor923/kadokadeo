@@ -146,14 +146,14 @@ const scoreOn1500 = computed(() => {
           @next="goNext"
         />
 
-        <section class="mx-2 mb-4 grid gap-3 border border-kado-cyan-800 p-3 md:grid-cols-3">
+        <section class="mx-2 mb-4 grid gap-3 border border-kado-teal-500 p-3 md:grid-cols-3">
           <h2 class="col-span-full">Calculateur 1500</h2>
           <label for="score-game" class="flex flex-col gap-1">
             Jeu
             <select id="score-game"
                     v-model="selectedGameId"
                     :disabled="isGamesLoading || !!gamesError"
-                    class="min-h-10 border border-kado-cyan-800 bg-white px-2">
+                    class="min-h-10 border border-kado-teal-500 bg-white px-2">
               <option value="">Sélectionner un jeu</option>
               <option v-for="game in games" :key="game.id" :value="String(game.id)">
                 {{ game.name }}
@@ -168,7 +168,7 @@ const scoreOn1500 = computed(() => {
                    min="0"
                    step="1"
                    inputmode="numeric"
-                   class="min-h-10 border border-kado-cyan-800 bg-white px-2" />
+                   class="min-h-10 border border-kado-teal-500 bg-white px-2" />
           </label>
           <label for="score-1500" class="flex flex-col gap-1">
             Score en mode 1500
@@ -176,7 +176,7 @@ const scoreOn1500 = computed(() => {
                    :value="scoreOn1500"
                    type="text"
                    readonly
-                   class="min-h-10 border border-kado-cyan-800 bg-kado-cyan-100 px-2" />
+                   class="min-h-10 border border-kado-teal-500 bg-kado-blue-50 px-2" />
           </label>
           <MessageError v-if="gamesError" class="md:col-span-full">Error: {{ gamesError }}</MessageError>
         </section>
@@ -186,7 +186,7 @@ const scoreOn1500 = computed(() => {
         <div v-else class="px-8 sm:px-16">
           <table class="w-full">
             <thead>
-              <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-right">
+              <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                 <th>Rang</th>
                 <th class="text-left">Joueur</th>
                 <th>Points</th>
@@ -199,8 +199,8 @@ const scoreOn1500 = computed(() => {
                 </tr>
                 <tr
                   v-else
-                  class="cursor-pointer transition-colors hover:bg-kado-cyan-100"
-                  :class="{ 'bg-kado-cyan-100': selectedPlayerId === row.player.user.etwin_id, 'font-bold': isMe(row.player) }"
+                  class="cursor-pointer transition-colors hover:bg-kado-blue-50"
+                  :class="{ 'bg-kado-blue-50': selectedPlayerId === row.player.user.etwin_id, 'font-bold': isMe(row.player) }"
                   tabindex="0"
                   role="button"
                   :data-player-id="row.player.user.etwin_id"
@@ -215,7 +215,7 @@ const scoreOn1500 = computed(() => {
                 </tr>
                 <tr v-if="!row.gap && selectedPlayerId === row.player.user.etwin_id">
                   <td colspan="3" class="px-4 py-3 text-left">
-                    <div class="rounded border border-kado-cyan-800 bg-white p-3">
+                    <div class="rounded border border-kado-teal-500 bg-white p-3">
                       <div class="mb-2 flex items-center justify-between gap-3">
                         <strong>{{ selectedPlayer.user.display_name }}</strong>
                         <button type="button"
@@ -263,7 +263,7 @@ const scoreOn1500 = computed(() => {
         <div v-else class="px-8 sm:px-16">
           <table class="w-full">
             <thead>
-              <tr class="text-kado-orange uppercase text-sm *:px-2 *:text-right">
+              <tr class="text-kado-orange-500 uppercase text-sm *:px-2 *:text-right">
                 <th>Rang</th>
                 <th class="text-left">Joueur</th>
                 <th>Plumes</th>

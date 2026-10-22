@@ -38,14 +38,14 @@ const save = () =>
 
 <template>
   <article class="mb-2.5">
-    <header class="flex flex-wrap items-baseline justify-between gap-x-3 rounded bg-kado-slate-600 bg-[url(/gfx/forum/twinoid/forum_postHeader.png)] bg-bottom-left bg-repeat-x px-2.5 py-1 text-white">
+    <header class="flex flex-wrap items-baseline justify-between gap-x-3 rounded bg-kado-slate-700 bg-[url(/gfx/forum/twinoid/forum_postHeader.png)] bg-bottom-left bg-repeat-x px-2.5 py-1 text-white">
       <RouterLink v-if="author"
                   :to="{ name: 'profile.show', params: { id: author.id } }"
-                  class="text-sm font-bold text-kado-orange hover:text-kado-orange">{{ etwinActorName(post.author) }}</RouterLink>
+                  class="text-sm font-bold text-kado-orange-500 hover:text-kado-orange-500">{{ etwinActorName(post.author) }}</RouterLink>
       <span v-else class="text-sm font-bold italic">?</span>
       <time :datetime="post.ctime" class="text-2xs opacity-70">{{ etwinForumDate(post.ctime) }}</time>
     </header>
-    <div class="mx-0.5 bg-kado-slate-450 p-2.5 text-sm text-white shadow-[0_2px_2px_rgba(0,0,0,0.15)] sm:mx-1">
+    <div class="mx-0.5 bg-kado-slate-500 p-2.5 text-sm text-white shadow-[0_2px_2px_rgba(0,0,0,0.15)] sm:mx-1">
       <MessageError v-if="error">{{ error }}</MessageError>
       <form v-if="editing" class="space-y-2" @submit.prevent="save">
         <MarktwinEditor v-model="draft"

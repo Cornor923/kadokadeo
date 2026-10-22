@@ -89,8 +89,8 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
           <button type="button"
                   class="h-[26px] cursor-pointer border border-solid bg-repeat-x px-2.5 font-[inherit] text-[15px] leading-6 font-bold whitespace-nowrap [font-variant:small-caps]"
                   :class="openPart?.id === part.id
-                    ? 'border-white bg-kado-cyan-800 bg-[url(/gfx/bgTabmenuActive.jpg)] text-white bg-blend-multiply'
-                    : 'border-kado-cyan-800 bg-[url(/gfx/bgTabmenu.jpg)] text-kado-blue hover:bg-[url(/gfx/bgTabmenuHover.jpg)] hover:text-kado-cyan-800'"
+                    ? 'border-white bg-kado-teal-500 bg-[url(/gfx/bgTabmenuActive.jpg)] text-white bg-blend-multiply'
+                    : 'border-kado-teal-500 bg-[url(/gfx/bgTabmenu.jpg)] text-kado-blue-700 hover:bg-[url(/gfx/bgTabmenuHover.jpg)] hover:text-kado-teal-500'"
                   :title="`${romans[i]}. ${part.title}`"
                   @click="go(part.index)">
             {{ part.title }}
@@ -113,8 +113,8 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
             <!-- the sections of the part (the clans), as small links -->
             <nav v-if="partOf(index).children.length" class="mb-2 text-xs">
               <template v-for="(s, i) in [partOf(index), ...partOf(index).children]" :key="s.id">
-                <span v-if="i" class="mx-1 text-kado-cyan-800">·</span>
-                <strong v-if="s.index === index" class="text-kado-blue">{{ i ? shortTitle(s) : 'Présentation' }}</strong>
+                <span v-if="i" class="mx-1 text-kado-teal-500">·</span>
+                <strong v-if="s.index === index" class="text-kado-blue-700">{{ i ? shortTitle(s) : 'Présentation' }}</strong>
                 <a v-else href="#" @click.prevent="go(s.index)">{{ i ? shortTitle(s) : 'Présentation' }}</a>
               </template>
             </nav>
