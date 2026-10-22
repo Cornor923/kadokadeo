@@ -430,127 +430,6 @@
       filter: drop-shadow(0 3px 0 var(--color-kado-yellow-500));
     }
   }
-
-  /* FORMS */
-
-  form div label {
-    font-weight: bold;
-  }
-
-  form div input,
-  input[type='submit'],
-  input[type='button'],
-  input[type='reset'] {
-    width: 100%;
-    min-width: 80px;
-    margin: 5px 0 5px 0;
-    padding: 5px;
-    box-sizing: border-box;
-    border: 2px solid var(--color-white);
-    border-left: 7px solid var(--color-white);
-    color: var(--color-kado-blue-600);
-    background: url('/gfx/bgInput.jpg') repeat-x;
-  }
-
-  form div input:focus {
-    color: var(--color-kado-green-500);
-    background: url('/gfx/bgInputFocus.jpg') repeat-x;
-  }
-
-  input[type='submit'],
-  input[type='button'],
-  input[type='reset'] {
-    height: 32px;
-    padding-left: 15px;
-    color: var(--color-kado-green-600);
-    font-size: 1em;
-    font-weight: bold;
-    text-decoration: none;
-    border: 1px solid var(--color-kado-green-600);
-    background:
-      url('/gfx/bgFormButtonLeft.jpg') left no-repeat,
-      url('/gfx/bgFormButtonFill.jpg') repeat-x;
-    background-color: var(--color-kado-green-100);
-    cursor: pointer;
-  }
-
-  input[type='submit']:hover,
-  input[type='button']:hover,
-  input[type='reset']:hover {
-    background:
-      url('/gfx/bgFormButtonLeftHover.jpg') left no-repeat,
-      url('/gfx/bgFormButtonFillHover.jpg') repeat-x;
-  }
-
-  input.pinkButton[type='submit'],
-  input.pinkButton[type='button'],
-  input.pinkButton[type='reset'] {
-    border: 1px solid var(--color-kado-pink-500);
-    color: var(--color-kado-pink-500);
-    background:
-      url('/gfx/bgFormButtonPinkLeft.jpg') left no-repeat,
-      url('/gfx/bgFormButtonPinkFill.jpg') repeat-x;
-  }
-
-  input.pinkButton[type='submit']:hover,
-  input.pinkButton[type='button']:hover,
-  input.pinkButton[type='reset']:hover {
-    background:
-      url('/gfx/bgFormButtonPinkLeftHover.jpg') left no-repeat,
-      url('/gfx/bgFormButtonPinkFillHover.jpg') repeat-x;
-  }
-
-  div.confirm,
-  div.error {
-    padding: 1px;
-    margin: 5px;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-
-  div.confirm {
-    border: 2px solid var(--color-kado-green-500);
-    border-left: 10px solid var(--color-kado-green-500);
-    background-color: var(--color-kado-green-600);
-    color: var(--color-kado-green-500);
-  }
-
-  div.confirm div,
-  div.error div {
-    border: 3px solid white;
-    background-repeat: no-repeat;
-    padding: 5px;
-  }
-
-  div.confirm div {
-    background-color: var(--color-kado-green-50);
-    background-image: url('/gfx/bgGreen.png');
-  }
-
-  div.confirm p,
-  div.confirm ul {
-    color: var(--color-kado-green-500);
-    font-weight: normal;
-    font-size: 14px;
-    line-height: 14px;
-  }
-
-  div.error {
-    border: 2px solid var(--color-kado-pink-400);
-    border-left: 10px solid var(--color-kado-pink-400);
-    background-color: var(--color-kado-pink-600);
-  }
-
-  div.error div {
-    background-color: var(--color-kado-pink-50);
-    background-image: url('/gfx/bgPink.png');
-  }
-
-  div.error p,
-  div.error ul {
-    color: var(--color-kado-pink-400);
-    font-weight: bold;
-  }
 }
 
 /* iOS : le menu « Enregistrer l'image » d'un appui long sur le canvas vise l'image de fond
@@ -608,6 +487,12 @@
 
   .kado-table.kado-table-rows-none tbody tr {
     background: none;
+  }
+
+  /* the margins of the notices (components/kado/Notice.vue), defaults that a space-y parent or the classes of the page
+     replace */
+  .kado-notice {
+    margin: 5px 5px 10px;
   }
 }
 

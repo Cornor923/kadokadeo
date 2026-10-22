@@ -16,7 +16,7 @@ const cancel = (action) => {
 </script>
 
 <template>
-  <div v-if="props.actions.length" class="mx-0 mb-4 space-y-1 border-2 border-l-[10px] border-solid border-kado-orange-500 bg-kado-orange-50 px-3 py-2 text-kado-orange-700">
+  <KadoNotice v-if="props.actions.length" variant="warning" class="mb-4 space-y-1 text-kado-orange-700">
     <MessageError v-if="error">{{ error }}</MessageError>
     <div v-for="action in props.actions" :key="action.id" class="flex flex-wrap items-center gap-2">
       <strong>{{ action.label }}</strong>
@@ -24,6 +24,6 @@ const cancel = (action) => {
       <FormButton variant="pink" size="sm" @click="cancel(action)">Annuler la partie</FormButton>
       <span v-if="action.blocks" class="w-full text-xs">Tant qu'elle n'est pas terminée ou annulée, vous ne pouvez ni lancer une autre attaque ni défendre.</span>
     </div>
-    <p class="m-0 text-xs">Une partie de clan qui n'a pas été terminée (page fermée pendant la partie...) reste en cours. Annulez-la seulement si vous ne pouvez vraiment plus la terminer.</p>
-  </div>
+    <p class="text-xs">Une partie de clan qui n'a pas été terminée (page fermée pendant la partie...) reste en cours. Annulez-la seulement si vous ne pouvez vraiment plus la terminer.</p>
+  </KadoNotice>
 </template>

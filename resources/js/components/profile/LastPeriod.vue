@@ -87,8 +87,8 @@ const thinTitles = '[&_th]:text-xs [&_th]:font-normal [&_th]:uppercase [&_td]:bo
   </KadoTable>
 
   <p class="mx-2.5 my-4 text-center">
-    <input type="button" value="Période précédente" class="pinkButton h-6 w-auto pt-px" />
-    <input type="button" value="Période suivante" class="h-6 w-auto pt-px ml-4" />
+    <FormButton size="lg" variant="pink">Période précédente</FormButton>
+    <FormButton size="lg" class="ml-4">Période suivante</FormButton>
   </p>
   <!-- <pre>{{ profile }}</pre> -->
 

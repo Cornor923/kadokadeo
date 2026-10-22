@@ -1,11 +1,7 @@
-<script setup></script>
-
 <template>
-  <div class="error">
-    <div>
-      <p class="mx-2.5 my-4">
-        <slot />
-      </p>
-    </div>
-  </div>
+  <KadoNotice variant="error">
+    <p class="mx-2.5 my-4 font-bold text-kado-pink-400">
+      <slot />
+    </p>
+  </KadoNotice>
 </template>

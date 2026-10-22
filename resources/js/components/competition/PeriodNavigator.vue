@@ -11,23 +11,17 @@ const emit = defineEmits(['previous', 'next'])
 
 <template>
   <div class="mx-2 mb-4 flex items-center justify-center gap-4">
-    <input
-      type="button"
-      value="Période précédente"
-      class="pinkButton h-6 w-auto pt-px"
-      :disabled="!canGoPrevious || disabled"
-      @click="emit('previous')"
-    />
+    <FormButton size="lg"
+                variant="pink"
+                :disabled="!canGoPrevious || disabled"
+                @click="emit('previous')">Période précédente</FormButton>
 
     <span class="font-bold">{{ label }}</span>
 
-    <input
-      v-if="canGoNext"
-      type="button"
-      value="Période suivante"
-      class="h-6 w-auto pt-px ml-4"
-      :disabled="disabled"
-      @click="emit('next')"
-    />
+    <FormButton v-if="canGoNext"
+                size="lg"
+                class="ml-4"
+                :disabled="disabled"
+                @click="emit('next')">Période suivante</FormButton>
   </div>
 </template>

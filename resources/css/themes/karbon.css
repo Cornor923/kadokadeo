@@ -45,11 +45,3 @@ html[data-theme='karbon'] .kTab:not(.kTabActive):hover {
   color: var(--color-kado-slate-900);
   background-image: url('/gfx/themes/karbon/folder_active.jpg');
 }
-
-/* the inputs (the components FormInput and FormTextarea use the karbon: variant of app.css): the shadow of inputBg.jpg
-   (18 px high) stretched over the whole height of the input, like the 32 px one of the base theme */
-html[data-theme='karbon'] form div input {
-  color: var(--color-kado-slate-700);
-  background: var(--color-white) url('/gfx/themes/karbon/inputBg.jpg') repeat-x;
-  background-size: auto 100%;
-}

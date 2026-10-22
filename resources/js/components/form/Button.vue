@@ -13,9 +13,9 @@ const variants = {
     lg: 'border-kado-green-600 text-kado-green-600 bg-kado-green-100 bg-[url(/gfx/bgFormButtonLeft.jpg),url(/gfx/bgFormButtonFill.jpg)] hover:bg-[url(/gfx/bgFormButtonLeftHover.jpg),url(/gfx/bgFormButtonFillHover.jpg)]',
   },
   pink: {
-    sm: 'border-kado-pink-600 text-kado-pink-600 bg-[url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkFillHover.jpg)]',
-    md: 'border-kado-pink-600 text-kado-pink-600 bg-[url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkFillHover.jpg)]',
-    lg: 'border-kado-pink-600 text-kado-pink-600 bg-kado-pink-50 bg-[url(/gfx/bgFormButtonPinkLeft.jpg),url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkLeftHover.jpg),url(/gfx/bgFormButtonPinkFillHover.jpg)]',
+    sm: 'border-kado-pink-500 text-kado-pink-500 bg-[url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkFillHover.jpg)]',
+    md: 'border-kado-pink-500 text-kado-pink-500 bg-[url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkFillHover.jpg)]',
+    lg: 'border-kado-pink-500 text-kado-pink-500 bg-kado-pink-50 bg-[url(/gfx/bgFormButtonPinkLeft.jpg),url(/gfx/bgFormButtonPinkFill.jpg)] hover:bg-[url(/gfx/bgFormButtonPinkLeftHover.jpg),url(/gfx/bgFormButtonPinkFillHover.jpg)]',
   },
 }
 const sizes = {

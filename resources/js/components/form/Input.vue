@@ -5,5 +5,5 @@ const model = defineModel({ type: [String, Number], default: null })
 
 <template>
   <input v-model="model"
-         class="my-1 box-border border-2 border-l-[7px] border-solid border-kado-teal-500 bg-[url(/gfx/bgInput.jpg)] bg-repeat-x p-1 text-kado-blue-600 outline-none focus:bg-[url(/gfx/bgInputFocus.jpg)] focus:text-kado-green-500 karbon:bg-white karbon:bg-[url(/gfx/themes/karbon/inputBg.jpg)] karbon:bg-[length:auto_100%] karbon:text-kado-slate-700 karbon:focus:bg-[url(/gfx/themes/karbon/inputBg.jpg)] karbon:focus:text-kado-slate-700" />
+         class="my-1 box-border min-w-20 border-2 border-l-[7px] border-solid border-kado-teal-500 bg-[url(/gfx/bgInput.jpg)] bg-repeat-x p-1 text-kado-blue-600 outline-none focus:bg-[url(/gfx/bgInputFocus.jpg)] focus:text-kado-green-500 karbon:bg-white karbon:bg-[url(/gfx/themes/karbon/inputBg.jpg)] karbon:bg-[length:auto_100%] karbon:text-kado-slate-700 karbon:focus:bg-[url(/gfx/themes/karbon/inputBg.jpg)] karbon:focus:text-kado-slate-700" />
 </template>

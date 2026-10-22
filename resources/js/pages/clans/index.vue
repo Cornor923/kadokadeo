@@ -90,7 +90,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
       <MessageError v-if="clanStore.clan">Vous faites déjà partie d'un clan.</MessageError>
       <form v-else class="max-w-lg space-y-2" @submit.prevent="submit">
         <div>
-          <label for="clanName">Nom du clan</label>
+          <label for="clanName" class="font-bold">Nom du clan</label>
           <FormInput id="clanName"
                      v-model="name"
                      type="text"
@@ -101,7 +101,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
           <p class="m-0 text-xs text-kado-blue-800">De 3 à 32 caractères : lettres, chiffres, espaces et - ' . ! ? Il ne pourra plus être changé.</p>
         </div>
         <div>
-          <label for="clanDescription">Présentation (vous pourrez la modifier plus tard)</label>
+          <label for="clanDescription" class="font-bold">Présentation (vous pourrez la modifier plus tard)</label>
           <FormTextarea id="clanDescription"
                         v-model="description"
                         rows="6"
