@@ -61,16 +61,16 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
   <div class="px-2 space-y-4">
     <KadoPageTitle>Les clans</KadoPageTitle>
     <ClanPeriodBanner :tournament="tournament ?? clanStore.tournament" />
-    <p v-if="clanStore.debug" class="mx-0 text-right text-xs">
+    <p v-if="clanStore.debug" class="text-right text-xs">
       <RouterLink :to="{ name: 'clans.debug' }">🔧 Outils de test des clans</RouterLink>
     </p>
 
-    <p v-if="clanStore.clan" class="mx-0">
+    <p v-if="clanStore.clan">
       <img src="/assets/img/gfx/icons/clan.gif" alt="" />
       Votre clan :
       <RouterLink :to="{ name: 'clans.show', params: { id: clanStore.clan.id } }" class="font-bold">{{ clanStore.clan.name }}</RouterLink>
     </p>
-    <p v-else class="mx-0">
+    <p v-else>
       <!-- the maximum set in the admin (ClanSettings::$max_members) -->
       Vous ne faites partie d'aucun clan. Un clan est un groupe
       <template v-if="clanStore.rules?.max_members">de 1 à {{ clanStore.rules.max_members }}</template><template v-else>de</template>
@@ -78,7 +78,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
       autres clans : rejoignez un clan existant en envoyant votre candidature depuis sa page, ou
       <RouterLink :to="{ name: 'clans.index', query: { tab: 'create' } }">créez votre propre clan</RouterLink>.
     </p>
-    <p v-if="clanStore.applications.length" class="mx-0 text-sm">
+    <p v-if="clanStore.applications.length" class="text-sm">
       Candidature(s) en attente :
       <template v-for="(a, i) in clanStore.applications" :key="a.id">
         <template v-if="i">, </template>
@@ -186,7 +186,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
           </tbody>
         </KadoTable>
       </div>
-      <p v-if="hasNextPage" class="text-center">
+      <p v-if="hasNextPage" class="mx-2.5 my-4 text-center">
         <FormButton size="lg" @click="load(meta.current_page + 1)">Charger plus de clans</FormButton>
       </p>
     </template>

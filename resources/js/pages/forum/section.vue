@@ -38,7 +38,7 @@ const create = () =>
   <div class="relative min-h-48 px-2 pb-2">
     <MessageError v-if="error">{{ error }}</MessageError>
     <Loader v-if="isLoading && !section" />
-    <EtwinForumLoginNotice v-if="status?.needs_login" />
+    <EtwinForumLoginNotice v-if="status?.needs_login" class="mt-4" />
 
     <template v-if="section">
       <EtwinForumBar :title="section.display_name" :crumbs="section.parent ? [{ label: section.parent.display_name, to: { name: 'forum.index' } }] : []">

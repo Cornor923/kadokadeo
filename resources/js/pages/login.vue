@@ -8,9 +8,9 @@ const authStore = useAuthStore()
     <section class="homeRightColumn">
       <KadoPageTitle class="mt-6.25 mb-5">Bienvenue</KadoPageTitle>
       <KadoSectionTitle>Des jeux</KadoSectionTitle>
-      <p>Plus de 70 jeux exclusifs à débloquer !</p>
+      <p class="mx-2.5 my-4">Plus de 70 jeux exclusifs à débloquer !</p>
       <KadoSectionTitle>Plein d'amis</KadoSectionTitle>
-      <p>... et d'adversaires dans une communauté de joueurs pleine de bonne humeur !</p>
+      <p class="mx-2.5 my-4">... et d'adversaires dans une communauté de joueurs pleine de bonne humeur !</p>
       <MessageError v-if="authStore.banMessage">{{ authStore.banMessage }}</MessageError>
       <p class="text-center btnHomepagePlay">
         <a href="/login" title="S'identifier / s'inscrire">

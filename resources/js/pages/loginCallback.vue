@@ -13,7 +13,7 @@ authStore.login(route.query?.code, route.query?.state).then(() => {
 
 <template>
   <div class="inColumns">
-    <p v-if="!error">Veuillez patienter...</p>
+    <p class="mx-2.5 my-4" v-if="!error">Veuillez patienter...</p>
     <MessageError v-else>{{ error }}</MessageError>
   </div>
 </template>

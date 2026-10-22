@@ -150,10 +150,10 @@ const chartLabels = computed(() => {
               P{{ point.periodId }}
             </text>
           </svg>
-          <p v-else>Aucun score enregistré pour ce jeu.</p>
+          <p class="mx-2.5 my-4" v-else>Aucun score enregistré pour ce jeu.</p>
         </section>
       </div>
-      <p class="text-center">
+      <p class="mx-2.5 my-4 text-center">
         <RouterLink :to="{ name: 'games.show', params: { id: history.game.id } }">
           Jouer à {{ history.game.name }}
         </RouterLink>

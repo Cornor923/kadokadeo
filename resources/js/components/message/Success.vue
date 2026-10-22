@@ -3,7 +3,7 @@
 <template>
   <div class="confirm">
     <div>
-      <p>
+      <p class="mx-2.5 my-4">
         <slot />
       </p>
     </div>

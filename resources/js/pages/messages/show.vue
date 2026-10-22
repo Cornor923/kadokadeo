@@ -46,7 +46,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', d
 
     <template v-if="message">
       <KadoSectionTitle>{{ message.subject }}</KadoSectionTitle>
-      <p class="mx-0 text-sm">
+      <p class="text-sm">
         <template v-if="received">
           De
           <RouterLink v-if="message.sender" :to="{ name: 'profile.show', params: { id: message.sender.etwin_id } }" class="font-bold">{{ message.sender.display_name }}</RouterLink>

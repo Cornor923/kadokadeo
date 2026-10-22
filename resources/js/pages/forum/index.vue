@@ -38,6 +38,6 @@ Promise.all([fetchStatus(), fetchSections()]).then(([status, listing]) => {
         </li>
       </ul>
     </template>
-    <p v-else-if="!isLoading && !error" class="italic">Le forum n'est pas encore ouvert.</p>
+    <p v-else-if="!isLoading && !error" class="mx-2.5 my-4 italic">Le forum n'est pas encore ouvert.</p>
   </div>
 </template>

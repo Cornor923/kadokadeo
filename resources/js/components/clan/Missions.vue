@@ -73,20 +73,20 @@ const confirmBonus = () => {
     <Loader v-if="isLoading && !data" />
 
     <template v-if="data">
-      <p class="mx-0">
+      <p>
         Score de mission du clan : <Number :value="data.mission_score" color="violet" />
         ({{ data.missions_completed }} mission(s) réussie(s))
       </p>
 
       <template v-if="mission">
         <KadoSectionTitle>Mission {{ mission.number }}</KadoSectionTitle>
-        <p v-if="isMember" class="mx-0">
+        <p v-if="isMember">
           Réussissez toutes les étapes avant la fin du temps imparti
           (<ClanCountdown :until="mission.expires_at" class="font-bold" @done="load" />) : votre clan remportera
           <Number :value="mission.reward" color="violet" /> points et passera à la mission suivante. Sinon, il perdra un
           point par étape non réussie, moins une. Les parties des missions sont gratuites !
         </p>
-        <p v-else class="mx-0">
+        <p v-else>
           Si le clan réussit toutes les étapes avant la fin du temps imparti
           (<ClanCountdown :until="mission.expires_at" class="font-bold" @done="load" />), il remportera
           <Number :value="mission.reward" color="violet" /> points et passera à la mission suivante.
@@ -139,17 +139,17 @@ const confirmBonus = () => {
           </KadoTable>
         </div>
       </template>
-      <p v-else class="italic mx-0">
+      <p v-else class="italic">
         Aucune mission en cours : une nouvelle mission sera proposée à la prochaine période.
       </p>
 
-      <p v-if="isMember && (data.banned_games.length || data.forced_games.length)" class="text-sm mx-0">
+      <p v-if="isMember && (data.banned_games.length || data.forced_games.length)" class="text-sm">
         <span v-if="data.banned_games.length">{{ data.banned_games.length > 1 ? 'Jeux caca' : 'Jeu caca' }} : <strong>{{ gameNames(data.banned_games) }}</strong>. </span>
         <span v-if="data.forced_games.length">{{ data.forced_games.length > 1 ? 'Jeux cool' : 'Jeu cool' }} : <strong>{{ gameNames(data.forced_games) }}</strong>.</span>
       </p>
 
       <KadoSectionTitle v-if="isMember">Options du clan</KadoSectionTitle>
-      <p v-if="isMember && !data.bonuses.length" class="italic mx-0">
+      <p v-if="isMember && !data.bonuses.length" class="italic">
         Votre clan n'a aucune option. Chaque mission réussie peut vous en faire gagner une !
       </p>
       <div v-if="isMember" class="relative flex flex-wrap gap-2">

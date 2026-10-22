@@ -26,7 +26,7 @@ fetchGame(gameId).then((data) => {
     </template>
     <template v-else>
       <KadoPageTitle class="mt-6.25 mb-5">{{ game.name }}</KadoPageTitle>
-      <p v-if="authStore.user?.kado_games >= 0">
+      <p class="mx-2.5 my-4" v-if="authStore.user?.kado_games >= 0">
         Il vous reste {{ authStore.user.kado_games }} parties à jouer aujourd'hui
       </p>
 

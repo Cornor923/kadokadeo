@@ -108,7 +108,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
                  class="flex h-[400px] gap-3"
                  :aria-hidden="index !== current">
           <img :src="section.art" alt="" class="hidden h-[400px] w-[275px] shrink-0 sm:block" />
-          <div class="h-[400px] min-w-0 flex-1 overflow-y-auto [&_h3]:mt-0 [&_h3]:mb-1.5 [&_p]:mt-1 [&_p]:mb-2.5 [&_p]:text-[13px] [&_p]:leading-4 [&_table]:mt-1 [&_table]:mb-2.5 [&_table]:text-[13px] [&_table]:leading-4 [&_ul]:mt-1 [&_ul]:mb-2.5 [&_ul]:pl-2.5 [&_ul]:text-[13px] [&_ul]:leading-4">
+          <div class="h-[400px] min-w-0 flex-1 overflow-y-auto [&_h3]:mt-0 [&_h3]:mb-1.5 [&_p]:mx-2.5 [&_p]:mt-1 [&_p]:mb-2.5 [&_p]:text-[13px] [&_p]:leading-4 [&_table]:mt-1 [&_table]:mb-2.5 [&_table]:text-[13px] [&_table]:leading-4 [&_ul]:mt-1 [&_ul]:mb-2.5 [&_ul]:pl-2.5 [&_ul]:text-[13px] [&_ul]:leading-4">
             <h3 class="text-2xl font-semibold text-kado-blue-800">{{ section.title }}</h3>
             <!-- the sections of the part (the clans), as small links -->
             <nav v-if="partOf(index).children.length" class="mb-2 text-xs">
@@ -320,7 +320,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
       </div>
     </div>
 
-    <p class="flex justify-between">
+    <p class="mx-2.5 my-4 flex justify-between">
       <FormButton v-if="current > 0"
                   size="lg"
                   variant="pink"

@@ -40,11 +40,11 @@ const use = (theme) => {
     <KadoPageTitle>Mon compte</KadoPageTitle>
 
     <KadoSectionTitle>Thème du site</KadoSectionTitle>
-    <p class="mx-0">
+    <p>
       Changez l'apparence de KadoKadéo ! Le thème KadoKado est offert à tous les joueurs, les autres thèmes s'achètent
       une seule fois avec vos points Kado. Vous pouvez ensuite changer de thème quand vous le voulez.
     </p>
-    <p class="mx-0">
+    <p>
       Vos points Kado :
       <strong>{{ formatScore(authStore.user?.kado_points ?? 0) }}</strong>
       <img src="/gfx/skpoint.gif" alt="Kado" class="ml-1 inline size-5" />

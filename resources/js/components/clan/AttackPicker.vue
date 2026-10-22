@@ -16,7 +16,7 @@ const choose = (game) =>
   <div class="space-y-4">
     <MessageError v-if="clan.viewer.attack_blocked">{{ clan.viewer.attack_blocked }}</MessageError>
     <template v-else>
-      <p class="mx-0">
+      <p>
         Choisissez un jeu et faites le meilleur score possible : il deviendra une attaque contre le clan
         <strong>{{ clan.name }}</strong>. Si personne ne le bat dans les {{ clanStore.rules?.attack_hours }} heures, votre clan remporte
         <Number :value="clan.viewer.attack_points" color="pink" /> point(s) et le clan adverse en perd autant. Si

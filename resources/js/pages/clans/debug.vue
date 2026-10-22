@@ -38,7 +38,7 @@ const endPeriod = () => {
 
   <div class="relative px-2 space-y-4">
     <KadoPageTitle>Debug clans</KadoPageTitle>
-    <p class="mx-0 text-sm">
+    <p class="text-sm">
       Outils de test (variable <code>KADO_DEBUG_TOOLS</code>, jamais en production) : les parties sont simulées avec le
       score choisi, par vous si vous êtes membre du clan, sinon par son chef.
       <RouterLink :to="{ name: 'clans.index' }">Retour aux clans</RouterLink>
@@ -52,7 +52,7 @@ const endPeriod = () => {
     </ul>
 
     <template v-if="data">
-      <p class="mx-0 text-sm">Période {{ data.period?.id ?? '—' }}, fin le {{ data.period ? new Date(data.period.end_at).toLocaleString('fr-FR') : '—' }}</p>
+      <p class="text-sm">Période {{ data.period?.id ?? '—' }}, fin le {{ data.period ? new Date(data.period.end_at).toLocaleString('fr-FR') : '—' }}</p>
 
       <KadoSectionTitle>Lancer une attaque</KadoSectionTitle>
       <form class="flex flex-wrap items-end gap-2" @submit.prevent="run('/debug/clans/attack', attack)">
@@ -82,7 +82,7 @@ const endPeriod = () => {
       </form>
 
       <KadoSectionTitle>Attaques en cours</KadoSectionTitle>
-      <p v-if="!data.attacks.length" class="mx-0 italic text-sm">Aucune attaque en cours.</p>
+      <p v-if="!data.attacks.length" class="italic text-sm">Aucune attaque en cours.</p>
       <KadoTable v-else class="w-full text-sm">
         <thead>
           <tr class="text-[10px] uppercase">
@@ -112,9 +112,9 @@ const endPeriod = () => {
       </KadoTable>
 
       <KadoSectionTitle>Mission de mon clan</KadoSectionTitle>
-      <p v-if="!data.mission" class="mx-0 italic text-sm">Vous ne faites partie d'aucun clan.</p>
+      <p v-if="!data.mission" class="italic text-sm">Vous ne faites partie d'aucun clan.</p>
       <template v-else>
-        <p class="mx-0 text-sm">Mission {{ data.mission.number }} ({{ data.mission.steps.length }} étapes, {{ data.mission.reward }} points si elle est réussie), fin dans <ClanCountdown :until="data.mission.expires_at" /></p>
+        <p class="text-sm">Mission {{ data.mission.number }} ({{ data.mission.steps.length }} étapes, {{ data.mission.reward }} points si elle est réussie), fin dans <ClanCountdown :until="data.mission.expires_at" /></p>
         <ul class="space-y-1 text-sm">
           <li v-for="step in data.mission.steps" :key="step.id" class="flex items-center gap-2">
             <span>{{ step.game }} : {{ step.target_score }} pts</span>
@@ -125,14 +125,14 @@ const endPeriod = () => {
       </template>
 
       <KadoSectionTitle>Le temps</KadoSectionTitle>
-      <p class="flex flex-wrap gap-2">
+      <p class="mx-2.5 flex flex-wrap gap-2">
         <FormButton v-for="h in [1, 6, 12, 24]"
                     :key="h"
                     size="lg"
                     @click="run('/debug/clans/time', { hours: h })">+{{ h }}h</FormButton>
         <FormButton size="lg" variant="pink" @click="endPeriod">Terminer la période</FormButton>
       </p>
-      <p class="mx-0 text-xs">« +12h » fait réussir les attaques non repoussées et échouer les missions en cours qui dépassent leur temps.</p>
+      <p class="my-4 text-xs">« +12h » fait réussir les attaques non repoussées et échouer les missions en cours qui dépassent leur temps.</p>
     </template>
   </div>
 </template>

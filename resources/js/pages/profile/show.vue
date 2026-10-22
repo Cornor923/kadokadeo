@@ -123,7 +123,7 @@ const gameAchievements = computed(() => {
         <div v-else-if="profile">
           <div v-if="item.value === 'me'" class="space-y-4">
             <KadoPageTitle>Profil de {{ profile.data.display_name }}</KadoPageTitle>
-            <p v-if="profile.data.etwin_id !== authSore.user?.etwin_id" class="text-center">
+            <p v-if="profile.data.etwin_id !== authSore.user?.etwin_id" class="mx-2.5 text-center">
               <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
                 <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
               </RouterLink>

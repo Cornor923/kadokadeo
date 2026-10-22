@@ -9,7 +9,7 @@ defineProps({
 // the presentation written in Markdown, turned into HTML by the server (App\Support\ClanMarkdown: the HTML of the
 // players is escaped): the titles take the ones of the site, the lists get back their bullets
 const markdownClasses = [
-  'break-words [&_p]:my-2 [&_img]:inline [&_img]:max-w-full',
+  'break-words [&_p]:mx-2.5 [&_p]:my-2 [&_img]:inline [&_img]:max-w-full',
   '[&_h1]:kado-page-title [&_h1]:mt-4 [&_h1]:mb-3 [&_h1]:text-[2em] [&_h2]:kado-section-title [&_h2]:mt-4 [&_h2]:mb-2',
   '[&_h3]:mt-3 [&_h3]:mb-2 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-kado-blue-800',
   '[&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-inside [&_ul]:list-image-[url(/gfx/puce.jpg)]',
@@ -28,7 +28,7 @@ const markdownClasses = [
          id="clanPresentation"
          :class="markdownClasses"
          v-html="clan.description_html" />
-    <p v-else class="italic text-kado-blue-800">Bienvenue sur la page du clan {{ clan.name }}.</p>
+    <p v-else class="mx-2.5 italic text-kado-blue-800">Bienvenue sur la page du clan {{ clan.name }}.</p>
 
     <ul class="list-inside list-image-[url(/gfx/puce.jpg)] ml-4 space-y-1">
       <li v-if="clan.leader">

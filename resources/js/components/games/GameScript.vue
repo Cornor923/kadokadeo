@@ -164,8 +164,8 @@ onBeforeUnmount(() => {
   <div class="relative w-full">
     <div v-if="crash" class="error absolute top-2 right-2 left-2 z-20">
       <div class="text-xs">
-        <p>Un problème technique est survenu pendant la partie.</p>
-        <p>Vous pouvez nous envoyer les détails techniques pour faciliter le diagnostic.</p>
+        <p class="mx-2.5 my-4">Un problème technique est survenu pendant la partie.</p>
+        <p class="mx-2.5 my-4">Vous pouvez nous envoyer les détails techniques pour faciliter le diagnostic.</p>
         <div class="mt-2 flex flex-wrap gap-2">
           <button
             type="button"

@@ -86,7 +86,7 @@ const doDissolve = () => {
     <MessageError v-if="error">{{ error }}</MessageError>
 
     <KadoSectionTitle>Candidatures</KadoSectionTitle>
-    <p v-if="!applications.length" class="italic mx-0">Aucune candidature en attente.</p>
+    <p v-if="!applications.length" class="italic">Aucune candidature en attente.</p>
     <div v-else class="overflow-x-auto">
       <KadoTable class="w-full">
         <tbody>
@@ -124,7 +124,7 @@ const doDissolve = () => {
     </form>
 
     <KadoSectionTitle>Membres</KadoSectionTitle>
-    <p class="mx-0 text-sm">
+    <p class="text-sm">
       Un <strong>bras droit</strong> a tous les droits du chef de clan, sauf dissoudre le clan et nommer un nouveau chef.
       Un siège choisi ne peut plus changer avant la prochaine période.
       <template v-for="(seat, role) in seats" :key="role">
@@ -182,7 +182,7 @@ const doDissolve = () => {
 
     <template v-if="isLeader">
       <KadoSectionTitle>Dissoudre le clan</KadoSectionTitle>
-      <p class="mx-0 text-sm">Tous les membres quitteront le clan, et ses scores de la période seront perdus.</p>
+      <p class="text-sm">Tous les membres quitteront le clan, et ses scores de la période seront perdus.</p>
       <FormButton variant="pink" @click="doDissolve">Dissoudre le clan</FormButton>
     </template>
   </div>

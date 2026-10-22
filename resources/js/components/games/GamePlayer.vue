@@ -124,7 +124,7 @@ watchEffect((onInvalidate) => {
                 </li>
               </ul>
             </nav>
-            <p v-if="gameScript?.changeRunError" class="absolute -top-5 right-0 text-xs text-kado-pink-600">{{ gameScript.changeRunError }}</p>
+            <p v-if="gameScript?.changeRunError" class="mx-2.5 my-4 absolute -top-5 right-0 text-xs text-kado-pink-600">{{ gameScript.changeRunError }}</p>
             <GamesGameScript ref="gameScript" :game="game" />
           </div>
           <div v-if="!game.is_arkadeo"

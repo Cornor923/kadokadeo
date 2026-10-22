@@ -87,10 +87,10 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
       <template v-if="result">
         <MessageSuccess v-if="isSuccess">{{ result.message }}</MessageSuccess>
         <MessageError v-else>{{ result.message }}</MessageError>
-        <p v-if="closedMessage" class="text-center">
+        <p v-if="closedMessage" class="mx-2.5 my-4 text-center">
           {{ closedMessage }} Retour à la page des missions dans quelques secondes...
         </p>
-        <p v-else class="text-center text-sm">
+        <p v-else class="mx-2.5 my-4 text-center text-sm">
           <template v-if="countsAgain">Si vous rejouez, votre nouvelle partie comptera aussi pour votre clan.</template>
           <template v-else>Si vous rejouez, ce sera une partie normale : elle ne comptera plus pour votre clan.</template>
         </p>
@@ -128,10 +128,10 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
           </template>
         </div>
       </div>
-      <p class="text-center">
+      <p class="mx-2.5 my-4 text-center">
         <RouterLink :to="backRoute">Retour à la page du clan</RouterLink>
       </p>
-      <p v-if="action.type !== 'mission' && authStore.user" class="flex items-center justify-center gap-1 text-sm">
+      <p v-if="action.type !== 'mission' && authStore.user" class="mx-2.5 my-4 flex items-center justify-center gap-1 text-sm">
         <img src="/gfx/gemGreen.svg" alt="" class="w-4" />
         {{ authStore.user.clan_attack_games }} partie(s) d'attaque gratuite(s) aujourd'hui, puis
         <img src="/gfx/gemOrange.svg" alt="" class="w-4" />

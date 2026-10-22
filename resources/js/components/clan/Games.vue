@@ -53,7 +53,7 @@ const distribute = () => {
     <Loader v-if="isLoading && !data" />
 
     <template v-if="data">
-      <p class="mx-0">
+      <p>
         Chaque jour, vous avez <Number :value="data.attack_games" color="green" /> partie(s) gratuite(s) pour attaquer et
         défendre (sur {{ data.attack_games_per_day }} par jour). Une fois jouées, les attaques et les défenses utilisent vos
         parties de clan achetées. Les missions, elles, sont gratuites et illimitées. Vous avez
@@ -74,7 +74,7 @@ const distribute = () => {
       </div>
 
       <KadoSectionTitle>Donner au clan</KadoSectionTitle>
-      <p class="mx-0 text-sm">
+      <p class="text-sm">
         Vous pouvez donner à votre clan les parties que vous avez achetées (pas vos parties gratuites du jour). Le chef et ses bras
         droits les distribueront aux membres. Le clan possède <Number :value="data.clan.games" color="orange" /> <img src="/gfx/gemOrange.svg" class="w-5 max-w-none"> parties en stock.
       </p>

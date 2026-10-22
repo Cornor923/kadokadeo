@@ -86,7 +86,7 @@ const thinTitles = '[&_th]:text-xs [&_th]:font-normal [&_th]:uppercase [&_td]:bo
     </tbody>
   </KadoTable>
 
-  <p class="text-center">
+  <p class="mx-2.5 my-4 text-center">
     <input type="button" value="Période précédente" class="pinkButton h-6 w-auto pt-px" />
     <input type="button" value="Période suivante" class="h-6 w-auto pt-px ml-4" />
   </p>

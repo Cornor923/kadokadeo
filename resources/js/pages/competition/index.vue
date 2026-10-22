@@ -252,7 +252,7 @@ const scoreOn1500 = computed(() => {
           @previous="goPrevious"
           @next="goNext"
         />
-        <p class="mx-2 mb-4 text-center text-sm">
+        <p class="mx-2 my-4 text-center text-sm">
           Les joueurs ayant le plus de plumes se partagent le jackpot. Les autres joueurs ayant au moins 2 plumes se partagent
           à parts égales une récompense supplémentaire.
           <template v-if="isCurrentPeriod">Les récompenses de la période courante sont potentielles, elles sont versées à sa clôture.</template>

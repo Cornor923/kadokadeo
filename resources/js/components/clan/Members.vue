@@ -50,7 +50,7 @@ const saveStatus = (m) => setStatus(props.clan.id, m.user.etwin_id, draft.value)
   <div class="relative space-y-4">
     <MessageError v-if="error">{{ error }}</MessageError>
     <Loader v-if="isLoading && !members.length" />
-    <p class="mx-0">Ce clan comporte {{ members.length }} joueur(s).</p>
+    <p>Ce clan comporte {{ members.length }} joueur(s).</p>
 
     <div class="overflow-x-auto">
       <KadoTable class="w-full">

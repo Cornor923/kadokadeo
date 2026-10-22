@@ -56,7 +56,7 @@ const reply = () =>
   <div class="relative min-h-48 px-2 pb-2">
     <MessageError v-if="error">{{ error }}</MessageError>
     <Loader v-if="isLoading && !thread" />
-    <EtwinForumLoginNotice v-if="status?.needs_login" />
+    <EtwinForumLoginNotice v-if="status?.needs_login" class="mt-4" />
 
     <template v-if="thread">
       <EtwinForumBar :title="thread.title" :crumbs="[{ label: thread.section.display_name, to: { name: 'forum.section', params: { section: thread.section.key ?? thread.section.id } } }]">
@@ -84,7 +84,7 @@ const reply = () =>
                         :icon-url="etwinIconUrl" />
         <FormButton type="submit" size="lg" :disabled="answer.isLoading.value || !draft.trim()">Répondre</FormButton>
       </form>
-      <p v-else-if="thread.is_locked" class="mt-4 text-center italic">Ce sujet est verrouillé.</p>
+      <p v-else-if="thread.is_locked" class="mx-2.5 my-4 text-center italic">Ce sujet est verrouillé.</p>
     </template>
   </div>
 </template>
