@@ -25,6 +25,10 @@ class Api {
 		if (runParams.build != null) {
 			req.build = runParams.build;
 		}
+		// (ClanRunService::pageAction)
+		if (runParams.clanAction != null) {
+			req.clan_action = runParams.clanAction;
+		}
 		http.setPostData(haxe.Json.stringify(req));
 		return send(http, true);
 	}

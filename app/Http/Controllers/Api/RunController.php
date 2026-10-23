@@ -60,9 +60,12 @@ class RunController extends Controller implements HasMiddleware
         // (prepared on demand, before the policy looks for it)
         $dailyGame = $isDaily ? $gameService->getDailyGame() : null;
         // an attack, a defense or a mission step asked on the clan pages: the runs of the missions are free, the attacks
-        // and the defenses have their own games (attack games of the day, then paid clan games). None while the clans are
-        // turned off (ClanSettings::$enabled)
-        $clanAction = $isDaily || !app(ClanSettings::class)->enabled ? null : $clanRunService->pendingAction($user->id, $game->id);
+        // and the defenses have their own games (attack games of the day, then paid clan games): the one of the page of the
+        // game (/clans/play/{action}), else the one asked last on the game. None while the clans are turned off
+        // (ClanSettings::$enabled)
+        $clanAction = $isDaily || !app(ClanSettings::class)->enabled
+            ? null
+            : $clanRunService->pageAction($user, $game->id, $request->filled('clan_action') ? (int) $request->validated('clan_action') : null);
         $cost = $clanRunService->runCost($clanAction);
 
         if ($dailyGame) {

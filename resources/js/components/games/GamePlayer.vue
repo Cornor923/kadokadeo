@@ -4,6 +4,8 @@
 const props = defineProps({
   game: { type: Object, required: true },
   goals: { type: Array, default: () => [] },
+  // more parameters of the game, taken when it is mounted (the clan run of the page: clanAction)
+  args: { type: Object, default: () => ({}) },
 })
 
 const { isLoading: isFavoriteLoading, error: favoriteError, put } = useApi()
@@ -125,7 +127,7 @@ watchEffect((onInvalidate) => {
               </ul>
             </nav>
             <p v-if="gameScript?.changeRunError" class="mx-2.5 my-4 absolute -top-5 right-0 text-xs text-kado-pink-600">{{ gameScript.changeRunError }}</p>
-            <GamesGameScript ref="gameScript" :game="game" />
+            <GamesGameScript ref="gameScript" :game="game" :args="args" />
           </div>
           <div v-if="!game.is_arkadeo"
                class="game-interface-2 hidden"

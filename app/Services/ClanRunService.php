@@ -5,18 +5,21 @@ namespace App\Services;
 use App\Enums\ClanActionType;
 use App\Enums\ClanAttackStatus;
 use App\Exceptions\ClanException;
+use App\Models\Clan;
 use App\Models\ClanAction;
 use App\Models\ClanAttack;
 use App\Models\ClanMission;
+use App\Models\ClanMissionStep;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Settings\ClanSettings;
 
-// a clan run is a normal run (contract, rankings): the player asks for it on the clan pages (ClanAction), then the next
-// run he begins on the game is bound to it, and its score is used when it ends. A mission step is free and unlimited, an
-// attack or a defense costs one of the attack games of the day (App\Settings\ClanSettings), then a paid clan game
-// (RunController::begin). The games of the day of the normal runs are not used.
+// a clan run is a normal run (contract, rankings): the player asks for it on the clan pages (ClanAction), then the run he
+// begins on its page (/clans/play/{action}: the game sends the action, pageAction, no time limit), or else the next run he
+// begins on the game, is bound to it, and its score is used when it ends. A mission step is free and unlimited, an attack or a defense
+// costs one of the attack games of the day (App\Settings\ClanSettings), then a paid clan game (RunController::begin). The
+// games of the day of the normal runs are not used.
 class ClanRunService
 {
     public function __construct(
@@ -28,13 +31,11 @@ class ClanRunService
     // the attack still waiting for a defense: improved by the new run), null when the next run would be a normal one
     public function again(ClanAction $action): ?ClanAction
     {
-        if ($action->completed_at === null) {
-            return null;
-        }
         $user = $action->user;
 
         // a mission step completed meanwhile (by the player or another member) or a mission over: the reason is given to
-        // the page (ClanMissionService::startStep), which sends the player back to the missions
+        // the page (ClanMissionService::startStep), which sends the player back to the missions. (The action of the page
+        // may not be the one of the run that ended: pageAction)
         if ($action->type === ClanActionType::MISSION) {
             // (the run begun meanwhile already went on with the step: continueFailedStep)
             return ClanAction::query()
@@ -45,6 +46,9 @@ class ClanRunService
                 ->latest('id')
                 ->first()
                 ?? $this->missionService->startStep($user, $action->missionStep);
+        }
+        if ($action->completed_at === null) {
+            return null;
         }
 
         try {
@@ -97,6 +101,120 @@ class ClanRunService
         $action->update(['result' => 'cancelled', 'completed_at' => now()]);
     }
 
+    // the clan run of the page where the game is played (/clans/play/{action}, sent by the game when the run begins): it
+    // goes on there while its target is open, however long the player stays on the page (pendingAction forgets an action
+    // asked ACTION_TTL_MINUTES ago: the run was a normal one, an attack or a defense lost). The action of the page, or the
+    // one asked since for the same target ("Rejouer"), else a new one for a mission step. Checked again when the run
+    // begins (an attack ended, a seat of attack taken...): refused with the reason rather than played for nothing. An
+    // action of another game or player, none (a page of the game, a bundle built before): the clan run asked last on the
+    // game
+    public function pageAction(User $user, int $gameId, ?int $actionId): ?ClanAction
+    {
+        $page = $actionId ? ClanAction::query()->find($actionId) : null;
+        if (!$page || (int) $page->user_id !== $user->id || (int) $page->game_id !== $gameId) {
+            return $this->pendingAction($user->id, $gameId);
+        }
+
+        // (one at most not begun: ClanService::forgetUnplayedActions)
+        $action = ClanAction::query()
+            ->where('user_id', $user->id)
+            ->where('game_id', $gameId)
+            ->where('type', $page->type)
+            ->where('id', '>=', $page->id)
+            ->whereNull('run_id')
+            ->whereNull('completed_at')
+            ->where(match ($page->type) {
+                ClanActionType::MISSION => ['clan_mission_step_id' => $page->clan_mission_step_id],
+                // a new attack, then its improvements
+                ClanActionType::ATTACK => ['defender_clan_id' => $page->defender_clan_id],
+                ClanActionType::DEFENSE => ['clan_attack_id' => $page->clan_attack_id],
+            })
+            ->latest('id')
+            ->first();
+
+        if ($page->type === ClanActionType::MISSION) {
+            $step = ClanMissionStep::query()->find($page->clan_mission_step_id);
+            $closed = $this->closedStepReason($step);
+            if ($closed !== null) {
+                $action?->update(['result' => 'too_late', 'completed_at' => now()]);
+
+                throw new ClanException($closed.' Retournez sur la page des missions de votre clan.');
+            }
+
+            // (refused out of the clan)
+            return $action ?? $this->missionService->startStep($user, $step);
+        }
+
+        // an attack or a defense played on the page, and "Rejouer" not asked (the page said the next run would be a
+        // normal one): the clan run asked last
+        if (!$action) {
+            return $this->pendingAction($user->id, $gameId);
+        }
+        $closed = $this->closedWarReason($action, $user);
+        if ($closed !== null) {
+            $action->update(['result' => 'too_late', 'completed_at' => now()]);
+
+            throw new ClanException($closed.' Retournez sur la page de votre clan.');
+        }
+
+        return $action;
+    }
+
+    // the page of a clan run shows the game: a mission step while it is open, an attack or a defense not begun while its
+    // target is open (pageAction)
+    public function isOpen(ClanAction $action): bool
+    {
+        if ($action->type === ClanActionType::MISSION) {
+            return $this->closedStepReason(ClanMissionStep::query()->find($action->clan_mission_step_id)) === null;
+        }
+
+        $user = User::query()->find($action->user_id);
+
+        return $user && $action->run_id === null && $action->completed_at === null && $this->closedWarReason($action, $user) === null;
+    }
+
+    // why an attack or a defense can't be played (null while it can): checked again when its run begins, as
+    // ClanWarService::startAttack / startImprovement / startDefense when it was asked
+    private function closedWarReason(ClanAction $action, User $user): ?string
+    {
+        $clanId = (int) $user->clanMember()->value('clan_id');
+        if ($action->clan_attack_id === null) {
+            $clan = Clan::query()->find($action->clan_id);
+            if (!$clan || $clanId !== $clan->id) {
+                return 'Vous ne faites plus partie de ce clan.';
+            }
+
+            // (an "Attaquant" whose seat was taken back, attacks launched from another page)
+            return $this->warService->runningAttacksCount($user) >= $this->warService->maxAttacks($user, $clan)
+                ? 'Vous avez déjà le maximum d\'attaques en cours.'
+                : null;
+        }
+
+        $attack = ClanAttack::query()->find($action->clan_attack_id);
+        if (!$attack || $attack->status !== ClanAttackStatus::ACTIVE || $attack->expires_at->isPast()) {
+            return 'Cette attaque est terminée.';
+        }
+        // the attacker for an improvement, a member of the clan attacked for a defense
+        $side = $action->type === ClanActionType::ATTACK ? $attack->attacker_clan_id : $attack->defender_clan_id;
+        if ($clanId !== (int) $side) {
+            return 'Vous ne faites plus partie de ce clan.';
+        }
+
+        return null;
+    }
+
+    // why a mission step can't be played (null while it is open)
+    private function closedStepReason(?ClanMissionStep $step): ?string
+    {
+        $mission = $step ? ClanMission::query()->find($step->clan_mission_id) : null;
+
+        return match (true) {
+            !$mission || $mission->status !== ClanMission::ACTIVE || $mission->expires_at->isPast() => 'Cette mission est terminée.',
+            $step->isDone() => 'Cette étape a déjà été réussie.',
+            default => null,
+        };
+    }
+
     // the clan run asked by the player on this game, not begun yet
     public function pendingAction(int $userId, int $gameId): ?ClanAction
     {
@@ -113,13 +231,7 @@ class ClanRunService
         // a mission step completed by another member (or a mission over) since it was asked: the run is refused (the game
         // shows why) rather than played for nothing, or as a normal run costing a game
         if ($action?->type === ClanActionType::MISSION) {
-            $step = $action->missionStep;
-            $mission = $step?->mission;
-            $closed = match (true) {
-                !$mission || $mission->status !== ClanMission::ACTIVE || $mission->expires_at->isPast() => 'Cette mission est terminée.',
-                $step->isDone() => 'Cette étape a déjà été réussie.',
-                default => null,
-            };
+            $closed = $this->closedStepReason($action->missionStep);
             if ($closed !== null) {
                 $action->update(['result' => 'too_late', 'completed_at' => now()]);
 

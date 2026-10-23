@@ -1130,6 +1130,128 @@ class ClanTest extends TestCase
     }
 
     // "Rejouer" on the page of a clan run: the next run counts for the clan while its target is open
+    // the page of a mission step sends its action when a run begins: the step goes on there however long the player stays
+    // on the page (ClanWarService::ACTION_TTL_MINUTES only for the runs begun elsewhere)
+    public function test_a_mission_step_counts_on_its_page_however_long_it_stays_open(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $this->period();
+        $leader = User::factory()->create(['kado_games' => 5]);
+        $other = User::factory()->create();
+        $clan = Clan::factory()->withLeader($leader)->create();
+        Game::factory()->count(8)->create();
+        $steps = app(ClanMissionService::class)->currentMission($clan)->steps;
+        [$step, $otherStep] = [$steps[0], $steps[1]];
+        Sanctum::actingAs($leader);
+        $actionId = $this->postJson("/api/clan-mission-steps/{$step->id}/play")->assertCreated()->json('data.id');
+
+        // 20 minutes on the page: still open, the run begun there is the action of the page
+        $this->travel(20)->minutes();
+        $this->getJson("/api/clan-actions/{$actionId}")->assertOk()->assertJsonPath('data.is_open', true);
+        $runId = $this->postJson("/api/runs/games/{$step->game_id}", ['clan_action' => $actionId])->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'mission')
+            ->json('data.run_id');
+        $this->assertSame($runId, ClanAction::query()->findOrFail($actionId)->run_id);
+        $this->assertSame(5, $leader->fresh()->kado_games);
+        $run = Run::query()->findOrFail($runId);
+        $run->update(['score' => $step->target_score - 1, 'completed_at' => now()]);
+        $this->assertSame('failed', app(ClanRunService::class)->handleRunCompleted($run->fresh())['result']);
+
+        // the game keeps the action it was given: a new one on the same step ("Rejouer" not asked yet), then the one of
+        // "Rejouer", even a long time after
+        $runId = $this->postJson("/api/runs/games/{$step->game_id}", ['clan_action' => $actionId])->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'mission')
+            ->json('data.run_id');
+        $second = ClanAction::query()->where('run_id', $runId)->sole();
+        $this->assertSame($step->id, $second->clan_mission_step_id);
+        Run::query()->findOrFail($runId)->update(['score' => $step->target_score - 1, 'completed_at' => now()]);
+        app(ClanRunService::class)->handleRunCompleted(Run::query()->findOrFail($runId));
+        $againId = $this->postJson("/api/clan-actions/{$actionId}/again")->assertOk()->json('data.id');
+        $this->travel(30)->minutes();
+        $runId = $this->postJson("/api/runs/games/{$step->game_id}", ['clan_action' => $actionId])->assertSuccessful()
+            ->json('data.run_id');
+        $this->assertSame($runId, ClanAction::query()->findOrFail($againId)->run_id);
+        Run::query()->findOrFail($runId)->update(['score' => $step->target_score, 'completed_at' => now()]);
+        $this->assertSame('completed', app(ClanRunService::class)->handleRunCompleted(Run::query()->findOrFail($runId))['result']);
+        $this->assertSame(5, $leader->fresh()->kado_games);
+
+        // the step completed: the page is closed, a run sent with its action is refused
+        $this->getJson("/api/clan-actions/{$actionId}")->assertOk()->assertJsonPath('data.is_open', false);
+        $this->postJson("/api/runs/games/{$step->game_id}", ['clan_action' => $actionId])->assertStatus(422)
+            ->assertJsonPath('message', 'Cette étape a déjà été réussie. Retournez sur la page des missions de votre clan.');
+
+        // an action of another game or of another player: the run of the game is a normal one
+        $otherActionId = $this->postJson("/api/clan-mission-steps/{$otherStep->id}/play")->assertCreated()->json('data.id');
+        $this->travel(20)->minutes();
+        $this->postJson("/api/runs/games/{$step->game_id}", ['clan_action' => $otherActionId])->assertSuccessful()
+            ->assertJsonPath('data.clan', null);
+        $this->assertNull(ClanAction::query()->findOrFail($otherActionId)->run_id);
+        Sanctum::actingAs($other);
+        $this->postJson("/api/runs/games/{$otherStep->game_id}", ['clan_action' => $otherActionId])->assertSuccessful()
+            ->assertJsonPath('data.clan', null);
+    }
+
+    // the same for an attack, its improvements and a defense: not lost after ClanWarService::ACTION_TTL_MINUTES on the
+    // page, checked again when the run begins
+    public function test_an_attack_and_a_defense_count_on_their_page_however_long_it_stays_open(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $this->period();
+        $attacker = User::factory()->create(['clan_attack_games' => 5]);
+        $defender = User::factory()->create(['clan_attack_games' => 5]);
+        $clanA = Clan::factory()->withLeader($attacker)->create();
+        $clanB = Clan::factory()->withLeader($defender)->create();
+        $game = Game::factory()->create();
+        $endRun = function (string $runId, int $score): ?array {
+            Run::query()->findOrFail($runId)->update(['score' => $score, 'completed_at' => now()]);
+
+            return app(ClanRunService::class)->handleRunCompleted(Run::query()->findOrFail($runId));
+        };
+
+        // a new attack, begun 20 minutes after it was asked
+        Sanctum::actingAs($attacker);
+        $pageId = $this->postJson("/api/clans/{$clanB->id}/attacks", ['game_id' => $game->id])->assertCreated()->json('data.id');
+        $this->travel(20)->minutes();
+        $this->getJson("/api/clan-actions/{$pageId}")->assertOk()->assertJsonPath('data.is_open', true);
+        $runId = $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $pageId])->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'attack')
+            ->json('data.run_id');
+        $this->assertSame('launched', $endRun($runId, 500)['result']);
+        $attack = ClanAttack::query()->sole();
+
+        // "Rejouer": an improvement, begun 20 minutes later from the page that still sends the first action
+        $againId = $this->postJson("/api/clan-actions/{$pageId}/again")->assertOk()->json('data.id');
+        $this->travel(20)->minutes();
+        $runId = $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $pageId])->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'attack')
+            ->json('data.run_id');
+        $this->assertSame($runId, ClanAction::query()->findOrFail($againId)->run_id);
+        $this->assertSame('improved', $endRun($runId, 600)['result']);
+        $this->assertSame(600, $attack->fresh()->score);
+        $this->assertSame(3, $attacker->fresh()->clan_attack_games);
+        $againId = $this->postJson("/api/clan-actions/{$againId}/again")->assertOk()->json('data.id');
+
+        // a defense, begun 20 minutes later: it repels the attack
+        Sanctum::actingAs($defender);
+        $defenseId = $this->postJson("/api/clan-attacks/{$attack->id}/defend")->assertCreated()->json('data.id');
+        $this->travel(20)->minutes();
+        $runId = $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $defenseId])->assertSuccessful()
+            ->assertJsonPath('data.clan.type', 'defense')
+            ->json('data.run_id');
+        $this->assertSame('repelled', $endRun($runId, 601)['result']);
+
+        // the attack is over: the improvement still open on the page of the attacker is refused, no game used
+        Sanctum::actingAs($attacker);
+        $this->getJson("/api/clan-actions/{$againId}")->assertOk()->assertJsonPath('data.is_open', false);
+        $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $pageId])->assertStatus(422)
+            ->assertJsonPath('message', 'Cette attaque est terminée. Retournez sur la page de votre clan.');
+        $this->assertSame(3, $attacker->fresh()->clan_attack_games);
+        $this->assertSame('too_late', ClanAction::query()->findOrFail($againId)->result);
+        // then the page plays normal runs
+        $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $pageId])->assertSuccessful()
+            ->assertJsonPath('data.clan', null);
+    }
+
     public function test_playing_again_on_the_page_of_a_clan_run(): void
     {
         ClanSettings::fake(['bonus_chance' => 0]);

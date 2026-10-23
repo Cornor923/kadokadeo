@@ -1,6 +1,7 @@
 <script setup>
 // a clan run: an attack, a defense or a mission step, on the page of the game (rules, paliers, ranking) with the score of
-// the clan in the paliers. The next run of the game is bound to it on the server.
+// the clan in the paliers. The game sends the action when a run begins: the run is bound to it on the server while its
+// target is open, however long the page stays open (ClanRunService::pageAction).
 const route = useRoute()
 const authStore = useAuthStore()
 const router = useRouter()
@@ -104,7 +105,7 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
       </div>
       <template v-else-if="game">
         <KadoSectionTitle class="text-center">{{ game.name }}</KadoSectionTitle>
-        <GamesGamePlayer :game="game" :goals="goals" />
+        <GamesGamePlayer :game="game" :goals="goals" :args="{ clanAction: action.id }" />
       </template>
 
       <div class="flex items-center gap-2 border-l-4 px-2 py-1" :class="action.type === 'attack' ? 'border-kado-pink-400 bg-kado-pink-50 text-kado-pink-400' : 'border-kado-teal-500 bg-kado-blue-50'">

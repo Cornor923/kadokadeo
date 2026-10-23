@@ -78,7 +78,12 @@ class KadoRunFlow {
 	#end
 
 	public function requestContract(onSuccess:RunStartContext->Void, onError:Dto.ApiError->Void):Void {
-		receiveContract(Api.askContract({daily: params.isDaily, gameId: params.gameId, build: params.build}), onSuccess, onError);
+		receiveContract(Api.askContract({
+			daily: params.isDaily,
+			gameId: params.gameId,
+			build: params.build,
+			clanAction: params.clanAction
+		}), onSuccess, onError);
 	}
 
 	// "Changer de partie": a new run in place of the one begun (the current context is kept when it is refused)
