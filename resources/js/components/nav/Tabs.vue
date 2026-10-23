@@ -41,7 +41,7 @@ function tabMenuLinkClasses(item) {
 
 <template>
   <TabGroup>
-    <TabList ref="tabList" class="flex gap-2 h-8 relative -top-[34px] -left-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <TabList ref="tabList" class="flex gap-2 h-8 relative -top-[34px] -ml-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <Tab
         v-for="(item, index) in items"
         :key="item.value ?? index"

@@ -15,6 +15,8 @@ const sidebarOpen = ref(false)
 
 <template>
   <div class="flex flex-col h-dvh">
+    <!-- the bar of the games of Eternaltwin; its menu opens the drawer of the page -->
+    <NavTopBar @menu="sidebarOpen = true" />
     <header id="topPage" class="mx-auto w-full max-w-5xl h-[100px] flex relative justify-center z-10">
       <div class="flex flex-col items-center justify-center">
         <img src="/gfx/logoBasic.png" alt="KadoKadéo" class="h-fit w-auto mx-auto mb-5" />
