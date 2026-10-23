@@ -7,7 +7,6 @@ use App\Exceptions\ClanException;
 use App\Http\Controllers\Controller;
 use App\Models\ClanAction;
 use App\Services\ClanRunService;
-use App\Services\ClanWarService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -45,7 +44,7 @@ class ClanActionController extends Controller implements HasMiddleware
         return ['data' => $next ? ['id' => $next->id] : null, 'closed' => null];
     }
 
-    public function show(Request $request, ClanAction $action)
+    public function show(Request $request, ClanAction $action, ClanRunService $clanRunService)
     {
         abort_unless($action->user_id === $request->user()->id, 404);
         $action->load('game', 'clan', 'defenderClan', 'attack.attackerClan', 'attack.attackerUser', 'missionStep.mission');
@@ -61,9 +60,8 @@ class ClanActionController extends Controller implements HasMiddleware
                 'is_improvement' => $action->type === ClanActionType::ATTACK && $action->clan_attack_id !== null,
                 // the runs of the missions are free
                 'is_free' => $action->type === ClanActionType::MISSION,
-                // begun or too old: playing again would be a normal run
-                'is_open' => $action->run_id === null && $action->completed_at === null
-                    && $action->created_at->gte(now()->subMinutes(ClanWarService::ACTION_TTL_MINUTES)),
+                // its target over (a mission step completed, an attack ended...): playing there would be a normal run
+                'is_open' => $clanRunService->isOpen($action),
                 'result' => $action->result,
                 'target' => match ($action->type) {
                     ClanActionType::ATTACK => [

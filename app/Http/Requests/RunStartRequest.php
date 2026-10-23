@@ -38,6 +38,8 @@ class RunStartRequest extends FormRequest
             'daily' => 'sometimes|required|accepted',
             // version of the game bundle (hash of the manifest), to play the replay with the same version
             'build' => ['sometimes', 'nullable', 'string', 'regex:/^[0-9a-f]{12}$/'],
+            // the clan run of the page where the game is played (/clans/play/{action}): ClanRunService::pageAction
+            'clan_action' => ['sometimes', 'nullable', 'integer'],
         ];
     }
 }

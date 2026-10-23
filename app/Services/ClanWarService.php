@@ -23,7 +23,8 @@ use Illuminate\Support\Facades\DB;
 // nothing to the attacker. One attack at a time by player (two for an "Attaquant"), as many received as can be.
 class ClanWarService
 {
-    // a clan run asked but not begun after this time is forgotten
+    // a clan run asked but not begun after this time is forgotten by the runs begun elsewhere than on its page
+    // (ClanRunService::pendingAction, pageAction)
     public const ACTION_TTL_MINUTES = 15;
 
     // the wars a clan can declare at the same time
