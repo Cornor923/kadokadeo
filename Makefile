@@ -68,3 +68,4 @@ compile-games:
 
 update-libraries:
 	docker exec -u dev kadokadeo_app haxelib install --always resources/hx/install.hxml
+
