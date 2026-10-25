@@ -178,7 +178,7 @@ class ManageClanSettings extends SettingsPage
 
     private function decimal(string $name, string $label): TextInput
     {
-        return TextInput::make($name)->label($label)->required()->numeric()->minValue(0)->step(0.01);
+        return TextInput::make($name)->label($label)->required()->numeric()->minValue(0)->step(0.001);
     }
 
     // 0 to 1
