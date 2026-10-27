@@ -113,14 +113,19 @@ class EnergyAnim implements Anim {
 	var mc:MC;
 	var steps:Int;
 	var max:Int;
-	var move:Float;
+	// the move of the whole anim, in twips (1/20 px)
+	var total:Int;
 	var minus:Bool;
 
+	// The original moved points / max per step, but play moves the bar max + 2 times: every gain and loss was shown
+	// 10 % too big, and the bar drifted away from the energy over a game (half full at the end of a long one). Now
+	// points over the max + 2 steps, in whole twips (_y keeps whole twips: points / 22 would lose its rest at every
+	// step). The end of the anim (its onEnd) is unchanged: mc._y never reaches 0 (the energy stops at 0, the bar at -91)
 	public function new(mc:MC, points:Int, minus = true) {
 		this.mc = mc;
 		steps = 0;
 		max = 20;
-		move = points / max;
+		total = points * 20;
 		this.minus = minus;
 	}
 
@@ -128,17 +133,20 @@ class EnergyAnim implements Anim {
 		if (mc._y >= 0)
 			return true;
 
-		if (minus) {
-			mc._y += move;
-		} else {
-			mc._y -= move;
-		}
+		var t = Std.int(total * (steps + 1) / (max + 2)) - Std.int(total * steps / (max + 2));
+		moveBy(mc, minus ? t : -t);
 
 		if (steps++ > max) {
 			return true;
 		}
 
 		return false;
+	}
+
+	// mc._y += twips / 20, exactly: MC.twips truncates towards 0, a sum a hair short of a whole twip would lose it
+	public static function moveBy(mc:MC, twips:Int) {
+		var k = Math.round(mc._y * 20) + twips;
+		mc._y = (k + (k < 0 ? -0.5 : 0.5)) / 20;
 	}
 
 	public function clean() {}

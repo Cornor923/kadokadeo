@@ -551,7 +551,7 @@ class Game implements kado.GameInterface {
 				return;
 			var r = removePoints(KKApi.val(Const.ENERGY_DEC));
 			if (step != GameOver)
-				mcEnergy.mask._y += KKApi.val(Const.ENERGY_DEC);
+				EnergyAnim.moveBy(mcEnergy.mask, KKApi.val(Const.ENERGY_DEC) * 20);
 		}
 	}
 
