@@ -28,6 +28,10 @@ class Phys extends mt.bumdum.Phys {
 		super.update();
 	}
 
+	public override function isOut(m:Float, ?w:Float, ?h:Float) {
+		return super.isOut(m, Cs.mcw, Cs.mch);
+	}
+
 	public function updateFlash() {
 		if (flash != null) {
 			var prc = Math.min(flash, 100);

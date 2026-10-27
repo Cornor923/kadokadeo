@@ -160,7 +160,7 @@ class Sprite {
 		return Math.atan2(point.y - this.y, point.x - this.x);
 	}
 
-	public function isOut(m:Float, w:Float = 900, h:Float = 900) {
+	public function isOut(m:Float, ?w:Float, ?h:Float) {
 		if (Math.isNaN(x) || Math.isNaN(y)) {
 			return true;
 		}
