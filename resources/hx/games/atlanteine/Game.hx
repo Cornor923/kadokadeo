@@ -87,6 +87,8 @@ class Game implements kado.GameInterface {
 		},
 	};
 
+	static inline var SWIPE_PRESS_FRAMES = 2;
+
 	public static var FL_DEBUG = false;
 	public static var FL_BONUS = false;
 	public static var FL_SIZER = false;
@@ -158,7 +160,10 @@ class Game implements kado.GameInterface {
 	var tc:Float;
 	var prc:Float;
 	var ballFlash:Float;
-	var pendingSwipeDir:Null<Int>;
+	// a swipe is a short press of an arrow key (recorded by the replay like the keyboard): the key held, the frames
+	// before it is released
+	var swipeKey:Null<Int>;
+	var swipeFramesLeft:Int;
 
 	var pushInfo:{base:Array<Int>, free:Array<Int>, flDone:Bool};
 
@@ -208,7 +213,8 @@ class Game implements kado.GameInterface {
 		skin = 0;
 		delayedActions = [];
 		flControl = true;
-		pendingSwipeDir = null;
+		swipeKey = null;
+		swipeFramesLeft = 0;
 		step = Step.WaitTimer;
 		initTimer();
 		initMap();
@@ -325,6 +331,7 @@ class Game implements kado.GameInterface {
 
 		updateDisplay();
 		updateScheduledActions();
+		releaseSwipeKey(false);
 	}
 
 	function scheduleAction(action:DelayedAction, delayMs:Int) {
@@ -434,12 +441,6 @@ class Game implements kado.GameInterface {
 			|| KeyboardManager.isDown(KeyboardManager.W))
 			d = 3;
 
-		if (pendingSwipeDir != null) {
-			d = pendingSwipeDir;
-			pendingSwipeDir = null;
-			flControl = true;
-		}
-
 		if (!flControl && d == null)
 			flControl = true;
 
@@ -479,13 +480,27 @@ class Game implements kado.GameInterface {
 	}
 
 	public function onTouchAction(action:String):Void {
-		pendingSwipeDir = switch (action) {
-			case "swipe_right": 0;
-			case "swipe_down": 1;
-			case "swipe_left": 2;
-			case "swipe_up": 3;
-			default: pendingSwipeDir;
+		var key:Null<Int> = switch (action) {
+			case "swipe_right": KeyboardManager.ARROW_RIGHT;
+			case "swipe_down": KeyboardManager.ARROW_DOWN;
+			case "swipe_left": KeyboardManager.ARROW_LEFT;
+			case "swipe_up": KeyboardManager.ARROW_UP;
+			default: null;
 		}
+		if (key == null)
+			return;
+		releaseSwipeKey(true);
+		KeyboardManager.queueVirtualKeyDown(key);
+		swipeKey = key;
+		swipeFramesLeft = SWIPE_PRESS_FRAMES;
+	}
+
+	// at the end of each frame (now: a new swipe)
+	function releaseSwipeKey(now:Bool):Void {
+		if (swipeKey == null || (!now && --swipeFramesLeft > 0))
+			return;
+		KeyboardManager.queueVirtualKeyUp(swipeKey);
+		swipeKey = null;
 	}
 
 	// BALL

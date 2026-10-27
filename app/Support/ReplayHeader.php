@@ -5,6 +5,7 @@ namespace App\Support;
 /**
  * Header of a replay sent by the game (resources/hx/lib/kado/ReplayManager.hx): base64 of the deflated (zlib) binary
  * replay, which starts with "KADO", the version and the flags, and ends with "LEN" and the number of frames of the game.
+ * Version 5: the game computed Math.sin, Math.pow... in plain JavaScript (kado.ExactMath), the same on every browser.
  */
 class ReplayHeader
 {

@@ -16,6 +16,8 @@ typedef GameParams = {
 	@:optional var assetBase:String;
 	// ANTI CHEAT: functions of the browser taken when the page loaded (resources/js/anticheat/natives.js), see kac.Natives
 	@:optional var natives:Dynamic;
+	// a replay played by the replay verifier (resources/js/replay-verifier/verify.mjs): nothing is seen, see headless
+	@:optional var headless:Bool;
 	var canvasWidth:Int;
 	var canvasHeight:Int;
 }

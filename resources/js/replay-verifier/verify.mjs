@@ -50,6 +50,8 @@ async function page(input) {
     isDaily: false,
     contractScore: 0,
     contractPoints: 0,
+    // nothing is seen: the game skips its effects drawn at each frame (kado.KadoKadeoManager.headless)
+    headless: true,
     // the size of the canvas of the site (resources/js/components/games/GameScript.vue)
     canvasWidth: 600,
     canvasHeight: input.arkadeo ? 500 : 640,
@@ -150,6 +152,18 @@ async function verify(input) {
     // the replay is seen playing, a few frames later
     const analyzer = analyzerOf(input)
     await b.eval(`(() => {
+      // the picture of the page is not drawn (slow in the software WebGL of the browser): the transforms of the display
+      // objects are still updated, as the render would do. The renders of the game in its own textures stay
+      const renderer = kk.renderer, render = renderer.render
+      renderer.render = function (object) {
+        if (object === kk.stage && arguments.length === 1) {
+          const parent = object.enableTempParent()
+          object.updateTransform()
+          object.disableTempParent(parent)
+          return
+        }
+        return render.apply(this, arguments)
+      }
       const ff = kk.ff, update = ff.update
       // the analyzer of the game: reads the game before each frame (read only), its errors only end the analysis
       window.__createAnalyzer = () => {

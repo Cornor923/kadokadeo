@@ -24,7 +24,11 @@ perl -pi -e 's/\}\)\(typeof exports != "undefined" \? exports : typeof window/})
 # esbuild of the repository, or the one of npx when node_modules was installed in Docker (Linux binary)
 ESB="$REPO/node_modules/.bin/esbuild"
 if ! "$ESB" --version >/dev/null 2>&1; then ESB="npx --yes esbuild@0.25"; fi
+# the Math functions of the bundles of the site (resources/js/games/builds/bundle.mjs, kado.ExactMath)
+EXACT_MATH=""
+for F in sin cos atan2 pow acos exp log; do EXACT_MATH="$EXACT_MATH --define:Math.$F=__kadoMath.$F"; done
 cd "$OUT"   # (npx run from the repository would pick its node_modules/.bin again)
 NODE_PATH="$REPO/node_modules" $ESB "$OUT/src/$N.js" --bundle --format=iife --target=es2018 --platform=browser \
-    --sourcemap --outfile="$OUT/$N.js" --log-level=warning
+    --sourcemap --outfile="$OUT/$N.js" --log-level=warning \
+    --inject:"$REPO/resources/js/games/builds/exact-math.mjs" $EXACT_MATH
 echo BUILD_OK

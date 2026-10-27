@@ -55,8 +55,12 @@ private typedef PendingEvent = {
 // change, event and mouse button change (in the order of their sections): the moment of the frame (quarter of ms) the
 // player did it, read from the DOM event (Event.timeStamp). The gameplay draws are stirred by it (see beginFrame): the
 // coming pieces depend on a time no player controls, so they can't be predicted before the input.
+// Version 5 (2026-10): the game computed Math.sin, Math.pow... in plain JavaScript (kado.ExactMath), the same on every
+// browser; the replays before it are played with the functions of the browser, as they were recorded.
 class ReplayManager {
-	public static inline var REPLAY_VERSION:Int = 4;
+	public static inline var REPLAY_VERSION:Int = 5;
+	// first version recorded with kado.ExactMath
+	private static inline var EXACT_MATH_VERSION:Int = 5;
 	private static inline var MAGIC_HEADER:String = "KADO";
 	// optional trailer (ignored by older readers): number of frames of the game
 	private static inline var MAGIC_LENGTH:String = "LEN";
@@ -122,6 +126,8 @@ class ReplayManager {
 	private var carriedEventSig:Int = 0;
 	// between beginFrame and endFrame
 	private var inFrame:Bool = false;
+	// the game computes its Math functions with kado.ExactMath: a live game, or a replay recorded with it
+	private var exactMath:Bool = true;
 
 	public function new(?replayData:String = null) {
 		this.replayData = parseReplayString(replayData);
@@ -143,8 +149,10 @@ class ReplayManager {
 				this.replayData = null;
 				this.playFrames = [];
 				this.playRecords = [];
+				this.exactMath = true;
 			}
 		}
+		ExactMath.setEnabled(exactMath);
 	}
 
 	public function init(params:ReplayInitParams):Void {
@@ -941,6 +949,7 @@ class ReplayManager {
 			throw "Unsupported replay version " + version;
 		}
 		var flags = input.readByte();
+		exactMath = version >= EXACT_MATH_VERSION;
 		rngStir = (flags & FLAG_RNG_STIR) != 0;
 		phasesEnabled = version >= 4 && (flags & FLAG_INPUT_PHASES) != 0;
 

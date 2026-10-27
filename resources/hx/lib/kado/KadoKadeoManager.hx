@@ -33,6 +33,10 @@ class KadoKadeoManager extends Application {
 
 	public var replay:ReplayManager;
 
+	// a replay played by the replay verifier, where nothing is seen: the effects drawn at each frame that the game never
+	// reads (mt.bumdum.Plasma) are skipped, they are slow in its software WebGL
+	public var headless(default, null):Bool = false;
+
 	var root:ASprite;
 	var gameRoot:ASprite;
 	var dm:DepthManager;
@@ -125,6 +129,7 @@ class KadoKadeoManager extends Application {
 		this.canvas = canvas;
 		this.gameClass = gameClass;
 		this.params = params;
+		this.headless = params.headless == true && params.replayData != null;
 		this.endRunClient = new KadoEndRun();
 		this.runFlow = new KadoRunFlow(params);
 		this.root = new ASprite();

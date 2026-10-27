@@ -29,12 +29,22 @@ class Plasma extends Bmp {
 		super.kill();
 	}
 
+	// an effect only (never read by a game): not drawn in the replay verifier
+	static inline function headless():Bool {
+		return kado.KadoKadeoManager.kkm != null && kado.KadoKadeoManager.kkm.headless;
+	}
+
+	override public function drawMc(mc:ASprite, ?dx:Float, ?dy:Float, ?ct:ColorMatrixFilter) {
+		if (!headless())
+			super.drawMc(mc, dx, dy, ct);
+	}
+
 	override public function update() {
-		if (this.ct != null) {
+		if (this.ct != null && !headless()) {
 			this.applyFilterToSelf(this.ct);
 		}
 
-		if (filters != null) {
+		if (filters != null && !headless()) {
 			for (i in filters) {
 				this.applyFilterToSelf(i);
 			}

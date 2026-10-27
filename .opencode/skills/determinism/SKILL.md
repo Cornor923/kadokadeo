@@ -55,6 +55,8 @@ Hors jeu du jour, `KadoKadeoManager.updatePhysics` appelle `Seed.stir(frame, ent
 - un tirage fait dans le constructeur du jeu (avant la première frame) n'est pas mélangé : générer les niveaux / pièces au moment où ils arrivent plutôt que tout au départ ;
 - vérifier un portage avec `harness/rc.mjs record` (partie live puis son replay : `MATCH`).
 
+Depuis le replay version 5, `Math.sin`, `Math.cos`, `Math.atan2`, `Math.pow`, `Math.acos`, `Math.exp` et `Math.log` des jeux sont calculés en JavaScript pur (`resources/js/games/builds/exact-math.mjs`, mis dans les bundles par esbuild, activé par `kado.ExactMath`) : ceux des navigateurs diffèrent au dernier bit selon le moteur et le processeur (Chrome x86 / ARM, Safari), et un replay diverge de sa partie. Rien à faire dans un jeu ; une autre fonction transcendante (`Math.tan`, `Math.asin`...) utilisée par la logique d'un jeu doit y être ajoutée (portage fdlibm, testé contre `StrictMath` de Java).
+
 Depuis le replay version 4, le stir dépend aussi du moment de chaque input dans sa frame (`Event.timeStamp`, enregistré dans le replay, voir `replay-system`) : rien à faire dans un jeu, mais un input ne doit jamais être simulé par un `dispatchEvent` (ignoré : `isTrusted` faux, et signalé comme triche).
 
 ## Prototypes gelés (anti-triche)
