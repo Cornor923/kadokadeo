@@ -80,9 +80,10 @@ class Game implements kado.GameInterface {
 	/*------------------------------------------------------------------------------*/
 	public function new(mc:ASprite, ?isReplay:Bool = false) {
 		this.isReplay = isReplay;
+		// (a replay keeps the params it was recorded with: the replays from before the space bar have no key)
 		KadoKadeoManager.kkm.replay.init({
-			recordedKeys: new UInt16Array(0),
-			recordInputs: false,
+			recordedKeys: UInt16Array.fromArray([KeyboardManager.SPACE]),
+			recordInputs: true,
 			recordEvents: true,
 			recordMousePosition: true,
 			recordedMouseButtons: UInt16Array.fromArray([MouseManager.BUTTON_LEFT]),
@@ -369,6 +370,10 @@ class Game implements kado.GameInterface {
 				if (mx < 300 && my < 300)
 					mouse = true;
 			}
+		// the space bar too (not in the original): a press on the stage. Its release is a key released like the others
+		for (c in KeyboardManager.getFrameKeyChanges())
+			if (c.keyCode == KeyboardManager.SPACE && c.isDown)
+				mouse = true;
 
 		frameAcc += 5;
 		while (frameAcc >= 4) {
