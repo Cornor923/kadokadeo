@@ -76,7 +76,7 @@ class Bonus extends Phys {
 		if (bounce < BOUNCE_MAX) {
 			checkBounds();
 		} else {
-			if (isOut(ray))
+			if (isOut(ray, Cs.mcw, Cs.mch))
 				kill();
 		}
 		if (id >= 15 && id <= 17) {
