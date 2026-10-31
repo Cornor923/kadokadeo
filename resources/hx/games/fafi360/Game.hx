@@ -848,6 +848,8 @@ class Game extends Sprite implements kado.GameInterface {
 
 		ground = new BitmapData(w,h, true, 0x0);
 		sdm.add(new Bitmap(ground), DP_BG2);
+		// (its RenderTexture made now, not by the first mark of an explosion during the match)
+		ground.draw(new Sprite());
 	}
 
 	public function createField(str:String, ?font:Font, ?adjustSize=false) {
@@ -1620,12 +1622,13 @@ class Game extends Sprite implements kado.GameInterface {
 			node.parent.removeChild(node);
 		node.destroy({children: true});
 		ME = null;
+		fafi360.it.Bonus.disposePictures();
 	}
 
 	// statics of the game: one page plays several games and replays
 	static function resetStatics() {
-		// the display: the positions of the original at whole pixels (pixel art drawn x2), its glows (inner ones by the
-		// sampled shader), the RenderTextures of its bitmaps without smoothing
+		// the display: the positions of the original at whole pixels (pixel art drawn x2), the RenderTextures of its bitmaps
+		// without smoothing; the bottles flattened by the previous game
 		Flash.reset();
 		Flash.useTwips = false;
 		Flash.roundMoving = true;
@@ -1634,6 +1637,7 @@ class Game extends Sprite implements kado.GameInterface {
 		mt.deepnight.Particle.ALL = [];
 		mt.deepnight.Particle.LIMIT = 100;
 		ME = null;
+		fafi360.it.Bonus.disposePictures();
 	}
 
 	// the sheets of this game in the loader of KadoKadeo (the frame names of another game cannot collide)

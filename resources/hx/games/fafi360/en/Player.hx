@@ -181,8 +181,18 @@ class Player extends Entity {
 
 	function updateRadius() {
 		if( radiusSpr!=null ) {
-			radiusSpr.bitmapData.dispose();
+			if( radiusSpr.bitmapData!=null )
+				radiusSpr.bitmapData.dispose();
 			radiusSpr.parent.removeChild(radiusSpr);
+		}
+
+		// (the range of the players of the opponent is never shown: no picture drawn for it, a RenderTexture each, all of
+		// them again at each round)
+		if( !isPlayable() ) {
+			radiusSpr = new Bitmap();
+			game.sdm.add(radiusSpr, Game.DP_BG2);
+			radiusSpr.visible = false;
+			return;
 		}
 
 		var s = new Sprite();
@@ -215,7 +225,8 @@ class Player extends Entity {
 		if( arrow.parent!=null )
 			arrow.parent.removeChild(arrow);
 		radiusSpr.parent.removeChild(radiusSpr);
-		radiusSpr.bitmapData.dispose();
+		if( radiusSpr.bitmapData!=null )
+			radiusSpr.bitmapData.dispose();
 		mc.dispose();
 	}
 

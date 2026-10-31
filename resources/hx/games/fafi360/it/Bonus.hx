@@ -1,6 +1,16 @@
 package fafi360.it;
 
 class Bonus extends GenericItem {
+	// the picture of each bottle (frame of lib.Bonus), flattened once and shown by the Bitmaps of all the bonuses of this
+	// frame: the original flattened every bonus, all of them again at each round (a RenderTexture each here)
+	static var pictures		: Map<Int,Bitmap> = new Map();
+
+	public static function disposePictures() {
+		for( p in pictures )
+			p.bitmapData.dispose();
+		pictures = new Map();
+	}
+
 	var value			: Int;
 	var big				: Bool;
 	var bmp				: Bitmap;
@@ -10,9 +20,6 @@ class Bonus extends GenericItem {
 		this.big = big;
 
 		fl_repop = !big;
-
-		var mc = new MovieClip("Bonus");
-		mc.y+=2;
 
 		var frame = 1;
 		if( !big ) {
@@ -58,16 +65,26 @@ class Bonus extends GenericItem {
 				case 7 : 2000;
 				default : 500;
 			}
-			mc.filters = [
-				new GlowFilter(0xFFFF00, 0.9, 8,8,1, 2),
-				new GlowFilter(0xFFCC00, 0.9, 32,32,2, 2),
-			];
 		}
 
-		mc.gotoAndStop(frame);
-		bmp = mt.deepnight.Lib.flatten(mc,40);
+		var pic = pictures.get(frame);
+		if( pic==null ) {
+			var mc = new MovieClip("Bonus");
+			mc.y+=2;
+			if( big )
+				mc.filters = [
+					new GlowFilter(0xFFFF00, 0.9, 8,8,1, 2),
+					new GlowFilter(0xFFCC00, 0.9, 32,32,2, 2),
+				];
+			mc.gotoAndStop(frame);
+			pic = mt.deepnight.Lib.flatten(mc,40);
+			mc.dispose();
+			pictures.set(frame, pic);
+		}
+		bmp = new Bitmap(pic.bitmapData);
+		bmp.x = pic.x;
+		bmp.y = pic.y;
 		spr.addChild( bmp );
-		mc.dispose();
 
 		delayPop(35 + rseed.random(20));
 	}
@@ -87,10 +104,10 @@ class Bonus extends GenericItem {
 		spr.alpha = 0;
 	}
 
-	// (the RenderTexture of the flattened bottle is freed: Flash had its garbage collector)
+	// (the picture of the bottle is kept for the next bonuses, freed with the game)
 	public override function unregister() {
 		super.unregister();
-		bmp.bitmapData.dispose();
+		bmp.bitmapData = null;
 	}
 
 	public override function pickUp() {
