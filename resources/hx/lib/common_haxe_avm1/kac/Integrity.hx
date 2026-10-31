@@ -212,15 +212,21 @@ class Integrity {
 		var proto:Dynamic = pixi.Container.prototype;
 		var original = originalPixiMethod(page, proto, "addChild");
 		var originalAt = originalPixiMethod(page, proto, "addChildAt");
-		// (the stack is read in the wrapper: its first frame, then the caller)
+		// (the stack is read in the wrapper: its first frame, then the caller; only for a child not sorted yet, a stack costs
+		// tens of microseconds and a game adds its children again at each frame: depth sorting, particles)
 		var sort = (child:Dynamic, stack:String) -> sortChild(child, stack);
+		var unsorted = (child:Dynamic) -> isUnsorted(child);
 		proto.addChild = Syntax.code("function () {
-			var stack = new Error().stack;
-			for (var i = 0; i < arguments.length; i++) {0}(arguments[i], stack);
+			var stack = null;
+			for (var i = 0; i < arguments.length; i++) {
+				if (!{2}(arguments[i])) continue;
+				if (stack == null) stack = new Error().stack;
+				{0}(arguments[i], stack);
+			}
 			return {1}.apply(this, arguments)
-		}", sort, original);
-		proto.addChildAt = Syntax.code("function (child, index) { {0}(child, new Error().stack); return {1}.call(this, child, index) }", sort,
-			originalAt);
+		}", sort, original, unsorted);
+		proto.addChildAt = Syntax.code("function (child, index) { if ({2}(child)) {0}(child, new Error().stack); return {1}.call(this, child, index) }",
+			sort, originalAt, unsorted);
 		proto.addChild.__kadoOriginal = original;
 		proto.addChildAt.__kadoOriginal = originalAt;
 		// what the manager already shows
@@ -256,8 +262,13 @@ class Integrity {
 		}
 	}
 
+	// a raw display object (no Haxe class) not sorted yet
+	static function isUnsorted(child:Dynamic):Bool {
+		return child != null && child.__class__ == null && !legit.has(child) && !foreign.has(child);
+	}
+
 	static function sortChild(child:Dynamic, stack:String):Void {
-		if (child == null || child.__class__ != null || legit.has(child) || foreign.has(child)) {
+		if (!isUnsorted(child)) {
 			return;
 		}
 		var caller = firstCaller(stack);
