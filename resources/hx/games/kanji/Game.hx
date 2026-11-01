@@ -3,6 +3,8 @@ package kanji;
 import common_haxe_avm1.KeyboardManager;
 import haxe.io.UInt16Array;
 import kado.TouchControlsConfig;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 // Kanji (KadoKado, Motion-Twin): ported from the original sources (Manager, Const, Game, Hero, Jama, Bonus of the
 // kanji folder) and the graphics of its SWF. Kanji the ninja jumps over the animals of the zoo (stork, bee, boar)
@@ -10,24 +12,35 @@ import kado.TouchControlsConfig;
 @:expose('GameKanji')
 class Game implements kado.GameInterface {
 	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
-		mode: TouchControlsMode.JOYSTICK,
-		joystick: {
-			x: 0.18,
-			y: 0.8,
-			radius: 84,
-			deadZone: 0.18,
-			dynamicCenter: true,
-			directions: 4,
-		},
+		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
 				id: "jump",
-				label: "⇧",
-				rightPx: 14,
-				bottomPx: 14,
-				size: 84,
+				label: "▲",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.SPACE,
-			}
+				shape: TouchButtonShape.SQUARE,
+			},
 		],
 	};
 

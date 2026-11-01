@@ -251,21 +251,21 @@ class Game implements kado.GameInterface {
 		buttons: [
 			{
 				id: "left",
-				label: "<",
+				label: "◀",
 				leftPx: 20,
 				bottomPx: 20,
 				size: 80,
 				keyCode: KeyboardManager.LEFT,
-				shape: TouchButtonShape.CIRCLE,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
-				label: ">",
+				label: "▶",
 				rightPx: 20,
 				bottomPx: 20,
 				size: 80,
 				keyCode: KeyboardManager.RIGHT,
-				shape: TouchButtonShape.CIRCLE,
+				shape: TouchButtonShape.SQUARE,
 			},
 		],
 	};

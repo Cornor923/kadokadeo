@@ -8,9 +8,45 @@ import mt.DepthManager;
 import mt.Timer;
 import mt.bumdum.Lib;
 import pixi.filters.colormatrix.ColorMatrixFilter;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 @:expose('GameKillBulle')
 class Game implements kado.GameInterface {
+	// mobile: left / right, the up arrow throws the grapple (Space)
+	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
+		mode: TouchControlsMode.KEYBOARD,
+		buttons: [
+			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "grapple",
+				label: "▲",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.SPACE,
+				shape: TouchButtonShape.SQUARE,
+			},
+		],
+	};
+
 	public var root:ASprite;
 	public var bg:ASprite;
 	public var dmanager:DepthManager;

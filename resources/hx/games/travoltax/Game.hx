@@ -20,6 +20,9 @@ import mt.bumdum.Sprite;
 import mt.bumdum.Phys;
 import mt.bumdum.Part;
 import mt.bumdum.Plasma;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
+import common_haxe_avm1.KeyboardManager;
 
 class LineSprite extends ASprite {
 	public var bmp:RenderTexture;
@@ -51,6 +54,67 @@ class BgSprite extends ASprite {
 
 @:expose('GameTravoltax')
 class Game implements kado.GameInterface {
+	// mobile: move left / right at the bottom corners, turn left (V) / right (Space) above them, drop (down) in the middle,
+	// the bonus (up) above it
+	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
+		mode: TouchControlsMode.KEYBOARD,
+		buttons: [
+			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "turnleft",
+				label: "↺",
+				leftPx: 20,
+				bottomPx: 90,
+				size: 60,
+				keyCode: KeyboardManager.V,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "turnright",
+				label: "↻",
+				rightPx: 20,
+				bottomPx: 90,
+				size: 60,
+				keyCode: KeyboardManager.SPACE,
+				shape: TouchButtonShape.SQUARE,
+			},
+			// centred at the bottom of the screen
+			{
+				id: "down",
+				label: "▼",
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "bonus",
+				label: "▲",
+				bottomPx: 90,
+				size: 60,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
+			},
+		],
+	};
+
 	public static var FL_DEBUG = false;
 
 	public static var DP_BG = 0;

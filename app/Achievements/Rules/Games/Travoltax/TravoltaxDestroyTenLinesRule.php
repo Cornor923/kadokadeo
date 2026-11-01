@@ -18,7 +18,11 @@ class TravoltaxDestroyTenLinesRule extends TravoltaxRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
+        // a run without any destroyed line sends no count (max() refuses an empty array)
         $linesDestroyed = data_get($event->stats, '_l', []);
+        if ($linesDestroyed === []) {
+            return AchievementRuleResult::unchanged($progress->current_value);
+        }
         $maxLinesDestroyedCount = max($linesDestroyed);
 
         if ($maxLinesDestroyedCount <= $progress->current_value) {

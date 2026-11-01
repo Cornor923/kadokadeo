@@ -52,7 +52,7 @@ class Game implements kado.GameInterface {
 		buttons: [
 			{
 				id: "fire",
-				label: "★",
+				label: "☄️",
 				rightPx: 14,
 				bottomPx: 14,
 				size: 84,

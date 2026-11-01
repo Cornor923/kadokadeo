@@ -4,6 +4,7 @@ import common_haxe_avm1.KeyboardManager;
 import haxe.io.UInt16Array;
 import kado.TouchControlsConfig.TouchControlsMode;
 import mt.DepthManager;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 // a bird shot by the magic gate: speed (dx, dy), spin (k) and colour (type: 0 = 200 points, 1 = 500, 2 = 3000,
 // 3 = one more fury)
@@ -17,17 +18,28 @@ private typedef Part = {mc:Clip, dx:Float, dy:Float};
 // releases a fury (3 at the start, the orange birds give more) that throws all the birds up.
 @:expose('GamePioutch')
 class Game implements kado.GameInterface {
-	// mobile: joystick (left / right) + fury button
+	// mobile: left / right buttons + fury button
 	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
-		mode: TouchControlsMode.JOYSTICK,
-		joystick: {
-			x: 0.2,
-			y: 0.8,
-			radius: 84,
-			deadZone: 0.2,
-			dynamicCenter: true,
-		},
+		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
+			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
 			{
 				id: "fury",
 				label: "✴",
@@ -35,7 +47,7 @@ class Game implements kado.GameInterface {
 				bottomPx: 14,
 				size: 84,
 				keyCode: KeyboardManager.SPACE,
-			}
+			},
 		],
 	};
 

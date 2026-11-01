@@ -11,6 +11,7 @@ import mt.DepthManager;
 import mt.Timer;
 import pixi.core.graphics.Graphics;
 import pixi.core.text.Text;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 class BgSprite extends ASprite {
 	public var sub:ASprite;
@@ -48,27 +49,30 @@ class Game implements kado.GameInterface {
 		buttons: [
 			{
 				id: "left",
-				label: "<",
-				leftPx: 10,
-				bottomPx: 10,
-				size: 72,
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
-				label: ">",
-				leftPx: 82,
-				bottomPx: 10,
-				size: 72,
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "down",
-				label: "v",
+				label: "▼",
 				rightPx: 20,
-				bottomPx: 10,
-				size: 72,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
 			},
 		],
 	};

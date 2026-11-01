@@ -71,7 +71,7 @@ class Game implements kado.GameInterface {
 			},
 			{
 				id: "action",
-				label: "+",
+				label: "✦",
 				rightPx: 12,
 				bottomPx: 20,
 				size: 80,

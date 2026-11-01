@@ -14,6 +14,8 @@ import pixi.core.textures.RenderTexture;
 import pixi.core.textures.Texture;
 import pixi.filters.blur.BlurFilter;
 import alphabounce.Texts;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 enum Step {
 	Scroll;
@@ -28,6 +30,23 @@ enum Step {
 // pad's power; the arrows move the pad too.
 @:expose('GameAlphabounce')
 class Game implements kado.GameInterface {
+	// mobile: the finger moves the pad like the mouse without clicking, the button is the click / Space (launch, power)
+	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
+		mode: TouchControlsMode.KEYBOARD,
+		passthroughMouseButtons: false,
+		buttons: [
+			{
+				id: "power",
+				label: "✦",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.SPACE,
+				shape: TouchButtonShape.SQUARE,
+			},
+		],
+	};
+
 	// Enter acts like Space, Q / A / D like the arrows
 	public static var KEY_ALIASES = KeyboardManager.ALIASES_MOVE.concat(KeyboardManager.ALIASES_ENTER_SPACE);
 

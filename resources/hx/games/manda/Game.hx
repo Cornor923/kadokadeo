@@ -7,6 +7,7 @@ import pixi.core.display.Container;
 import pixi.core.sprites.Sprite as PixiSprite;
 import pixi.core.textures.RenderTexture;
 import pixi.core.textures.Texture;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 // Manda (KadoKado, Motion-Twin): ported from the original sources (Manager, Game, Level, Snake... of the manda folder)
 // and the graphics of its SWF. The game runs in the Flash pixels of the original (300 x 300), drawn x2.
@@ -18,27 +19,30 @@ class Game implements kado.GameInterface {
 			{
 				id: "left",
 				label: "◀",
-				leftPx: 14,
-				bottomPx: 14,
-				size: 84,
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
 				label: "▶",
-				leftPx: 112,
-				bottomPx: 14,
-				size: 84,
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "up",
 				label: "▲",
-				rightPx: 14,
-				bottomPx: 14,
-				size: 84,
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
 				keyCode: KeyboardManager.UP,
-			}
+				shape: TouchButtonShape.SQUARE,
+			},
 		],
 	};
 

@@ -7,6 +7,7 @@ import mt.DepthManager;
 import pixi.core.sprites.Sprite as PixiSprite;
 import pixi.core.textures.Texture;
 import pixi.filters.colormatrix.ColorMatrixFilter;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 typedef Plat = {x:Int, y:Int, w:Int, mc:PlatGfx};
 typedef Plan = {mc:ASprite, c:Float};
@@ -14,33 +15,54 @@ typedef Square = {block:Bool, list:Array<Monster>};
 
 @:expose('GameKSlash')
 class Game implements kado.GameInterface {
-	// mobile: joystick (left / right, up: jump, down: through the platform) + jump and shuriken buttons
+	// mobile: a cross of arrows (up: jump, down: through the platform) + shuriken button (the layout of Kanji's Adventure)
 	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
-		mode: TouchControlsMode.JOYSTICK,
-		joystick: {
-			x: 0.18,
-			y: 0.8,
-			radius: 84,
-			deadZone: 0.2,
-			dynamicCenter: true,
-		},
+		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
-				id: "shoot",
-				label: "✴",
-				rightPx: 14,
-				bottomPx: 14,
-				size: 84,
-				keyCode: KeyboardManager.SPACE,
+				id: "up",
+				label: "▲",
+				leftPx: 64,
+				bottomPx: 76,
+				size: 56,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
-				id: "jump",
-				label: "⬆",
-				rightPx: 112,
-				bottomPx: 44,
-				size: 72,
-				keyCode: KeyboardManager.UP,
-			}
+				id: "left",
+				label: "◀",
+				leftPx: 8,
+				bottomPx: 20,
+				size: 56,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 120,
+				bottomPx: 20,
+				size: 56,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "down",
+				label: "▼",
+				leftPx: 64,
+				bottomPx: 20,
+				size: 56,
+				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "shoot",
+				label: "✦",
+				rightPx: 12,
+				bottomPx: 20,
+				size: 80,
+				keyCode: KeyboardManager.SPACE,
+			},
 		],
 	};
 

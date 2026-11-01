@@ -5,6 +5,8 @@ import mt.bumdum.Sprite;
 import mt.bumdum.Phys;
 import pixi.core.graphics.Graphics;
 import pixi.core.text.Text;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 class F1Sprite extends ASprite {
 	public var dr:ASprite;
@@ -15,6 +17,40 @@ class F1Sprite extends ASprite {
 
 @:expose('GameF1Champion')
 class Game implements kado.GameInterface {
+	// mobile: steer left / right, the up arrow accelerates
+	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
+		mode: TouchControlsMode.KEYBOARD,
+		buttons: [
+			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "up",
+				label: "▲",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
+			},
+		],
+	};
+
 	static var BONUS = KKApi.aconst([200, 500, 1000]);
 
 	public var mc:ASprite;

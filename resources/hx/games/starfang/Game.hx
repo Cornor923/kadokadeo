@@ -8,6 +8,8 @@ import mt.bumdum.Lib.Num;
 import mt.DepthManager;
 import mt.Timer;
 import kado.KadoKadeoManager;
+import kado.TouchControlsConfig.TouchControlsMode;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 class DashlightSprite extends ASprite {
 	public var multi:Float;
@@ -15,6 +17,59 @@ class DashlightSprite extends ASprite {
 
 @:expose('GameStarfang')
 class Game implements kado.GameInterface {
+	// mobile: turn left / right, the up arrow thrusts, the fire button shoots (Space), the one at its left fires the second
+	// weapon (down)
+	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
+		mode: TouchControlsMode.KEYBOARD,
+		buttons: [
+			{
+				id: "left",
+				label: "◀",
+				leftPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "right",
+				label: "▶",
+				leftPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "fire",
+				label: "✦",
+				rightPx: 20,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.SPACE,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "thrust",
+				label: "▲",
+				rightPx: 20,
+				bottomPx: 90,
+				size: 60,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "fire2",
+				label: "✹",
+				rightPx: 90,
+				bottomPx: 20,
+				size: 60,
+				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
+			},
+		],
+	};
+
 	public static var DP_INTERFACE = 12;
 	public static var DP_SHOT = 10;
 	public static var DP_PARTS = 9;

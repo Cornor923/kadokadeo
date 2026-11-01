@@ -9,6 +9,7 @@ import pixi.core.textures.RenderTexture;
 import pixi.core.textures.Texture;
 import pixi.filters.colormatrix.ColorMatrixFilter;
 import pixi.filters.extras.GlowFilter;
+import kado.TouchControlsConfig.TouchButtonShape;
 
 // Hammerfest Mini: Igor in a well of small levels, with the engine, the bads, the items and the graphics of
 // Hammerfest (Motion-Twin, 2006, CC BY-NC-SA 4.0: archive WebGamesArchives/Hammerfest). This class is the
@@ -20,46 +21,49 @@ class Game implements kado.GameInterface {
 		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
+				id: "jump",
+				label: "▲",
+				leftPx: 64,
+				bottomPx: 76,
+				size: 56,
+				keyCode: KeyboardManager.UP,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
 				id: "left",
 				label: "◀",
-				leftPx: 14,
-				bottomPx: 14,
-				size: 84,
+				leftPx: 8,
+				bottomPx: 20,
+				size: 56,
 				keyCode: KeyboardManager.LEFT,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "right",
 				label: "▶",
-				leftPx: 112,
-				bottomPx: 14,
-				size: 84,
+				leftPx: 120,
+				bottomPx: 20,
+				size: 56,
 				keyCode: KeyboardManager.RIGHT,
+				shape: TouchButtonShape.SQUARE,
+			},
+			{
+				id: "kickup",
+				label: "▼",
+				leftPx: 64,
+				bottomPx: 20,
+				size: 56,
+				keyCode: KeyboardManager.DOWN,
+				shape: TouchButtonShape.SQUARE,
 			},
 			{
 				id: "bomb",
 				label: "●",
-				rightPx: 112,
-				bottomPx: 14,
-				size: 84,
+				rightPx: 12,
+				bottomPx: 20,
+				size: 80,
 				keyCode: KeyboardManager.SPACE,
 			},
-			{
-				// over the bomb: the up kick (the bombs close to Igor go up in the air)
-				id: "kickup",
-				label: "▼",
-				rightPx: 119,
-				bottomPx: 112,
-				size: 70,
-				keyCode: KeyboardManager.DOWN,
-			},
-			{
-				id: "jump",
-				label: "▲",
-				rightPx: 14,
-				bottomPx: 14,
-				size: 84,
-				keyCode: KeyboardManager.UP,
-			}
 		],
 	};
 
