@@ -56,3 +56,4 @@ docker/database-data
 .eslintcache
 .haxelib
 kadokadeo.dump
+brag-output
