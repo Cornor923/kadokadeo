@@ -75,6 +75,11 @@ const clanRewards = computed(() => [
 // the seats of a role for a clan of n members (App\Services\ClanService::combatSeats): at least one (nothing while
 // the rules load)
 const seatsFor = (members, share) => (members && share != null ? Math.max(1, Math.floor((members * share) / 100)) : '')
+// "1 Jeu cool et 2 Jeu caca": the options given at the start of the period
+const startingBonuses = computed(() => {
+  const parts = (rules.value.bonuses ?? []).filter((bonus) => bonus.starting > 0).map((bonus) => `${bonus.starting} ${bonus.label}`)
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} et ${parts.at(-1)}` : parts[0]
+})
 const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `${pack.count} pour ${formatScore(pack.price)} points`).join(', '))
 </script>
 
@@ -191,6 +196,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
               <p>Votre score devient une attaque. Pour la repousser, le Clan adverse devra faire un score supérieur au vôtre. Une attaque repoussée est annulée, et votre Clan ne perd rien.</p>
               <p>Si au bout de <strong>{{ rules.attack_hours }} heures</strong> l'attaque n'a pas été repoussée, votre Clan remporte de 1 à <strong>{{ rules.attack_max_points }} points</strong> et le Clan adverse perd autant (jamais en dessous de zéro). Contre un Clan qui a autant de points que le vôtre ou plus, l'attaque rapporte {{ rules.attack_max_points }} points ; c'est un point de moins par tranche de {{ rules.attack_points_palier }} points qu'il a de moins que vous. Le nombre de points est affiché avant d'attaquer. Attaquez des clans au score proche du vôtre : ceux qui ont plus de {{ rules.protection_range }} points d'écart avec vous sont protégés de vos attaques.</p>
               <p>Chaque joueur peut avoir une attaque en cours à la fois. Pour l'améliorer, cliquez sur « Améliorer » dans l'onglet Statut et rejouez sur le même jeu : le nouveau score ne remplace celui de l'attaque que s'il est meilleur, et le Clan adverse a de nouveau {{ rules.attack_hours }} heures pour le battre.</p>
+              <p>Une attaque doit pouvoir se terminer avant la fin de la période : les attaques et les améliorations ferment <strong>{{ rules.attack_hours }} heures avant la fin de la période</strong>. Les défenses restent possibles jusqu'au bout.</p>
               <p>Chaque jour, vous avez <strong>{{ rules.attack_games_per_day }} parties gratuites</strong> pour attaquer et défendre (la gemme verte dans le menu du Clan), à part de vos parties normales. Quand elles sont jouées, vous pouvez attaquer et défendre avec des <strong>parties de clan</strong>, achetées avec vos points Kado ({{ gamePacks }}). Vous pouvez les garder pour vous ou les donner à votre Clan : le chef et ses bras droits les distribuent ensuite aux membres. Les parties gratuites du jour ne peuvent pas être données.</p>
             </template>
 
@@ -239,14 +245,14 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
             </template>
 
             <template v-else-if="section.id === 'missions'">
-              <p>Votre Clan reçoit des missions : plusieurs étapes, chacune étant un score à atteindre sur un jeu. Vous avez <strong>{{ rules.mission_hours }} heures</strong> pour toutes les réussir. Chacun peut faire les étapes sur les jeux où il est le meilleur, et les parties des missions sont <strong>gratuites et illimitées</strong> !</p>
+              <p>Votre Clan reçoit des missions : plusieurs étapes, chacune étant un score à atteindre sur un jeu. Vous avez <strong>{{ rules.mission_hours }} heures</strong> pour toutes les réussir<template v-if="rules.mission_minutes_less > 0"> lors de la première mission de la période, puis {{ formatMinutes(rules.mission_minutes_less) }} de moins à chaque mission réussie (au moins {{ formatMinutes(Math.min(rules.mission_min_minutes, rules.mission_hours * 60)) }})</template>. Chacun peut faire les étapes sur les jeux où il est le meilleur, et les parties des missions sont <strong>gratuites et illimitées</strong> !</p>
               <p>Comme pour les défenses, chacun peut « Réserver » une étape pour prévenir le Clan qu'il s'en occupe.</p>
-              <p>Plus votre Clan a de membres, plus les missions ont d'étapes : {{ rules.mission_steps_alone }} pour un joueur seul, jusqu'à {{ rules.mission_steps_full }} pour {{ rules.max_members }} joueurs. Le score à atteindre augmente avec les missions, jusqu'à dépasser l'étoile rouge. Chaque mission mélange des étapes de toutes les difficultés, et garde des étapes plus faciles (dès la moitié de l'étoile verte), pour que chacun puisse participer.</p>
+              <p>Plus votre Clan a de membres, plus les missions ont d'étapes : {{ rules.mission_steps_alone }} pour un joueur seul, jusqu'à {{ rules.mission_steps_full }} pour {{ rules.max_members }} joueurs. Le score à atteindre augmente avec les missions, jusqu'à dépasser l'étoile rouge. Chaque mission mélange des étapes de toutes les difficultés, jusqu'à l'étoile rouge et au-delà, et garde des étapes plus faciles (dès la moitié de l'étoile verte, un peu plus dures à chaque mission), pour que chacun puisse participer.</p>
               <p>Une mission réussie rapporte <strong>{{ rules.mission_points_first }} points</strong> (un point de moins toutes les {{ rules.mission_points_every }} missions, au moins {{ rules.mission_points_min }}) et ouvre la mission suivante. Si le temps est écoulé, votre Clan perd un point par étape non réussie, moins une, et reçoit une nouvelle mission. Combien de missions votre Clan réussira-t-il ?</p>
             </template>
 
             <template v-else-if="section.id === 'options'">
-              <p>Au début de chaque période, votre Clan reçoit les options Jeu cool et Jeu caca. Chaque mission réussie a {{ rules.bonus_chance }} % de chances de lui en faire gagner une autre. C'est le chef de clan ou un bras droit qui les utilise. Chaque Jeu caca et chaque Jeu cool ajoute un jeu à la liste des jeux caca ou des jeux cool du Clan ; un jeu ne peut être que dans une seule liste. S'il y a plus de jeux cool que d'étapes, la mission en prend une partie au hasard. Elles sont remises à zéro à la fin de la période.</p>
+              <p><template v-if="startingBonuses">Au début de chaque période, votre Clan reçoit les options suivantes : {{ startingBonuses }}. </template>Chaque mission réussie a {{ rules.bonus_chance }} % de chances de lui faire gagner une option. C'est le chef de clan ou un bras droit qui les utilise. Chaque Jeu caca et chaque Jeu cool ajoute un jeu à la liste des jeux caca ou des jeux cool du Clan ; un jeu ne peut être que dans une seule liste. S'il y a plus de jeux cool que d'étapes, la mission en prend une partie au hasard. Elles sont remises à zéro à la fin de la période.</p>
               <KadoTable class="w-full">
                 <tbody>
                   <tr v-for="bonus in rules.bonuses ?? []" :key="bonus.type">

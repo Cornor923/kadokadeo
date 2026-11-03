@@ -505,7 +505,7 @@ class ClanService
         return ClanPeriodScore::query()->where('clan_id', $clan->id)->where('period_id', $period->id)->first();
     }
 
-    // created the first time the clan plays in the period, with the "Jeu cool" and "Jeu caca" options given to every clan
+    // created the first time the clan plays in the period, with the options given to every clan (ClanSettings::$starting_bonuses)
     public function periodScore(Clan $clan, Period $period): ClanPeriodScore
     {
         $score = ClanPeriodScore::query()->firstOrCreate(['clan_id' => $clan->id, 'period_id' => $period->id]);
@@ -514,8 +514,11 @@ class ClanService
         }
 
         if ($period->end_at->isFuture()) {
-            foreach ([ClanBonusType::FORCE_GAME, ClanBonusType::BAN_GAME] as $type) {
-                ClanBonus::query()->create(['clan_id' => $clan->id, 'period_id' => $period->id, 'type' => $type]);
+            $settings = app(ClanSettings::class);
+            foreach (ClanBonusType::cases() as $type) {
+                for ($i = 0; $i < $settings->startingBonuses($type); $i++) {
+                    ClanBonus::query()->create(['clan_id' => $clan->id, 'period_id' => $period->id, 'type' => $type]);
+                }
             }
         }
 

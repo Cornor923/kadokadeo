@@ -42,11 +42,14 @@ class ClanMissionPaliersTest extends TestCase
 
         $this->assertSame(0.5, $paliers->topDifficulty(1));
         $this->assertSame(1.0, $paliers->topDifficulty(3));
+        // the plain red star for a star of missions (4 missions at a quarter of star)
         $this->assertSame(3.0, $paliers->topDifficulty(11));
+        $this->assertSame(3.0, $paliers->topDifficulty(14));
         // then 10 % of the way to the "Score 1500" by mission
-        $this->assertEqualsWithDelta(3.1, $paliers->topDifficulty(12), 1e-9);
-        $this->assertEqualsWithDelta(3.5, $paliers->topDifficulty(16), 1e-9);
-        $this->assertSame(4.0, $paliers->topDifficulty(21));
+        $this->assertSame(3.0, $paliers->topDifficulty(15));
+        $this->assertEqualsWithDelta(3.1, $paliers->topDifficulty(16), 1e-9);
+        $this->assertEqualsWithDelta(3.5, $paliers->topDifficulty(20), 1e-9);
+        $this->assertSame(4.0, $paliers->topDifficulty(25));
         $this->assertSame(4.0, $paliers->topDifficulty(1000));
         $this->assertSame(4.0, $paliers->maxDifficulty());
         // nothing beyond the red star
@@ -68,6 +71,34 @@ class ClanMissionPaliersTest extends TestCase
         // a single step: the hard one
         $this->assertSame([2.5], $paliers->levels(9, 1));
         $this->assertSame([], $paliers->levels(9, 0));
+    }
+
+    // the easiest steps get harder with each mission, up to a maximum
+    public function test_the_bottom_difficulty_goes_up_with_the_missions(): void
+    {
+        $paliers = $this->paliers(['mission_bottom_per_mission' => 0.025, 'mission_bottom_max' => 0.75]);
+
+        $this->assertSame(0.5, $paliers->bottomDifficulty(1));
+        $this->assertEqualsWithDelta(0.6, $paliers->bottomDifficulty(5), 1e-9);
+        $this->assertSame(0.75, $paliers->bottomDifficulty(11));
+        $this->assertSame(0.75, $paliers->bottomDifficulty(100));
+        // mission 9 (top 2.5): from 0.7 up to the top
+        $this->assertEqualsWithDelta([0.7, 1.15, 1.6, 2.05, 2.5, 2.5], $paliers->levels(9, 6), 1e-9);
+        // the first missions: everything at the top, the bottom never above it
+        $this->assertSame([0.5, 0.5], $paliers->levels(1, 2));
+        // off: half the green star
+        $this->assertSame(0.5, $this->paliers()->bottomDifficulty(100));
+    }
+
+    // the plain red star (its score exactly) takes a star of room in the spread of the steps, as the green and orange ones
+    public function test_the_steps_at_the_plain_red_star(): void
+    {
+        $paliers = $this->paliers(['mission_hard_share_min' => 0.25, 'mission_hard_share_step' => 0, 'mission_hard_share_max' => 0.25]);
+
+        // mission 21 (top 3.6 = 4.6 on the scale of the missions): from 0.5 to 4.6, the steps from 3 to 4 at the red star
+        $levels = $paliers->levels(21, 8);
+        $this->assertEqualsWithDelta([0.5, 1.18, 1.87, 2.55, 3.0, 3.0, 3.6, 3.6], $levels, 0.01);
+        $this->assertSame(['grise', 'verte', 'verte', 'orange', 'rouge', 'rouge', 'rouge +60 %', 'rouge +60 %'], array_map(ClanMissionPaliers::label(...), $levels));
     }
 
     public function test_the_labels_are_the_stars_won(): void

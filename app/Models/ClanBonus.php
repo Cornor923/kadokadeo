@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClanBonus extends Model
 {
-    protected $fillable = ['clan_id', 'period_id', 'clan_mission_id', 'type', 'used_at', 'game_id'];
+    protected $fillable = ['clan_id', 'period_id', 'clan_mission_id', 'type', 'used_at', 'game_id', 'doubled_mission_id'];
 
     protected $casts = [
         'type' => ClanBonusType::class,
@@ -34,6 +34,16 @@ class ClanBonus extends Model
     public function game()
     {
         return $this->belongsTo(Game::class);
+    }
+
+    // "Double points" used and waiting for the next mission of the clan (ClanMissionService::generateMission)
+    public function scopePendingDoublePoints($query, int $clanId, int $periodId)
+    {
+        return $query->where('clan_id', $clanId)
+            ->where('period_id', $periodId)
+            ->where('type', ClanBonusType::DOUBLE_POINTS)
+            ->whereNotNull('used_at')
+            ->whereNull('doubled_mission_id');
     }
 
     public function scopeAvailable($query)

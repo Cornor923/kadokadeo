@@ -34,7 +34,9 @@ class ClanWarService
     // the wars a clan can declare at the same time
     public const MAX_WARS = 3;
 
-    public function __construct(private readonly ClanService $clanService) {}
+    public const ATTACKS_CLOSED = 'Fin de période imminente, vous ne pouvez plus lancer d\'attaque.';
+
+    public function __construct(private readonly ClanService $clanService, private readonly MessageService $messageService) {}
 
     // ---------------------------------------------------------------- wars
 
@@ -106,9 +108,20 @@ class ClanWarService
         }
     }
 
+    // the last ClanSettings::$attack_hours of the period: no new attack nor improvement (which gives the whole time again),
+    // it would end after the period, whose attacks still running are cancelled (cancelUnfinished). Checked when it is
+    // asked and again when its run begins (ClanRunService::closedWarReason, pendingAction)
+    public function attacksClosed(Period $period): bool
+    {
+        return now()->gte($period->end_at->copy()->subHours(app(ClanSettings::class)->attack_hours));
+    }
+
     public function startAttack(User $user, Clan $defender, Game $game): ClanAction
     {
         $period = $this->clanService->assertPeriod();
+        if ($this->attacksClosed($period)) {
+            throw new ClanException(self::ATTACKS_CLOSED);
+        }
         $clan = $this->clanService->clanOf($user);
         if (!$clan) {
             throw new ClanException('Vous devez faire partie d\'un clan pour attaquer.');
@@ -161,6 +174,9 @@ class ClanWarService
         }
         if ($attack->status !== ClanAttackStatus::ACTIVE) {
             throw new ClanException('Cette attaque est terminée.');
+        }
+        if ($this->attacksClosed($attack->period)) {
+            throw new ClanException(self::ATTACKS_CLOSED);
         }
         $this->clanService->forgetUnplayedActions($user);
         $this->assertClanGame($user);
@@ -221,13 +237,17 @@ class ClanWarService
         ClanUpdated::send([$attack->defender_clan_id], [ClanUpdated::STATUS]);
     }
 
+    // its attacker, or the leader and the right hands of the attacking clan (any attack of the clan, even of a member gone
+    // since: the attacker is told by a private message). The run played is not given back.
     public function cancelAttack(User $user, ClanAttack $attack): void
     {
-        if (!$this->isAttacker($user, $attack)) {
-            throw new ClanException('Seul l\'attaquant peut annuler son attaque.');
+        $isAttacker = $this->isAttacker($user, $attack);
+        $role = $isAttacker ? null : $this->clanService->roleOf($user, $attack->attackerClan);
+        if (!$isAttacker && !$role?->canManage()) {
+            throw new ClanException('Seuls l\'attaquant, le chef de clan et ses bras droits peuvent annuler cette attaque.');
         }
 
-        DB::transaction(function () use ($attack) {
+        $attack = DB::transaction(function () use ($attack) {
             $attack = ClanAttack::query()->lockForUpdate()->findOrFail($attack->id);
             if ($attack->status !== ClanAttackStatus::ACTIVE) {
                 throw new ClanException('Cette attaque est terminée.');
@@ -235,7 +255,18 @@ class ClanWarService
 
             $attack->update(['status' => ClanAttackStatus::CANCELLED, 'resolved_at' => now()]);
             $this->attackChanged($attack);
+
+            return $attack;
         });
+
+        if ($attack->attacker_user_id !== $user->id) {
+            $this->messageService->system(
+                $attack->attacker_user_id,
+                'Attaque annulée',
+                "{$user->display_name} ({$role?->getLabel()}) a annulé votre attaque contre le clan {$attack->defenderClan->name} "
+                ."sur {$attack->game->name} ({$attack->score} pts).",
+            );
+        }
     }
 
     // the score of the attack run becomes the attack

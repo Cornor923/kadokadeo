@@ -379,36 +379,6 @@ parameters:
 			path: app/Http/Controllers/Api/ClanController.php
 
 		-
-			message: '#^Relation ''attackerClan'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''attackerUser'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''defenderUser'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''defenseRun'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
 			message: '#^Relation ''leader'' is not found in App\\Models\\Clan model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -416,12 +386,6 @@ parameters:
 
 		-
 			message: '#^Relation ''members'' is not found in App\\Models\\Clan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''reservedBy'' is not found in App\\Models\\ClanAttack model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/ClanController.php
@@ -601,24 +565,6 @@ parameters:
 			path: app/Http/Controllers/Api/DebugClanController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerClan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerUser\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$defenderClan\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$steps\.$#'
 			identifier: property.notFound
 			count: 1
@@ -639,24 +585,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Clan\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Relation ''attackerClan'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Relation ''attackerUser'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/DebugClanController.php
 
@@ -853,72 +781,6 @@ parameters:
 			path: app/Http/Resources/AchievementResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attackerClan\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attackerUser\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$attacker_user_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defenderClan\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defenderUser\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$defender_clan_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$expires_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$points\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$reservedBy\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$reserved_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -931,32 +793,8 @@ parameters:
 			path: app/Http/Resources/ClanAttackResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$resolved_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$score\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ClanAttackResource\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$clanMember\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ClanAttackResource.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Resources/ClanAttackResource.php
 
@@ -1783,43 +1621,7 @@ parameters:
 			path: app/Services/ClanService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$attackerClan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ClanWarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$defenderClan\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/ClanWarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$period\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ClanWarService.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$reserved_by_user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ClanWarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$attackerClan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ClanWarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$defenderClan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ClanWarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ClanAttack\>\:\:\$period\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/ClanWarService.php

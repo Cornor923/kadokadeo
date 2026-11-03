@@ -84,7 +84,7 @@ class DebugClanController extends Controller implements HasMiddleware
                 'mission' => $mission ? [
                     'number' => $mission->number,
                     'expires_at' => $mission->expires_at->toIso8601String(),
-                    'reward' => $this->missionService->missionPoints($mission->number),
+                    'reward' => $this->missionService->missionReward($mission),
                     'steps' => $mission->steps->map(fn (ClanMissionStep $step) => [
                         'id' => $step->id,
                         'game' => $step->game->name,

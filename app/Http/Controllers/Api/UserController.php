@@ -8,10 +8,12 @@ use App\Http\Resources\UserResource;
 use App\Models\Game;
 use App\Models\Period;
 use App\Models\User;
+use App\Services\ClanService;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\PeriodSummaryService;
 use App\Services\ScoreService;
+use App\Settings\ClanSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +49,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
     /**
      * Profile of a user. If no user is provided, it will return the profile of the authenticated user.
      */
-    public function show(?User $user, ScoreService $scoreService, LeagueService $leagueService, GameService $gameService)
+    public function show(?User $user, ScoreService $scoreService, LeagueService $leagueService, GameService $gameService, ClanService $clanService)
     {
         if (!$user?->id) {
             $user = Auth::user();
@@ -71,6 +73,7 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
             'current_leagues' => $currentLeagues,
             'promotion_game_ids' => $periodId ? $leagueService->getPromotionGameIds($user, $periodId) : [],
             'max_stars' => $maxStars,
+            'clan' => $this->profileClan($user, $clanService),
             'achievements' => app(SiteSettings::class)->achievements_enabled
                 ? $user->achievementProgress->map(function ($progress) {
                     return [
@@ -80,6 +83,26 @@ class UserController extends Controller implements \Illuminate\Routing\Controlle
                 })
                 : [],
         ]);
+    }
+
+    // the clan of the player shown on his profile, with his rank in it; none while the clans are off
+    private function profileClan(User $user, ClanService $clanService): ?array
+    {
+        if (!app(ClanSettings::class)->enabled) {
+            return null;
+        }
+        $clan = $clanService->clanOf($user);
+        if (!$clan) {
+            return null;
+        }
+        $role = $clanService->roleOf($user, $clan);
+
+        return [
+            'id' => $clan->id,
+            'name' => $clan->name,
+            'role' => $role?->value,
+            'role_label' => $role?->getLabel(),
+        ];
     }
 
     /**

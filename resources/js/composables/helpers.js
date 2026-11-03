@@ -20,6 +20,16 @@ export function formatTime(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+// a duration in minutes: "23 h 50", "12 h", "45 min"
+export function formatMinutes(minutes) {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) {
+    return `${m} min`
+  }
+  return m ? `${h} h ${String(m).padStart(2, '0')}` : `${h} h`
+}
+
 export function updateAtMidnight() {
   return new Promise((resolve) => {
     const now = dayjs().utc()

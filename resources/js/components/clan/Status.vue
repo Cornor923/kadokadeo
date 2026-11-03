@@ -32,8 +32,13 @@ const doImprove = (attack) => improveAttack(attack.id).then(goPlay)
 // "Je m'en occupe": reserve the defense, take the place of another member, or give it up
 const doReserve = (attack) => reserveDefense(attack.id).then(load)
 const reserveLabel = (item) => (item.reserved_by_me ? 'Libérer' : item.reserved_by ? 'Prendre' : 'Réserver')
+const authStore = useAuthStore()
 const doCancel = (attack) => {
-  if (confirm('Annuler cette attaque ?')) {
+  const isMine = attack.attacker.etwin_id === authStore.user?.etwin_id
+  const question = isMine
+    ? 'Annuler cette attaque ?'
+    : `Annuler l'attaque de ${attack.attacker.display_name} ? Ce joueur sera prévenu par message privé.`
+  if (confirm(question)) {
     cancelAttack(attack.id).then(() => {
       load()
       clanStore.reload()

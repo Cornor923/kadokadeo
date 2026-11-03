@@ -105,7 +105,10 @@ const isSuccess = computed(() => ['launched', 'improved', 'repelled', 'completed
       </div>
       <template v-else-if="game">
         <KadoSectionTitle class="text-center">{{ game.name }}</KadoSectionTitle>
-        <GamesGamePlayer :game="game" :goals="goals" :args="{ clanAction: action.id }" />
+        <GamesGamePlayer :game="game"
+                         :goals="goals"
+                         :args="{ clanAction: action.id }"
+                         side-tab="gameStars" />
       </template>
 
       <div class="flex items-center gap-2 border-l-4 px-2 py-1" :class="action.type === 'attack' ? 'border-kado-pink-400 bg-kado-pink-50 text-kado-pink-400' : 'border-kado-teal-500 bg-kado-blue-50'">

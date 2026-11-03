@@ -6,6 +6,8 @@ const props = defineProps({
   goals: { type: Array, default: () => [] },
   // more parameters of the game, taken when it is mounted (the clan run of the page: clanAction)
   args: { type: Object, default: () => ({}) },
+  // the tab of the side panel open first (GameSide.vue)
+  sideTab: { type: String, default: 'gameRules' },
 })
 
 const { isLoading: isFavoriteLoading, error: favoriteError, setFavorite } = useGames()
@@ -139,7 +141,8 @@ watchEffect((onInvalidate) => {
             <GamesGameSide class="overflow-y-auto overflow-x-hidden text-xs h-full"
                            :is-zoomed="isZoomed"
                            :game="game"
-                           :goals="goals" />
+                           :goals="goals"
+                           :initial-tab="sideTab" />
           </div>
         </div>
 

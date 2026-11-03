@@ -44,7 +44,13 @@ class ClanSettings extends Settings
 
     // ---------------------------------------------------------------- missions
 
+    // the time of the first mission of the period, then this many minutes less with each mission completed, at least
+    // min_minutes (App\Services\ClanMissionService::missionMinutes)
     public int $mission_hours;
+
+    public int $mission_minutes_less;
+
+    public int $mission_min_minutes;
 
     // "Plus de temps"
     public int $mission_more_time_hours;
@@ -62,10 +68,15 @@ class ClanSettings extends Settings
     public float $mission_steps_ratio;
 
     // the scores to reach (App\Services\ClanMissionPaliers), by difficulty in stars: the top difficulty of a mission goes up
-    // by this many stars with each mission from half the first star, then beyond the last star by this share of the way
-    // up to the "Score 1500" of the game with each mission; this share of the steps at the top difficulty (min + step by
-    // mission, at most max), the others spread from half the first star up to it
+    // by this many stars with each mission from half the first star (the plain red star for a star of missions), then
+    // beyond the last star by this share of the way up to the "Score 1500" of the game with each mission; this share of the
+    // steps at the top difficulty (min + step by mission, at most max), the others spread from the bottom difficulty up to
+    // it (half the first star, up by bottom_per_mission with each mission, at most bottom_max)
     public float $mission_stars_per_mission;
+
+    public float $mission_bottom_per_mission;
+
+    public float $mission_bottom_max;
 
     public float $mission_beyond_last_star;
 
@@ -87,6 +98,9 @@ class ClanSettings extends Settings
     public float $bonus_chance;
 
     public array $bonus_weights;
+
+    // the options given to every clan at the start of the period [type => count] (App\Services\ClanService::periodScore)
+    public array $starting_bonuses;
 
     // ---------------------------------------------------------------- paid clan games and rewards
 
@@ -129,6 +143,11 @@ class ClanSettings extends Settings
         ksort($rewards);
 
         return $rewards;
+    }
+
+    public function startingBonuses(ClanBonusType $type): int
+    {
+        return max(0, (int) ($this->starting_bonuses[$type->value] ?? 0));
     }
 
     public function bonusWeight(ClanBonusType $type): int

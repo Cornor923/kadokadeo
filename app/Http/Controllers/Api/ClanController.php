@@ -388,6 +388,8 @@ class ClanController extends Controller implements HasMiddleware
             'attacker_seats' => (int) round($settings->attacker_seats_share * 100),
             'defender_seats' => (int) round($settings->defender_seats_share * 100),
             'mission_hours' => $settings->mission_hours,
+            'mission_minutes_less' => $settings->mission_minutes_less,
+            'mission_min_minutes' => $settings->mission_min_minutes,
             'mission_more_time_hours' => $settings->mission_more_time_hours,
             // the steps of the first mission of a lone player, of a full clan
             'mission_steps_alone' => $missionService->stepsCount(1, 1),
@@ -402,6 +404,8 @@ class ClanController extends Controller implements HasMiddleware
                 'label' => $type->getLabel(),
                 'description' => $type->description(),
                 'icon' => $type->icon(),
+                // given to every clan at the start of the period
+                'starting' => $settings->startingBonuses($type),
             ]),
             'game_packs' => collect($settings->gamePacks())->map(fn (int $price, int $count) => ['count' => $count, 'price' => $price])->values(),
             'rewards' => [
@@ -421,6 +425,9 @@ class ClanController extends Controller implements HasMiddleware
         }
         if (!$period) {
             return 'Aucune période en cours.';
+        }
+        if ($this->warService->attacksClosed($period)) {
+            return ClanWarService::ATTACKS_CLOSED;
         }
         $attackerScore = $this->clanService->warScore($myClan, $period);
         $defenderScore = $this->clanService->warScore($clan, $period);

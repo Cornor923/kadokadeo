@@ -117,7 +117,8 @@
 
   /* the frame of the content of the pages (layouts/default.vue), in the base theme and in Karbon */
   --shadow-kado-page: 0 0 0 2px var(--color-white), 0 0 30px 1px --alpha(var(--color-black) / 50%);
-  --shadow-kado-page-karbon: 0 0 0 2px var(--color-kado-slate-100), 0 0 30px 1px --alpha(var(--color-black) / 70%);
+  --shadow-kado-page-karbon:
+    0 0 0 2px var(--color-kado-slate-100), 0 0 30px 1px --alpha(var(--color-black) / 70%);
 
   /*
    * The palette of KadoKado: the colours of its stylesheet (public/assets/original_style.css), by family, light to
@@ -391,6 +392,10 @@
   border-image-source: url('/gfx/bgTopBarInfo.png');
   border-image-slice: 10 20 15 20 fill;
   border-image-repeat: stretch;
+
+  @variant karbon {
+    border-image-source: url('/gfx/themes/karbon/bgTopBarInfo.png');
+  }
 }
 
 @utility daily-game-frame {

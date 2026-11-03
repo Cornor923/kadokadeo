@@ -35,49 +35,75 @@ class ClanAttack extends Model
         'reserved_at' => 'datetime',
     ];
 
-    public function period()
+    /**
+     * @return BelongsTo<Period, $this>
+     */
+    public function period(): BelongsTo
     {
         return $this->belongsTo(Period::class);
     }
 
-    /** @return BelongsTo<Game, $this> */
+    /**
+     * @return BelongsTo<Game, $this>
+     */
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
 
-    public function attackerClan()
+    /**
+     * @return BelongsTo<Clan, $this>
+     */
+    public function attackerClan(): BelongsTo
     {
         return $this->belongsTo(Clan::class, 'attacker_clan_id');
     }
 
-    public function attackerUser()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function attackerUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'attacker_user_id');
     }
 
-    public function defenderClan()
+    /**
+     * @return BelongsTo<Clan, $this>
+     */
+    public function defenderClan(): BelongsTo
     {
         return $this->belongsTo(Clan::class, 'defender_clan_id');
     }
 
-    public function defenderUser()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function defenderUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'defender_user_id');
     }
 
     // the member of the attacked clan who said he will defend
-    public function reservedBy()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function reservedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reserved_by_user_id');
     }
 
-    public function run()
+    /**
+     * @return BelongsTo<Run, $this>
+     */
+    public function run(): BelongsTo
     {
         return $this->belongsTo(Run::class);
     }
 
-    public function defenseRun()
+    /**
+     * @return BelongsTo<Run, $this>
+     */
+    public function defenseRun(): BelongsTo
     {
         return $this->belongsTo(Run::class, 'defense_run_id');
     }

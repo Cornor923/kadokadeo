@@ -64,13 +64,15 @@ class ClanMissionController extends Controller implements HasMiddleware
                     ->orderByDesc('id')
                     ->get()
                     ->map(fn (ClanMission $mission) => [
-                        ...$mission->only(['id', 'number', 'status', 'points']),
+                        ...$mission->only(['id', 'number', 'status', 'points', 'double_points']),
                         'completed_at' => $mission->completed_at?->toIso8601String(),
                         // the option won with the mission, if any
                         'bonus' => $isMember && $mission->bonus ? $this->bonusData($mission->bonus) + ['used' => $mission->bonus->used_at !== null] : null,
                     ]),
                 'mission_score' => $score?->mission_score ?? 0,
                 'missions_completed' => $score?->missions_completed ?? 0,
+                // a "Double points" used, for the next mission
+                'double_points_pending' => $isMember && ClanBonus::query()->pendingDoublePoints($clan->id, $period->id)->exists(),
                 'banned_games' => $gameList($lists['banned']),
                 'forced_games' => $gameList($lists['forced']),
                 'bonuses' => $isMember
@@ -130,8 +132,11 @@ class ClanMissionController extends Controller implements HasMiddleware
             'number' => $mission->number,
             'status' => $mission->status,
             'expires_at' => $mission->expires_at->toIso8601String(),
+            // the time of the next mission, once this one is completed
+            'next_minutes' => $this->missionService->missionMinutes($mission->number + 1),
             // won if all the steps are done in time, otherwise 1 point lost by step not done, minus one
-            'reward' => $this->missionService->missionPoints($mission->number),
+            'reward' => $this->missionService->missionReward($mission),
+            'double_points' => $mission->double_points,
             // the hardest steps first
             'steps' => $mission->steps
                 ->sortByDesc(fn (ClanMissionStep $step) => ClanMissionPaliers::difficulty($step->game->stars ?? [], $step->game->score_rankv1, $step->target_score))

@@ -135,11 +135,20 @@ const gameAchievements = computed(() => {
         <div v-else-if="profile">
           <div v-if="item.value === 'me'" class="space-y-4">
             <KadoPageTitle>Profil de {{ profile.data.display_name }}</KadoPageTitle>
-            <p v-if="!isMe" class="mx-2.5 text-center">
-              <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
-                <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
-              </RouterLink>
-            </p>
+            <div v-if="profile.clan || !isMe" class="mx-2.5 space-y-1">
+              <p v-if="profile.clan" class="flex items-center justify-center gap-1">
+                <img src="/assets/img/gfx/icons/clan.gif" alt="" />
+                <RouterLink :to="{ name: 'clans.show', params: { id: profile.clan.id } }">{{ profile.clan.name }}</RouterLink>
+                <template v-if="profile.clan.role !== 'member'">
+                  (<img v-if="profile.clan.role === 'leader'" src="/gfx/clan/clanleader.gif" alt="" />{{ profile.clan.role_label }})
+                </template>
+              </p>
+              <p v-if="!isMe" class="text-center">
+                <RouterLink :to="{ name: 'messages.new', query: { to: profile.data.display_name } }">
+                  <img src="/assets/img/gfx/icons/readedMail.gif" alt="" class="mr-1" />Envoyer un message à {{ profile.data.display_name }}
+                </RouterLink>
+              </p>
+            </div>
             <div v-if="feathersCount > 0" class="flex justify-center items-center gap-1 mb-4">
               <img v-for="i in feathersCount"
                    :key="i"

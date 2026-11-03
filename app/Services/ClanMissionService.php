@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 // the collaborative missions of the clans: a score (a palier of the stars) to reach on several games within
-// ClanSettings::$mission_hours, more games in a bigger clan, higher paliers with each mission. A completed mission gives up
+// ClanSettings::$mission_hours (less with each mission: missionMinutes), more games in a bigger clan, higher paliers with each mission. A completed mission gives up
 // to 10 points (one less every 10 missions) and opens the next one; a mission not finished in time loses 1 point by game
 // not completed, minus one, and the clan gets a new mission of the same number. The runs of the missions are free. The
 // members see the changes at once (App\Events\ClanUpdated), a toast for a step done and for the next mission available
@@ -107,8 +107,14 @@ class ClanMissionService
                 'period_id' => $period->id,
                 'number' => $number,
                 'status' => ClanMission::ACTIVE,
-                'expires_at' => now()->addHours(app(ClanSettings::class)->mission_hours),
+                'expires_at' => now()->addMinutes($this->missionMinutes($number)),
             ]);
+            // a "Double points" used since the previous mission
+            $double = ClanBonus::query()->pendingDoublePoints($clan->id, $period->id)->lockForUpdate()->first();
+            if ($double) {
+                $mission->update(['double_points' => true]);
+                $double->update(['doubled_mission_id' => $mission->id]);
+            }
 
             // steps of all the difficulties, in no order
             $paliers = ClanMissionPaliers::fromSettings(app(ClanSettings::class));
@@ -261,6 +267,30 @@ class ClanMissionService
         return max($settings->mission_points_min, $settings->mission_points_first - intdiv($number, max(1, $settings->mission_points_every)));
     }
 
+    // the points of the mission once completed: twice with "Double points"
+    public function missionReward(ClanMission $mission): int
+    {
+        return $this->missionPoints($mission->number) * ($mission->double_points ? 2 : 1);
+    }
+
+    // the time of a mission: ClanSettings::$mission_hours for the first one of the period, $mission_minutes_less less with
+    // each mission completed, at least $mission_min_minutes (never more than the first one). A mission failed or replaced
+    // comes back with the same number, the same time
+    public function missionMinutes(int $number): int
+    {
+        $settings = app(ClanSettings::class);
+
+        return self::minutesOf($number, $settings->mission_hours, $settings->mission_minutes_less, $settings->mission_min_minutes);
+    }
+
+    // (also the preview of the admin, with the values of its form)
+    public static function minutesOf(int $number, int $hours, int $less, int $min): int
+    {
+        $first = $hours * 60;
+
+        return max(min($min, $first), $first - max(0, $number - 1) * $less);
+    }
+
     // the steps of a mission: more in a bigger clan, (maybe) fewer with each mission
     public function stepsCount(int $membersCount, int $number): int
     {
@@ -318,6 +348,12 @@ class ClanMissionService
                     }
                     $step->update(['skipped' => true]);
                     $this->completeMissionIfDone($mission);
+                    break;
+                case ClanBonusType::DOUBLE_POINTS:
+                    // for the next mission, one at a time
+                    if (ClanBonus::query()->pendingDoublePoints($clan->id, $period->id)->exists()) {
+                        throw new ClanException('La prochaine mission rapportera déjà deux fois plus de points.');
+                    }
                     break;
             }
 
@@ -394,7 +430,7 @@ class ClanMissionService
             return;
         }
 
-        $points = $this->missionPoints($mission->number);
+        $points = $this->missionReward($mission);
         $score = $this->clanService->periodScore($mission->clan, $mission->period);
         $score->increment('mission_score', $points);
         $score->increment('missions_completed');
@@ -447,6 +483,21 @@ class ClanMissionService
         return $game;
     }
 
+    // the games of the missions: active, not Arkadeo, with their 3 stars (a step at most each: a mission has fewer steps
+    // when there are not enough of them)
+    /**
+     * @return \Illuminate\Support\Collection<int, Game>
+     */
+    public function missionGames()
+    {
+        return Game::query()
+            ->where('is_active', true)
+            ->where('is_arkadeo', false)
+            ->get()
+            ->filter(fn (Game $game) => is_array($game->stars) && count($game->stars) >= 3)
+            ->values();
+    }
+
     // the "Jeux cool" first (some of them at random when there are more than the steps), then other games at random,
     // never a "Jeu caca"
     /**
@@ -456,13 +507,7 @@ class ClanMissionService
      */
     private function pickGames(int $count, Collection $bannedIds, Collection $forcedIds)
     {
-        $games = Game::query()
-            ->where('is_active', true)
-            ->where('is_arkadeo', false)
-            ->whereNotIn('id', $bannedIds)
-            ->get()
-            ->filter(fn (Game $game) => is_array($game->stars) && count($game->stars) >= 3)
-            ->shuffle();
+        $games = $this->missionGames()->reject(fn (Game $game) => $bannedIds->contains($game->id))->shuffle();
         [$forced, $others] = $games->partition(fn (Game $game) => $forcedIds->contains($game->id));
 
         return $forced->concat($others)->take($count)->values();

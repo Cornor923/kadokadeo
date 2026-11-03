@@ -155,7 +155,7 @@ class ClanGuardsTest extends TestCase
         $this->postJson("/api/clan-attacks/{$attack->id}/improve")->assertStatus(422)
             ->assertJsonPath('message', 'Seul l\'attaquant peut améliorer son attaque.');
         $this->postJson("/api/clan-attacks/{$attack->id}/cancel")->assertStatus(422)
-            ->assertJsonPath('message', 'Seul l\'attaquant peut annuler son attaque.');
+            ->assertJsonPath('message', 'Seuls l\'attaquant, le chef de clan et ses bras droits peuvent annuler cette attaque.');
         $this->assertSame(ClanAttackStatus::ACTIVE, $attack->fresh()->status);
 
         // excluded: the same

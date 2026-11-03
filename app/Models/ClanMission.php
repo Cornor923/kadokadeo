@@ -17,9 +17,15 @@ class ClanMission extends Model
     // replaced by the "Mission suivante" bonus (a new mission of the same number, no point lost)
     public const SKIPPED = 'skipped';
 
-    protected $fillable = ['clan_id', 'period_id', 'number', 'status', 'points', 'expires_at', 'completed_at'];
+    protected $fillable = ['clan_id', 'period_id', 'number', 'status', 'points', 'expires_at', 'completed_at', 'double_points'];
+
+    protected $attributes = [
+        'double_points' => false,
+    ];
 
     protected $casts = [
+        // "Double points": twice the points when it is completed (ClanMissionService::missionReward)
+        'double_points' => 'boolean',
         'points' => 'integer',
         'expires_at' => 'datetime',
         'completed_at' => 'datetime',

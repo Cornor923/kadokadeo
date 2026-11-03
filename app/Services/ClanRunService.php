@@ -180,6 +180,9 @@ class ClanRunService
     private function closedWarReason(ClanAction $action, User $user): ?string
     {
         $clanId = (int) $user->clanMember()->value('clan_id');
+        if ($action->type === ClanActionType::ATTACK && $this->attacksClosed($action)) {
+            return ClanWarService::ATTACKS_CLOSED;
+        }
         if ($action->clan_attack_id === null) {
             $clan = Clan::query()->find($action->clan_id);
             if (!$clan || $clanId !== $clan->id) {
@@ -203,6 +206,17 @@ class ClanRunService
         }
 
         return null;
+    }
+
+    // a new attack or an improvement in the last hours of the period (ClanWarService::attacksClosed): of the current period,
+    // of the period of the attack
+    private function attacksClosed(ClanAction $action): bool
+    {
+        $period = $action->clan_attack_id === null
+            ? Period::current()->first()
+            : ClanAttack::query()->find($action->clan_attack_id)?->period;
+
+        return $period !== null && $this->warService->attacksClosed($period);
     }
 
     // why a mission step can't be played (null while it is open)
@@ -239,6 +253,14 @@ class ClanRunService
 
                 throw new ClanException($closed.' Retournez sur la page des missions de votre clan.');
             }
+        }
+
+        // an attack or an improvement begun in the last hours of the period: refused (the game shows why) rather than played
+        // for an attack cancelled with the period
+        if ($action?->type === ClanActionType::ATTACK && $this->attacksClosed($action)) {
+            $action->update(['result' => 'too_late', 'completed_at' => now()]);
+
+            throw new ClanException(ClanWarService::ATTACKS_CLOSED.' Retournez sur la page de votre clan.');
         }
 
         // a new attack checked again when it begins (out of the clan, or the maximum of attacks reached meanwhile: his seat

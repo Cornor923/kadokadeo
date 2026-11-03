@@ -18,6 +18,7 @@ use App\Models\ClanMission;
 use App\Models\ClanMissionStep;
 use App\Models\ClanPeriodScore;
 use App\Models\Game;
+use App\Models\Message;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
@@ -280,6 +281,111 @@ class ClanTest extends TestCase
         $this->assertStringContainsString('target="_blank" href="https://google.fr"', $html);
         $this->assertStringNotContainsString('javascript:', $html);
         $this->assertStringNotContainsString('<script>', $html);
+    }
+
+    // the leader and the right hands cancel any attack of their clan, even of a member gone since: its attacker is told by
+    // a private message; a simple member cancels only his own
+    public function test_the_leader_and_the_right_hands_cancel_the_attacks_of_their_clan(): void
+    {
+        $period = $this->period();
+        $leader = User::factory()->create();
+        $rightHand = User::factory()->create(['display_name' => 'Bob']);
+        $member = User::factory()->create();
+        $other = User::factory()->create();
+        $clan = Clan::factory()->withLeader($leader)->create();
+        $clan->members()->create(['user_id' => $rightHand->id, 'role' => ClanRole::RIGHT_HAND]);
+        $clan->members()->create(['user_id' => $member->id]);
+        $clan->members()->create(['user_id' => $other->id]);
+        $defender = Clan::factory()->withLeader()->create(['name' => 'Les Pious']);
+        $game = Game::factory()->create(['name' => 'Kaskade']);
+        $warService = app(ClanWarService::class);
+        $attackOf = function (User $user) use ($warService, $defender, $game, $period): ClanAttack {
+            $warService->startAttack($user, $defender, $game);
+            $this->playClanRun($user, $game, $period, 500);
+
+            return ClanAttack::query()->latest('id')->first();
+        };
+
+        // a simple member: not the attack of another
+        $attack = $attackOf($member);
+        Sanctum::actingAs($other);
+        $this->getJson("/api/clans/{$clan->id}/status")->assertOk()->assertJsonPath('data.launched.0.can_cancel', false);
+        $this->postJson("/api/clan-attacks/{$attack->id}/cancel")->assertStatus(422);
+
+        // a right hand: the attacker is told
+        Sanctum::actingAs($rightHand);
+        $this->getJson("/api/clans/{$clan->id}/status")->assertOk()->assertJsonPath('data.launched.0.can_cancel', true);
+        $this->postJson("/api/clan-attacks/{$attack->id}/cancel")->assertNoContent();
+        $this->assertSame(ClanAttackStatus::CANCELLED, $attack->fresh()->status);
+        $message = Message::query()->where('recipient_id', $member->id)->sole();
+        $this->assertNull($message->sender_id);
+        $this->assertSame('Bob (Bras droit) a annulé votre attaque contre le clan Les Pious sur Kaskade (500 pts).', $message->body);
+
+        // the leader, the attack of a member gone since
+        $attack = $attackOf($other);
+        app(ClanService::class)->leave($other);
+        Sanctum::actingAs($leader);
+        $this->getJson("/api/clans/{$clan->id}/status")->assertOk()->assertJsonPath('data.launched.0.can_cancel', true);
+        $this->postJson("/api/clan-attacks/{$attack->id}/cancel")->assertNoContent();
+        $this->assertStringContainsString('(Chef de clan) a annulé votre attaque', Message::query()->where('recipient_id', $other->id)->sole()->body);
+
+        // his own attack: no message
+        $attack = $attackOf($leader);
+        $this->postJson("/api/clan-attacks/{$attack->id}/cancel")->assertNoContent();
+        $this->assertFalse(Message::query()->where('recipient_id', $leader->id)->exists());
+    }
+
+    // the last attack_hours of the period: no new attack nor improvement, asked or begun (the attack would end after the
+    // period, cancelled with it); the defenses go on
+    public function test_no_attack_in_the_last_hours_of_the_period(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $closed = 'Fin de période imminente, vous ne pouvez plus lancer d\'attaque.';
+        // the attacks close in 5 minutes
+        Period::factory()->create(['start_at' => now()->subDays(12), 'end_at' => now()->addHours(12)->addMinutes(5)]);
+        $attacker = User::factory()->create(['clan_attack_games' => 5]);
+        $defender = User::factory()->create(['clan_attack_games' => 5]);
+        $clanA = Clan::factory()->withLeader($attacker)->create();
+        $clanB = Clan::factory()->withLeader($defender)->create();
+        [$game, $otherGame] = Game::factory()->count(2)->create();
+
+        // an attack launched before the limit, then an improvement asked
+        Sanctum::actingAs($attacker);
+        $actionId = $this->postJson("/api/clans/{$clanB->id}/attacks", ['game_id' => $game->id])->assertCreated()->json('data.id');
+        $runId = $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $actionId])->assertSuccessful()->json('data.run_id');
+        Run::query()->findOrFail($runId)->update(['score' => 500, 'completed_at' => now()]);
+        $this->assertSame('launched', app(ClanRunService::class)->handleRunCompleted(Run::query()->findOrFail($runId))['result']);
+        $attack = ClanAttack::query()->sole();
+        $improveId = $this->postJson("/api/clan-attacks/{$attack->id}/improve")->assertCreated()->json('data.id');
+        // ... and an attack asked on the clan pages, to play on the page of the game
+        Sanctum::actingAs($defender);
+        $this->postJson("/api/clans/{$clanA->id}/attacks", ['game_id' => $otherGame->id])->assertCreated();
+
+        // begun after the limit: refused, no attack game spent
+        $this->travel(10)->minutes();
+        Sanctum::actingAs($attacker);
+        $this->postJson("/api/runs/games/{$game->id}", ['clan_action' => $improveId])->assertStatus(422)
+            ->assertJsonPath('message', "{$closed} Retournez sur la page de votre clan.");
+        $this->assertDatabaseHas('clan_actions', ['id' => $improveId, 'result' => 'too_late']);
+        $this->assertSame(4, $attacker->fresh()->clan_attack_games);
+        Sanctum::actingAs($defender);
+        $this->postJson("/api/runs/games/{$otherGame->id}")->assertStatus(422)
+            ->assertJsonPath('message', "{$closed} Retournez sur la page de votre clan.");
+        $this->assertSame(5, $defender->fresh()->clan_attack_games);
+
+        // nothing asked any more
+        Sanctum::actingAs($attacker);
+        $this->getJson("/api/clans/{$clanB->id}")->assertOk()->assertJsonPath('data.viewer.attack_blocked', $closed);
+        $this->postJson("/api/clans/{$clanB->id}/attacks", ['game_id' => $otherGame->id])->assertStatus(422)
+            ->assertJsonPath('message', $closed);
+        $this->postJson("/api/clan-attacks/{$attack->id}/improve")->assertStatus(422)->assertJsonPath('message', $closed);
+        $this->getJson("/api/clans/{$clanA->id}/status")->assertOk()
+            ->assertJsonPath('data.launched.0.can_improve', false)
+            ->assertJsonPath('data.launched.0.can_cancel', true);
+
+        // the defenses go on
+        Sanctum::actingAs($defender);
+        $this->postJson("/api/clan-attacks/{$attack->id}/defend")->assertCreated();
     }
 
     // "Statut" shows the attacks waiting for a defense, "Historique" the finished ones (not the cancelled ones), from the
@@ -552,7 +658,7 @@ class ClanTest extends TestCase
             ->assertJsonPath('data.viewer.attack_blocked', 'Ce clan est protégé de vos attaques : son score est trop éloigné du vôtre.');
     }
 
-    // attacks any time of the period, from its first day; the next period starts again from 0
+    // attacks from the first day of the period until its last attack_hours; the next period starts again from 0
     public function test_the_attacks_of_the_first_day_and_the_reset_of_the_next_period(): void
     {
         $period = Period::factory()->create(['start_at' => now()->startOfDay(), 'end_at' => now()->addDays(13)->endOfDay()]);
@@ -569,19 +675,24 @@ class ClanTest extends TestCase
         $this->travel(13)->hours();
         $this->assertSame(1, $warService->resolveExpired());
 
-        // two attacks at the same time (an "Attaquant"), launched a few hours before the end
-        $this->travelTo($period->end_at->clone()->subHours(2));
+        // two attacks at the same time (an "Attaquant"), the last ones before the attacks close (ClanWarService::attacksClosed):
+        // the first one ends before the period, the second one is begun before the limit and ended after it
+        $this->travelTo($period->end_at->clone()->subHours(12)->subMinutes(30));
         $warService->startAttack($attacker, $clanB, $game);
         $this->playClanRun($attacker, $game, $period, 100);
         $warService->startAttack($attacker, $clanB, $game);
-        $this->assertSame('launched', $this->playClanRun($attacker, $game, $period, 100)['result']);
+        $run = Run::factory()->for($game)->for($attacker)->for($period)->create(['score' => 0, 'completed_at' => null]);
+        app(ClanRunService::class)->bindRun($run);
+        $this->travel(40)->minutes();
+        $run->update(['score' => 100, 'completed_at' => now()]);
+        $this->assertSame('launched', app(ClanRunService::class)->handleRunCompleted($run->fresh())['result']);
 
         // the period ends: the attacks not over are cancelled
         $this->travelTo($period->end_at->clone()->addMinute());
         $nextPeriod = Period::factory()->create(['start_at' => now()->startOfDay(), 'end_at' => now()->addDays(13)->endOfDay()]);
         app(ClanPeriodService::class)->closePeriod($period);
         $this->assertSame(
-            [ClanAttackStatus::WON, ClanAttackStatus::CANCELLED, ClanAttackStatus::CANCELLED],
+            [ClanAttackStatus::WON, ClanAttackStatus::WON, ClanAttackStatus::CANCELLED],
             ClanAttack::query()->orderBy('id')->pluck('status')->all(),
         );
         $this->assertGreaterThan(0, ClanPeriodScore::query()->where('clan_id', $clanA->id)->where('period_id', $period->id)->value('war_score'));
@@ -633,17 +744,73 @@ class ClanTest extends TestCase
             ->assertJsonPath('data.0.user.etwin_id', $member->etwin_id)
             ->assertJsonPath('data.0.points', 5);
 
-        // the next mission, and the option won with the previous one
+        // the next mission (10 minutes shorter), and the option won with the previous one
         $response = $this->getJson("/api/clans/{$clan->id}/missions")->assertOk()
             ->assertJsonPath('data.mission.number', 2)
+            ->assertJsonPath('data.mission.next_minutes', 1420)
             ->assertJsonPath('data.mission.reward', 10)
             ->assertJsonPath('data.missions.0.number', 1)
             ->assertJsonPath('data.missions.0.bonus.used', false);
+        $this->assertEqualsWithDelta(now()->addMinutes(1430)->timestamp, ClanMission::query()->where('number', 2)->sole()->expires_at->timestamp, 1);
         $won = ClanBonus::query()->where('clan_mission_id', $mission->id)->sole();
         $this->assertSame($won->type->value, $response->json('data.missions.0.bonus.type'));
         // the ranking of the missions: the steps done of the mission in progress
         $this->getJson('/api/clans?ranking=missions')->assertOk()
             ->assertJsonPath('data.0.mission', ['number' => 2, 'steps' => 5, 'steps_done' => 0]);
+    }
+
+    // "Double points": used, it waits for the next mission of the clan (one at a time), which gives twice its points
+    public function test_double_points_doubles_the_next_mission(): void
+    {
+        ClanSettings::fake(['bonus_chance' => 0]);
+        $period = $this->period();
+        $leader = User::factory()->create();
+        $clan = Clan::factory()->withLeader($leader)->create();
+        Game::factory()->count(8)->create();
+        Sanctum::actingAs($leader);
+        $first = $this->getJson("/api/clans/{$clan->id}/missions")->assertOk()->json('data.mission');
+        [$double, $other] = collect([1, 2])->map(fn () => ClanBonus::query()->create([
+            'clan_id' => $clan->id, 'period_id' => $period->id, 'type' => ClanBonusType::DOUBLE_POINTS,
+        ]));
+
+        // the mission in progress is not doubled; a second one waits for the one after
+        $this->postJson("/api/clan-bonuses/{$double->id}/use")->assertNoContent();
+        $this->postJson("/api/clan-bonuses/{$other->id}/use")->assertStatus(422)
+            ->assertJsonPath('message', 'La prochaine mission rapportera déjà deux fois plus de points.');
+        $this->assertNull($other->fresh()->used_at);
+        $this->getJson("/api/clans/{$clan->id}/missions")->assertOk()
+            ->assertJsonPath('data.mission.double_points', false)
+            ->assertJsonPath('data.mission.reward', 10)
+            ->assertJsonPath('data.double_points_pending', true)
+            // the same options shown once by the page: both still given
+            ->assertJsonCount(3, 'data.bonuses');
+
+        $complete = function (array $steps) use ($leader, $period): void {
+            foreach ($steps as $step) {
+                $this->postJson("/api/clan-mission-steps/{$step['id']}/play")->assertCreated();
+                $this->playClanRun($leader, Game::query()->find($step['game']['id']), $period, $step['target_score']);
+            }
+        };
+        $complete($first['steps']);
+        $this->assertSame(10, ClanMission::query()->findOrFail($first['id'])->points);
+
+        // the next mission: twice its points
+        $second = $this->getJson("/api/clans/{$clan->id}/missions")->assertOk()
+            ->assertJsonPath('data.mission.number', 2)
+            ->assertJsonPath('data.mission.double_points', true)
+            ->assertJsonPath('data.mission.reward', 20)
+            ->assertJsonPath('data.double_points_pending', false)
+            ->json('data.mission');
+        $this->assertSame($second['id'], $double->fresh()->doubled_mission_id);
+        $complete($second['steps']);
+        $this->assertSame(20, ClanMission::query()->findOrFail($second['id'])->points);
+        $this->assertSame(30, ClanPeriodScore::query()->where('clan_id', $clan->id)->value('mission_score'));
+        $this->getJson("/api/clans/{$clan->id}/missions")->assertOk()
+            ->assertJsonPath('data.mission.double_points', false)
+            ->assertJsonPath('data.missions.0.double_points', true);
+
+        // now the second one can be used
+        $this->postJson("/api/clan-bonuses/{$other->id}/use")->assertNoContent();
     }
 
     // two members on the same step: one fails, the other one completes it. The first one plays again: nothing is played
@@ -781,7 +948,8 @@ class ClanTest extends TestCase
     // the "Score 1500" of the game beyond the red star; the other steps start from half the first star
     public function test_the_paliers_get_higher_with_the_missions_completed(): void
     {
-        ClanSettings::fake(['bonus_chance' => 0, 'mission_stars_per_mission' => 0.25, 'mission_beyond_last_star' => 0.1]);
+        ClanSettings::fake(['bonus_chance' => 0, 'mission_stars_per_mission' => 0.25, 'mission_beyond_last_star' => 0.1,
+            'mission_bottom_per_mission' => 0.025, 'mission_bottom_max' => 0.75]);
         $period = $this->period();
         $leader = User::factory()->create();
         $clan = Clan::factory()->withLeader($leader)->create();
@@ -789,29 +957,33 @@ class ClanTest extends TestCase
         $missionService = app(ClanMissionService::class);
 
         $hardest = [];
-        foreach (range(1, 14) as $number) {
+        foreach (range(1, 17) as $number) {
             $mission = $missionService->currentMission($clan);
             $this->assertSame($number, $mission->number);
             $targets = $mission->steps->pluck('target_score');
             $hardest[$number] = $targets->max();
-            // the easiest step (a lone player: 5 steps)
-            $this->assertSame(500, $targets->min());
+            // the easiest step (a lone player: 5 steps), from half the green star up to 3/4 of it
+            $this->assertSame((int) round(1000 * min(0.75, 0.5 + 0.025 * ($number - 1))), $targets->min());
             foreach ($mission->steps as $step) {
                 $missionService->startStep($leader, $step);
                 $this->playClanRun($leader, $step->game, $period, $step->target_score);
             }
         }
 
-        $this->assertSame([1 => 500, 2 => 750, 3 => 1000, 5 => 1500, 7 => 2000, 9 => 2500, 11 => 3000, 12 => 3100, 14 => 3300], array_intersect_key($hardest, array_flip([1, 2, 3, 5, 7, 9, 11, 12, 14])));
+        // the plain red star from the mission 11 to the 15 (a star of missions), then beyond
+        $this->assertSame(
+            [1 => 500, 2 => 750, 3 => 1000, 5 => 1500, 7 => 2000, 9 => 2500, 11 => 3000, 13 => 3000, 15 => 3000, 16 => 3100, 17 => 3200],
+            array_intersect_key($hardest, array_flip([1, 2, 3, 5, 7, 9, 11, 13, 15, 16, 17])),
+        );
 
         // the star of each step, a "+" above the red one
         $mission = $missionService->currentMission($clan);
         Sanctum::actingAs($leader);
         $steps = collect($this->getJson("/api/clans/{$clan->id}/missions")->assertOk()->json('data.mission.steps'));
-        $this->assertSame(['-1' => false], $steps->where('target_score', 500)->mapWithKeys(fn ($step) => [(string) $step['star'] => $step['beyond_last_star']])->all());
-        $this->assertSame(3400, $steps->max('target_score'));
-        $this->assertSame(['2' => true], $steps->where('target_score', 3400)->mapWithKeys(fn ($step) => [(string) $step['star'] => $step['beyond_last_star']])->all());
-        $this->assertSame(15, $mission->number);
+        $this->assertSame(['-1' => false], $steps->where('target_score', 750)->mapWithKeys(fn ($step) => [(string) $step['star'] => $step['beyond_last_star']])->all());
+        $this->assertSame(3300, $steps->max('target_score'));
+        $this->assertSame(['2' => true], $steps->where('target_score', 3300)->mapWithKeys(fn ($step) => [(string) $step['star'] => $step['beyond_last_star']])->all());
+        $this->assertSame(18, $mission->number);
     }
 
     // the runs of the missions don't cost a game, the attacks and the defenses have their own games
@@ -1302,23 +1474,83 @@ class ClanTest extends TestCase
         $this->assertSame(150000, $settings->rewards('war')[1]);
     }
 
+    // the first mission of the period lasts mission_hours, then mission_minutes_less less with each mission completed, at
+    // least mission_min_minutes (never more than the first one)
+    public function test_the_time_of_the_missions_goes_down(): void
+    {
+        $missionService = app(ClanMissionService::class);
+        // 24 h, 10 minutes less, at least 12 h
+        $this->assertSame(1440, $missionService->missionMinutes(1));
+        $this->assertSame(1430, $missionService->missionMinutes(2));
+        $this->assertSame(720, $missionService->missionMinutes(73));
+        $this->assertSame(720, $missionService->missionMinutes(200));
+
+        $this->assertSame(1440, ClanMissionService::minutesOf(50, 24, 0, 720));
+        $this->assertSame(360, ClanMissionService::minutesOf(50, 6, 10, 720));
+    }
+
+    // the options given at the start of the period are set in the admin: for the clans that did not play yet
+    public function test_the_admin_sets_the_options_given_at_the_start_of_the_period(): void
+    {
+        $period = $this->period();
+        [$before, $after] = Clan::factory()->count(2)->withLeader()->create();
+        app(ClanService::class)->periodScore($before, $period);
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(ManageClanSettings::class)
+            ->assertSet('data.starting_bonuses.force_game', 1)
+            ->assertSet('data.starting_bonuses.ban_game', 1)
+            ->set('data.starting_bonuses.ban_game', 0)
+            ->set('data.starting_bonuses.more_time', 2)
+            ->set('data.starting_bonuses.double_points', 1)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        app(ClanService::class)->periodScore($after, $period);
+        $types = fn (Clan $clan) => ClanBonus::query()->where('clan_id', $clan->id)->pluck('type')->map->value->sort()->values()->all();
+        $this->assertSame(['ban_game', 'force_game'], $types($before));
+        $this->assertSame(['double_points', 'force_game', 'more_time', 'more_time'], $types($after));
+        // the help says it
+        Sanctum::actingAs(User::factory()->create());
+        $bonuses = collect($this->getJson('/api/clans/overview')->assertOk()->json('data.rules.bonuses'))->pluck('starting', 'type');
+        $this->assertSame(['more_time' => 2, 'ban_game' => 0, 'force_game' => 1, 'next_mission' => 0, 'skip_step' => 0, 'double_points' => 1], $bonuses->all());
+    }
+
     // the preview of the steps of the missions follows the form, before saving it
     public function test_the_admin_previews_the_steps_of_the_missions(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => true]));
+        // the games of the missions (not an Arkadeo one, nor a game without its stars)
+        Game::factory()->count(12)->create();
+        Game::factory()->create(['is_arkadeo' => true]);
+        Game::factory()->create(['stars' => null]);
 
         Livewire::test(ManageClanSettings::class)
             ->assertSee('pour un clan de 10 membres')
+            ->assertSee('12 jeux des missions')
+            ->assertDontSee('limité aux jeux')
             ->assertSee('Palier le plus haut')
-            // a row every 2 missions (a quarter of star by mission), up to the "Score 1500" at the mission 21
-            ->assertSee('n° 21')
+            // a row every 2 missions (a quarter of star by mission), the plain red star for 4 missions, up to the "Score 1500"
+            // at the mission 25
+            ->assertSee('n° 25')
+            // 24 h, 10 minutes less by mission
+            ->assertSee('20 h 40')
             ->assertSee('rouge +100 %')
-            ->assertDontSee('n° 23')
+            ->assertDontSee('n° 27')
             ->set('data.mission_stars_per_mission', '0.5')
             ->set('data.mission_beyond_last_star', '0.5')
-            ->assertSee('n° 8')
-            ->assertSee('1 × grise · 2 × verte · 2 × orange · 3 × rouge +50 %')
-            ->assertDontSee('n° 9');
+            // the top at the plain red star at the missions 7 and 8, beyond from the 9
+            ->assertSee('1 × grise · 1 × verte · 2 × orange · 4 × rouge')
+            ->assertSee('1 × grise · 1 × verte · 2 × orange · 1 × rouge · 3 × rouge +50 %')
+            ->assertSee('n° 10')
+            ->assertDontSee('n° 11')
+            // no grey step once the bottom reaches the green star (the mission 3; the top is still grey at the first one)
+            ->set('data.mission_bottom_per_mission', '0.25')
+            ->set('data.mission_bottom_max', '1')
+            ->assertSee('6 × grise · 2 × verte')
+            ->assertSee('8 × verte')
+            // more steps with each mission: at most a step by game
+            ->set('data.mission_steps_ratio', '1.2');
     }
 
     // the help page shows the rules set in the admin
@@ -1638,5 +1870,31 @@ class ClanTest extends TestCase
             ->assertJsonPath('data.top.0.id', $best->id)
             ->assertJsonPath('data.top_missions.0.id', $mine->id)
             ->assertJsonPath('data.top_missions.0.mission_score', 7);
+    }
+
+    // the profile of a player shows his clan and his rank in it (none for a simple member), nothing outside a clan or
+    // while the clans are off
+    public function test_the_profile_shows_the_clan_of_the_player(): void
+    {
+        $this->period();
+        $leader = User::factory()->create();
+        $rightHand = User::factory()->create();
+        $member = User::factory()->create();
+        $alone = User::factory()->create();
+        $clan = Clan::factory()->withLeader($leader)->create(['name' => 'Les Pious']);
+        $clan->members()->create(['user_id' => $rightHand->id, 'role' => ClanRole::RIGHT_HAND]);
+        $clan->members()->create(['user_id' => $member->id]);
+        Sanctum::actingAs($alone);
+
+        $this->getJson("/api/users/{$leader->etwin_id}")->assertOk()
+            ->assertJsonPath('clan', ['id' => $clan->id, 'name' => 'Les Pious', 'role' => 'leader', 'role_label' => 'Chef de clan']);
+        $this->getJson("/api/users/{$rightHand->etwin_id}")->assertOk()
+            ->assertJsonPath('clan.role', 'right_hand')
+            ->assertJsonPath('clan.role_label', 'Bras droit');
+        $this->getJson("/api/users/{$member->etwin_id}")->assertOk()->assertJsonPath('clan.role', 'member');
+        $this->getJson("/api/users/{$alone->etwin_id}")->assertOk()->assertJsonPath('clan', null);
+
+        $this->setClansEnabled(false);
+        $this->getJson("/api/users/{$leader->etwin_id}")->assertOk()->assertJsonPath('clan', null);
     }
 }

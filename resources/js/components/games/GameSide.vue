@@ -6,6 +6,8 @@ const props = defineProps({
   isZoomed: { type: Boolean, default: false },
   // more paliers: [{ score, img, alt }] (a clan defense, a mission step...)
   goals: { type: Array, default: () => [] },
+  // the tab open first (a clan run: the paliers)
+  initialTab: { type: String, default: 'gameRules' },
 })
 const { isLoading, fetchScores } = useGames()
 const authStore = useAuthStore()
@@ -111,7 +113,7 @@ onUnmounted(() => {
 
 refreshScores()
 
-const selectedTab = ref('gameRules')
+const selectedTab = ref(props.initialTab)
 
 const menus = [
   { id: 'gameRules', label: 'Règles', icon: '/gfx/iconGameRules.png' },

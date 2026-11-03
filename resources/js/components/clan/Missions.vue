@@ -49,6 +49,19 @@ const stars = {
   2: { img: '/gfx/iconRedStar.gif', alt: 'Étoile rouge' },
 }
 const statusLabels = { completed: 'Réussie', failed: 'Échouée', skipped: 'Remplacée' }
+// the options of the same kind shown once with their count ("x3"): the first one is used
+const stackedBonuses = computed(() => {
+  const byType = new Map()
+  for (const bonus of data.value?.bonuses ?? []) {
+    const stack = byType.get(bonus.type)
+    if (stack) {
+      stack.count++
+    } else {
+      byType.set(bonus.type, { ...bonus, count: 1 })
+    }
+  }
+  return [...byType.values()]
+})
 
 // "Je m'en occupe": reserve the step, take the place of another member, or give it up
 const reserve = (step) => reserveStep(step.id).then(load)
@@ -85,13 +98,21 @@ const confirmBonus = () => {
         <p v-if="isMember">
           Réussissez toutes les étapes avant la fin du temps imparti
           (<ClanCountdown :until="mission.expires_at" class="font-bold" @done="load" />) : votre clan remportera
-          <Number :value="mission.reward" color="violet" /> points et passera à la mission suivante. Sinon, il perdra un
-          point par étape non réussie, moins une. Les parties des missions sont gratuites !
+          <Number :value="mission.reward" color="violet" /> points<template v-if="mission.double_points">
+            (<img src="/gfx/clan/opt/optDoublePoints.gif" alt="" class="inline h-4 align-middle" /> Double points)</template>
+          et passera à la mission suivante (<strong>{{ formatMinutes(mission.next_minutes) }}</strong> pour la réussir).
+          Sinon, il perdra un point par étape non réussie, moins une. Les parties des missions sont gratuites !
         </p>
         <p v-else>
           Si le clan réussit toutes les étapes avant la fin du temps imparti
           (<ClanCountdown :until="mission.expires_at" class="font-bold" @done="load" />), il remportera
-          <Number :value="mission.reward" color="violet" /> points et passera à la mission suivante.
+          <Number :value="mission.reward" color="violet" /> points<template v-if="mission.double_points">
+            (<img src="/gfx/clan/opt/optDoublePoints.gif" alt="" class="inline h-4 align-middle" /> Double points)</template>
+          et passera à la mission suivante (<strong>{{ formatMinutes(mission.next_minutes) }}</strong> pour la réussir).
+        </p>
+        <p v-if="data.double_points_pending" class="flex items-center gap-1">
+          <img src="/gfx/clan/opt/optDoublePoints.gif" alt="" class="h-5" />
+          <strong>Double points</strong> : la prochaine mission rapportera deux fois plus de points.
         </p>
         <div class="overflow-x-auto">
           <KadoTable class="w-full">
@@ -155,13 +176,18 @@ const confirmBonus = () => {
         Votre clan n'a aucune option. Chaque mission réussie peut vous en faire gagner une !
       </p>
       <div v-if="isMember" class="relative flex flex-wrap gap-2">
-        <div v-for="bonus in data.bonuses" :key="bonus.id" class="w-[81px] text-center">
+        <div v-for="bonus in stackedBonuses" :key="bonus.type" class="relative w-[81px] text-center">
           <button type="button"
                   class="border-0 bg-transparent p-0.5 hover:p-0 hover:border-2 hover:border-solid hover:border-kado-yellow-100 hover:bg-kado-orange-500 cursor-pointer"
-                  :title="bonus.label"
+                  :title="bonus.count > 1 ? `${bonus.label} (x${bonus.count})` : bonus.label"
                   @click="openBonus(bonus)">
             <img :src="bonus.icon" :alt="bonus.label" class="w-[77px] h-[68px]" />
           </button>
+          <!-- on a white halo fading into the icon -->
+          <Number v-if="bonus.count > 1"
+                  :value="`x${bonus.count}`"
+                  color="bigPink"
+                  class="pointer-events-none absolute top-0 right-0 bg-radial-[closest-side] from-white from-55% to-transparent px-[7px] py-1 leading-0" />
           <div class="text-2xs leading-tight">{{ bonus.label }}</div>
         </div>
 
@@ -203,7 +229,11 @@ const confirmBonus = () => {
           <li v-for="m in data.missions" :key="m.id">
             Mission {{ m.number }} : {{ statusLabels[m.status] ?? m.status }}
             <template v-if="m.status === 'completed'">
-              (<Number :value="m.points" color="violet" signed /> points)
+              (<Number :value="m.points" color="violet" signed /> points<template v-if="m.double_points">,
+                <img src="/gfx/clan/opt/optDoublePoints.gif"
+                     alt="Double points"
+                     title="Double points"
+                     class="h-4 align-middle" /></template>)
               <template v-if="m.bonus">
                 — option gagnée :
                 <img :src="m.bonus.icon"

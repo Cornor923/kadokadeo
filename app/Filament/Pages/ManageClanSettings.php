@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\ClanBonusType;
 use App\Services\ClanMissionPaliers;
+use App\Services\ClanMissionService;
 use App\Settings\ClanSettings;
 use BackedEnum;
 use Filament\Forms\Components\Repeater;
@@ -69,8 +70,14 @@ class ManageClanSettings extends SettingsPage
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        $this->integer('mission_hours', 'Durée d\'une mission (heures)', min: 1),
+                        $this->integer('mission_hours', 'Durée de la première mission (heures)', min: 1)->live(onBlur: true),
                         $this->integer('mission_more_time_hours', 'Heures ajoutées par « Plus de temps »', min: 1),
+                        $this->integer('mission_minutes_less', 'Temps (en minutes) en moins à chaque mission réalisée')
+                            ->helperText('0 : toutes les missions durent autant que la première.')
+                            ->live(onBlur: true),
+                        $this->integer('mission_min_minutes', 'Temps minimum d\'une mission (minutes)', min: 1)
+                            ->helperText('720 : 12 heures.')
+                            ->live(onBlur: true),
                         $this->integer('mission_steps_base', 'Étapes pour un joueur seul', min: 1)->live(onBlur: true),
                         $this->decimal('mission_steps_per_member', 'Étapes en plus par membre')
                             ->helperText('0,38 : 24 étapes pour 50 membres.')
@@ -86,7 +93,7 @@ class ManageClanSettings extends SettingsPage
                     ]),
 
                 Section::make('Scores des missions')
-                    ->description('La difficulté d\'une étape se compte en étoiles du jeu : de la ½ étoile verte à la rouge, puis au-delà vers le « Score 1500 » du jeu (s\'il est renseigné). Une part des étapes est au palier le plus haut de la mission, les autres sont réparties de la ½ étoile verte jusqu\'à lui : chaque mission garde des étapes faciles. Les étapes sont mélangées.')
+                    ->description('La difficulté d\'une étape se compte en étoiles du jeu : de la ½ étoile verte à la rouge, puis au-delà vers le « Score 1500 » du jeu (s\'il est renseigné). La rouge pleine (son score exact) compte comme une étoile : le palier le plus haut y reste le temps d\'une étoile de progression avant d\'aller au-delà. Une part des étapes est au palier le plus haut de la mission, les autres sont réparties du palier le plus bas (la ½ étoile verte, un peu plus à chaque mission) jusqu\'à lui : chaque mission garde des étapes faciles. Les étapes sont mélangées.')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
@@ -96,6 +103,12 @@ class ManageClanSettings extends SettingsPage
                         $this->share('mission_beyond_last_star', 'Au-delà de l\'étoile rouge : progression par mission')
                             ->helperText('Part de l\'écart entre l\'étoile rouge et le « Score 1500 » du jeu (0,1 = 10 % par mission, 0 : rien au-delà de la rouge).')
                             ->live(onBlur: true),
+                        $this->decimal('mission_bottom_per_mission', 'Progression du palier le plus bas (étoiles par mission)')
+                            ->helperText('Depuis la ½ étoile verte : 0,025 = un quart d\'étoile en 10 missions.')
+                            ->live(onBlur: true),
+                        $this->decimal('mission_bottom_max', 'Palier le plus bas maximum (en étoiles)')
+                            ->helperText('0,75 : les ¾ de l\'étoile verte. 1 : plus aucune étape grise une fois atteint.')
+                            ->live(onBlur: true),
                         $this->share('mission_hard_share_min', 'Part des étapes au palier le plus haut (au départ)')->live(onBlur: true),
                         $this->share('mission_hard_share_step', 'Part en plus à chaque mission')->live(onBlur: true),
                         $this->share('mission_hard_share_max', 'Part maximum au palier le plus haut')->live(onBlur: true),
@@ -104,8 +117,14 @@ class ManageClanSettings extends SettingsPage
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Options de départ')
+                    ->description('Les options données à chaque clan au début de la période, la première fois qu\'il joue. Un changement compte pour les clans qui n\'ont pas encore joué de la période.')
+                    ->columns(3)
+                    ->columnSpanFull()
+                    ->schema(collect(ClanBonusType::cases())->map(fn (ClanBonusType $type) => $this->integer("starting_bonuses.{$type->value}", "« {$type->getLabel()} »"))->all()),
+
                 Section::make('Options des missions')
-                    ->description('« Jeu cool » et « Jeu caca » sont donnés à chaque clan au début de la période.')
+                    ->description('Les chances de gagner une option avec chaque mission réussie.')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
@@ -143,21 +162,28 @@ class ManageClanSettings extends SettingsPage
     {
         $values = collect(['mission_stars_per_mission', 'mission_beyond_last_star', 'mission_hard_share_min', 'mission_hard_share_step',
             'mission_hard_share_max', 'mission_steps_base', 'mission_steps_per_member', 'mission_steps_max', 'mission_steps_min',
-            'mission_steps_ratio'])
+            'mission_steps_ratio', 'mission_bottom_per_mission', 'mission_bottom_max', 'mission_hours', 'mission_minutes_less', 'mission_min_minutes'])
             ->mapWithKeys(fn (string $name) => [$name => (float) str_replace(',', '.', (string) $get($name))])
             ->all();
         $paliers = ClanMissionPaliers::fromArray($values);
         $members = 10;
+        // a game at most by step (ClanMissionService::pickGames)
+        $games = app(ClanMissionService::class)->missionGames()->count();
         $base = min($values['mission_steps_max'], $values['mission_steps_base'] + ($members - 1) * $values['mission_steps_per_member']);
 
         $rows = [];
         $stride = $paliers->starsPerMission > 0 ? max(1, (int) round(ClanMissionPaliers::START / $paliers->starsPerMission)) : 1;
         for ($number = 1; count($rows) < 25; $number += $stride) {
-            $steps = max((int) $values['mission_steps_min'], (int) round($base * $values['mission_steps_ratio'] ** ($number - 1)));
+            $wanted = max((int) $values['mission_steps_min'], (int) round($base * $values['mission_steps_ratio'] ** ($number - 1)));
+            $steps = min($wanted, $games);
             $top = $paliers->topDifficulty($number);
+            $minutes = ClanMissionService::minutesOf($number, (int) $values['mission_hours'], (int) $values['mission_minutes_less'], (int) $values['mission_min_minutes']);
             $rows[] = [
                 'number' => $number,
+                // "23 h 50"
+                'duration' => intdiv($minutes, 60).' h'.($minutes % 60 ? ' '.str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT) : ''),
                 'top' => ClanMissionPaliers::label($top),
+                'steps_count' => $steps,
                 // "2 × orange", the easiest first
                 'steps' => collect($paliers->levels($number, $steps))->map(fn (float $level) => ClanMissionPaliers::label($level))->countBy()
                     ->map(fn (int $count, string $label) => "{$count} × {$label}")
@@ -168,7 +194,7 @@ class ManageClanSettings extends SettingsPage
             }
         }
 
-        return ['rows' => $rows, 'members' => $members];
+        return ['rows' => $rows, 'members' => $members, 'games' => $games];
     }
 
     private function integer(string $name, string $label, int $min = 0): TextInput

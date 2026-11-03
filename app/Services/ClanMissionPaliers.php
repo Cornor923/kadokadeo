@@ -7,10 +7,12 @@ use App\Settings\ClanSettings;
 
 // the scores to reach of the steps of a mission, by their difficulty in stars (difficulty() and scoreAt()): 1 at the first
 // star, 2 at the second, 3 at the third (linear between them, from 0), then 3 + x at x of the way from the last star to
-// the "Score 1500" of the game (games.score_rankv1), at most 4. The top difficulty of a mission starts at half the first
-// star and goes up by `starsPerMission` with each mission, then by `beyondPerMission` beyond the last star. A share of the
-// steps is at the top difficulty (bigger with the missions), the others are spread on all the difficulties from half the
-// first star: the missions keep easy steps. Used by ClanMissionService::generateMission and the preview of the admin.
+// the "Score 1500" of the game (games.score_rankv1), at most 4. The missions are made on a scale where the last star
+// (plain: its score exactly) takes a star of room as the others (toReal): the top difficulty of a mission starts at half
+// the first star and goes up by `starsPerMission` with each mission, stays at the last star for a star of missions, then
+// goes up by `beyondPerMission` beyond it. A share of the steps is at the top difficulty (bigger with the missions), the
+// others are spread from the bottom difficulty up to it: half the first star, up by `bottomPerMission` with each mission
+// up to `bottomMax`, so the missions keep easy steps. Used by ClanMissionService::generateMission and the admin preview.
 final class ClanMissionPaliers
 {
     // the easiest steps: half the first star
@@ -22,6 +24,8 @@ final class ClanMissionPaliers
         public readonly float $hardShareMin,
         public readonly float $hardShareStep,
         public readonly float $hardShareMax,
+        public readonly float $bottomPerMission = 0,
+        public readonly float $bottomMax = self::START,
     ) {}
 
     public static function fromSettings(ClanSettings $settings): self
@@ -38,20 +42,49 @@ final class ClanMissionPaliers
             hardShareMin: (float) ($values['mission_hard_share_min'] ?? 0),
             hardShareStep: (float) ($values['mission_hard_share_step'] ?? 0),
             hardShareMax: (float) ($values['mission_hard_share_max'] ?? 1),
+            bottomPerMission: max(0, (float) ($values['mission_bottom_per_mission'] ?? 0)),
+            bottomMax: (float) ($values['mission_bottom_max'] ?? self::START),
         );
     }
 
     // the top difficulty of a mission
     public function topDifficulty(int $number, int $starsCount = 3): float
     {
+        return self::toReal($this->scaledTop($number, $starsCount), $starsCount);
+    }
+
+    // the easiest steps of a mission
+    public function bottomDifficulty(int $number): float
+    {
+        return max(self::START, min($this->bottomMax, self::START + $this->bottomPerMission * max(0, $number - 1)));
+    }
+
+    // the top difficulty on the scale of the missions: the plain last star from $starsCount to $starsCount + 1
+    private function scaledTop(int $number, int $starsCount): float
+    {
         $top = self::START + $this->starsPerMission * max(0, $number - 1);
-        if ($top <= $starsCount) {
+        if ($top <= $starsCount + 1) {
             return $top;
         }
-        // the missions since the last star was reached
-        $beyond = ($top - $starsCount) / $this->starsPerMission;
+        // the missions since the plain last star was passed
+        $beyond = ($top - $starsCount - 1) / $this->starsPerMission;
 
-        return $starsCount + min(1, $beyond * $this->beyondPerMission);
+        return $starsCount + 1 + min(1, $beyond * $this->beyondPerMission);
+    }
+
+    // a difficulty of the scale of the missions: the plain last star takes a star of room
+    private static function toReal(float $scaled, int $starsCount): float
+    {
+        return match (true) {
+            $scaled < $starsCount => $scaled,
+            $scaled < $starsCount + 1 => (float) $starsCount,
+            default => $scaled - 1,
+        };
+    }
+
+    private static function toScaled(float $difficulty, int $starsCount): float
+    {
+        return $difficulty < $starsCount ? $difficulty : $difficulty + 1;
     }
 
     // the highest top difficulty (reached after enough missions)
@@ -70,17 +103,18 @@ final class ClanMissionPaliers
         if ($steps <= 0) {
             return [];
         }
-        $top = $this->topDifficulty($number, $starsCount);
+        $top = $this->scaledTop($number, $starsCount);
+        $bottom = min($top, self::toScaled($this->bottomDifficulty($number), $starsCount));
         $share = min($this->hardShareMax, $this->hardShareMin + $this->hardShareStep * max(0, $number - 1));
         $hard = max(1, (int) round($steps * $share));
         $rest = $steps - $hard;
-        // the others, from half the first star up to the top difficulty
+        // the others, from the bottom difficulty up to the top one
         $others = [];
         for ($i = 0; $i < $rest; $i++) {
-            $others[] = self::START + ($top - self::START) * $i / $rest;
+            $others[] = self::toReal($bottom + ($top - $bottom) * $i / $rest, $starsCount);
         }
 
-        return [...$others, ...array_fill(0, $hard, $top)];
+        return [...$others, ...array_fill(0, $hard, self::toReal($top, $starsCount))];
     }
 
     // the score of a difficulty on a game (the inverse of difficulty()), at most its last star without a "Score 1500"

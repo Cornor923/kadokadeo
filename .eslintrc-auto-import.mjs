@@ -32,6 +32,7 @@ export default {
     "etwinActorName": true,
     "etwinForumDate": true,
     "formatFrame": true,
+    "formatMinutes": true,
     "formatScore": true,
     "formatTime": true,
     "getCurrentInstance": true,
