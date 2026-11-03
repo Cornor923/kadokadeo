@@ -115,6 +115,9 @@ class DisplayObject {
 		return vvis;
 
 	function set_visible(v:Bool) {
+		// (shown again: drawn at its new place, no sliding from where it was hidden)
+		if (v && !vvis)
+			snap();
 		vvis = v;
 		node.visible = v;
 		return v;
@@ -142,9 +145,25 @@ class DisplayObject {
 		return c;
 	}
 
+	// the multipliers as the tint of the node; colour offsets (a Sprite or a Shape coloured by code: Fafi 360's aiming
+	// arrow) as a colour matrix after the filters
 	function applyColour() {
 		node.tint = ct == null ? 0xFFFFFF : ct.tint();
+		var withOffsets = ct != null && (ct.redOffset != 0 || ct.greenOffset != 0 || ct.blueOffset != 0);
+		if (withOffsets || ctFilter != null) {
+			ctFilter = withOffsets ? new ColorMatrixFilter([
+				ct.redMultiplier, 0, 0, 0, ct.redOffset,
+				0, ct.greenMultiplier, 0, 0, ct.greenOffset,
+				0, 0, ct.blueMultiplier, 0, ct.blueOffset,
+				0, 0, 0, 1, 0
+			]) : null;
+			if (withOffsets)
+				node.tint = 0xFFFFFF;
+			pixiFilters();
+		}
 	}
+
+	var ctFilter:ColorMatrixFilter = null;
 
 	public var filters(get, set):Array<BitmapFilter>;
 
@@ -153,15 +172,32 @@ class DisplayObject {
 
 	function set_filters(f:Array<BitmapFilter>) {
 		flts = f == null ? [] : f.copy();
+		pixiFilters();
+		return f;
+	}
+
+	function pixiFilters() {
 		var out:Array<Dynamic> = [];
 		for (x in flts) {
 			var p = x.toPixi();
 			if (p != null)
 				out.push(p);
 		}
+		if (ctFilter != null)
+			out.push(ctFilter.toPixi());
+		// filters given to an object that has a blend mode: the blend of the filtered picture (Flash: the blend mode of the
+		// object applies to it with its filters)
+		if (blend != NORMAL)
+			for (p in out)
+				p.blendMode = pixiBlend();
 		node.filters = out.length > 0 ? cast out : null;
-		return f;
 	}
+
+	// flash.geom.Transform: transform.matrix, transform.colorTransform
+	public var transform(get, never):Transform;
+
+	inline function get_transform():Transform
+		return new Transform(this);
 
 	public var blendMode(get, set):BlendMode;
 

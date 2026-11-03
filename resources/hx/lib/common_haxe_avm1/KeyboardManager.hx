@@ -42,6 +42,7 @@ class KeyboardManager {
 	static public inline var F = 70;
 	static public inline var G = 71;
 	static public inline var H = 72;
+	static public inline var M = 77;
 	static public inline var N = 78;
 	static public inline var Q = 81;
 	static public inline var R = 82;

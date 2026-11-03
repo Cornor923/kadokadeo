@@ -95,8 +95,8 @@ class DisplayObjectContainer extends DisplayObject {
 			return;
 		children.splice(j, 1);
 		children.insert(i, o);
-		node.removeChild(o.node);
-		node.addChildAt(o.node, i + base);
+		// (moved in the children of its node: no removal / adding, their events)
+		node.setChildIndex(o.node, i + base);
 	}
 
 	public function contains(o:DisplayObject):Bool {

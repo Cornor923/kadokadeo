@@ -4,7 +4,16 @@ import kado.Seed;
 
 // flash.display.BitmapData on an off-screen 2D <canvas>, shown by a Bitmap (getTexture: the canvas as a PIXI.Texture,
 // uploaded again after each change). Nothing of it is read by a game: its pixels are not the same in every browser.
+//
+// What only the GPU can draw (Fafi 360: the stadium composed of the clips of the SWF, the marks of the explosions on the
+// ground, mt.deepnight.Lib.flatten) moves the picture to a PIXI.RenderTexture, kept from then on: draw of a display
+// object (the matrix, colour transform and blend mode of draw; the own transform of the object ignored, like Flash),
+// colorTransform, applyFilter, and the fills / copies after it. A picture drawn on the GPU has no pixels to read (getPixel
+// reads what the canvas had before).
 class BitmapData {
+	// the scale mode of the RenderTextures (Flash.reset: smoothed; 0 for the pixel art games)
+	public static var gpuScaleMode:Int = 1;
+
 	public var width:Int;
 	public var height:Int;
 	public var transparent:Bool;
@@ -14,6 +23,13 @@ class BitmapData {
 	var tex:Dynamic; // PIXI.Texture (made when first needed)
 	var texDirty:Bool;
 	var _imgData:Dynamic; // cached ImageData (dropped at each change)
+
+	// the RenderTexture once the GPU drew in it, and the Bitmaps that show this BitmapData (given the RenderTexture)
+	var rt:Dynamic = null;
+	var users:Array<Bitmap> = [];
+	// the canvas only holds the colour it was created with (moved to the GPU without uploading it)
+	var plain:Bool = true;
+	var fill0:Int;
 
 	public function new(width:Int, height:Int, ?transparent:Bool = true, ?fillColor:Int = 0x0) {
 		this.width = width;
@@ -26,12 +42,15 @@ class BitmapData {
 		texDirty = true;
 		if (fillColor != 0x0 || !transparent)
 			fillRect(new Rectangle(0, 0, width, height), fillColor);
+		plain = true;
+		fill0 = fillColor;
 	}
 
 	public var rect(get, never):Rectangle;
 	inline function get_rect():Rectangle return new Rectangle(0, 0, width, height);
 
 	inline function dirty():Void {
+		plain = false;
 		texDirty = true;
 		_imgData = null;
 		// a PIXI.Texture already made must be uploaded again, or the change would not show
@@ -57,6 +76,10 @@ class BitmapData {
 	}
 
 	public function fillRect(r:Rectangle, color:Int):Void {
+		if (rt != null) {
+			gpuFill(r, color);
+			return;
+		}
 		ctx.clearRect(r.x, r.y, r.width, r.height);
 		ctx.fillStyle = argb(color);
 		ctx.fillRect(r.x, r.y, r.width, r.height);
@@ -76,12 +99,20 @@ class BitmapData {
 	}
 
 	public function setPixel(x:Int, y:Int, color:Int):Void {
+		if (rt != null) {
+			gpuFill(new Rectangle(x, y, 1, 1), 0xFF000000 | color);
+			return;
+		}
 		ctx.fillStyle = "rgb(" + ((color >> 16) & 0xFF) + "," + ((color >> 8) & 0xFF) + "," + (color & 0xFF) + ")";
 		ctx.fillRect(x, y, 1, 1);
 		dirty();
 	}
 
 	public function setPixel32(x:Int, y:Int, color:Int):Void {
+		if (rt != null) {
+			gpuFill(new Rectangle(x, y, 1, 1), color);
+			return;
+		}
 		ctx.fillStyle = argb(color);
 		ctx.fillRect(x, y, 1, 1);
 		dirty();
@@ -124,9 +155,19 @@ class BitmapData {
 	// (a ColorTransform is not a Matrix: matrix is skipped). With Dynamic parameters,
 	// Haxe skips nothing and the arguments shift.
 	public function draw(source:Dynamic, ?matrix:Matrix, ?colorTransform:ColorTransform, ?blendMode:BlendMode, ?clipRect:Dynamic, ?smoothing:Dynamic):Void {
+		var src:BitmapData = Std.downcast(source, BitmapData);
+		if (Std.isOfType(source, DisplayObject) || rt != null || (src != null && src.rt != null)) {
+			if (src != null)
+				drawTexture(src.getTexture(), matrix, colorTransform, blendMode);
+			else if (Std.isOfType(source, DisplayObject))
+				drawObject(source, matrix, colorTransform, blendMode);
+			return;
+		}
 		try {
-			var img = Std.isOfType(source, BitmapData) ? (cast source : BitmapData).canvas : source;
+			var img = src != null ? src.canvas : source;
 			ctx.save();
+			if (matrix != null)
+				ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 			// global alpha from the ColorTransform
 			if (colorTransform != null) {
 				var am:Dynamic = untyped colorTransform.alphaMultiplier;
@@ -149,11 +190,19 @@ class BitmapData {
 			case MULTIPLY: "multiply";
 			case SCREEN: "screen";
 			case ADD: "lighter";
+			case ERASE: "destination-out";
 			default: null;
 		}
 	}
 
 	public function copyPixels(source:BitmapData, srcRect:Rectangle, dstPoint:Point, ?alphaBitmapData:Dynamic, ?alphaPoint:Dynamic, ?mergeAlpha:Bool):Void {
+		if (rt != null || source.rt != null) {
+			var r = new Rectangle(dstPoint.x, dstPoint.y, srcRect.width, srcRect.height);
+			if (mergeAlpha != true)
+				gpuFill(r, 0);
+			drawRegion(source.getTexture(), srcRect, dstPoint, null, null);
+			return;
+		}
 		try {
 			ctx.drawImage(source.canvas, srcRect.x, srcRect.y, srcRect.width, srcRect.height, dstPoint.x, dstPoint.y, srcRect.width, srcRect.height);
 			dirty();
@@ -192,16 +241,42 @@ class BitmapData {
 		dirty();
 	}
 	public function copyChannel(source:Dynamic, srcRect:Rectangle, dstPoint:Point, srcChannel:Int, dstChannel:Int):Void {}
-	public function applyFilter(source:Dynamic, srcRect:Rectangle, dstPoint:Point, filter:Dynamic):Void {}
+
+	// the region srcRect of source drawn through the filter (a BitmapFilter of arkadeo) at dstPoint, replacing it
+	public function applyFilter(source:BitmapData, srcRect:Rectangle, dstPoint:Point, filter:BitmapFilter):Void {
+		var t:Dynamic = source == this ? copyTexture() : source.getTexture();
+		gpuFill(new Rectangle(dstPoint.x, dstPoint.y, srcRect.width, srcRect.height), 0);
+		drawRegion(t, srcRect, dstPoint, filter.toPixi(), null);
+		if (source == this)
+			t.destroy(true);
+	}
+
+	// the pixels of rect through the colour transform
+	public function colorTransform(r:Rectangle, ct:ColorTransform):Void {
+		applyFilter(this, r, new Point(r.x, r.y), new ColorMatrixFilter([
+			ct.redMultiplier, 0, 0, 0, ct.redOffset,
+			0, ct.greenMultiplier, 0, 0, ct.greenOffset,
+			0, 0, ct.blueMultiplier, 0, ct.blueOffset,
+			0, 0, 0, ct.alphaMultiplier, ct.alphaOffset
+		]));
+	}
 
 	public function clone():BitmapData {
 		var b = new BitmapData(width, height, transparent, 0x0);
+		if (rt != null) {
+			b.toGpu();
+			b.drawTexture(rt, null, null, null);
+			return b;
+		}
 		b.ctx.drawImage(canvas, 0, 0);
 		b.dirty();
 		return b;
 	}
 
 	public function dispose():Void {
+		if (rt != null)
+			rt.destroy(true);
+		rt = null;
 		canvas = null;
 		ctx = null;
 		tex = null;
@@ -209,6 +284,8 @@ class BitmapData {
 	}
 
 	public function getTexture():Dynamic {
+		if (rt != null)
+			return rt;
 		if (tex == null)
 			tex = js.Syntax.code("PIXI.Texture.from({0})", canvas);
 		else if (texDirty)
@@ -224,5 +301,194 @@ class BitmapData {
 		b.ctx.drawImage(img, 0, 0);
 		b.dirty();
 		return b;
+	}
+
+	// (Bitmap) the Bitmaps showing this BitmapData
+	public function addUser(b:Bitmap) {
+		if (users.indexOf(b) < 0)
+			users.push(b);
+	}
+
+	public function removeUser(b:Bitmap) {
+		users.remove(b);
+	}
+
+	// ---------------------------------------------------------------- GPU
+	static inline function renderer():Dynamic {
+		return kado.KadoKadeoManager.kkm.renderer;
+	}
+
+	// the picture moves to a RenderTexture (what the canvas had drawn first), shown from then on by the Bitmaps
+	function toGpu() {
+		if (rt != null)
+			return;
+		rt = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", width, height, gpuScaleMode);
+		if (plain) {
+			var g = new pixi.core.graphics.Graphics();
+			renderer().render(g, {renderTexture: rt, clear: true});
+			g.destroy();
+			if (fill0 != 0x0 || !transparent)
+				gpuFill(new Rectangle(0, 0, width, height), fill0);
+		} else {
+			var t:Dynamic = js.Syntax.code("PIXI.Texture.from({0})", canvas);
+			var s = new pixi.core.sprites.Sprite(t);
+			renderer().render(s, {renderTexture: rt, clear: true});
+			s.destroy();
+			t.destroy(true);
+		}
+		if (tex != null)
+			tex.destroy(true);
+		tex = null;
+		canvas = null;
+		ctx = null;
+		_imgData = null;
+		for (b in users)
+			if (b.bitmapData == this)
+				b.setTexture(rt, width, height);
+	}
+
+	// a copy of the RenderTexture (to draw this picture into itself)
+	function copyTexture():Dynamic {
+		toGpu();
+		var c:Dynamic = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", width, height, gpuScaleMode);
+		var s = new pixi.core.sprites.Sprite(rt);
+		renderer().render(s, {renderTexture: c, clear: true});
+		s.destroy();
+		return c;
+	}
+
+	// pixels of r set to the colour (ARGB), the alpha included (the rectangle is cleared first: Flash replaces)
+	function gpuFill(r:Rectangle, color:Int) {
+		toGpu();
+		var g = new pixi.core.graphics.Graphics();
+		g.beginFill(0, 1);
+		g.drawRect(r.x, r.y, r.width, r.height);
+		g.endFill();
+		untyped g.blendMode = js.Syntax.code("PIXI.BLEND_MODES.ERASE");
+		renderer().render(g, {renderTexture: rt, clear: false});
+		var a = transparent ? ((color >>> 24) & 0xFF) / 255 : 1.0;
+		if (a > 0) {
+			g.clear();
+			g.beginFill(color & 0xFFFFFF, a);
+			g.drawRect(r.x, r.y, r.width, r.height);
+			g.endFill();
+			untyped g.blendMode = js.Syntax.code("PIXI.BLEND_MODES.NORMAL");
+			renderer().render(g, {renderTexture: rt, clear: false});
+		}
+		g.destroy();
+	}
+
+	// a blend of draw: the PIXI blend of the drawn leaves, or of the filter that ends the drawing (a filtered picture is
+	// composed only once, by its last filter). OVERLAY: the 2 x src x dst of OverlayBlend when the game registered it (its
+	// filter puts the picture over 50 % grey), else the SCREEN of BlendMode
+	static function overlayFilter(b:BlendMode):Dynamic {
+		return b == OVERLAY && untyped renderer().state.blendModes[OverlayBlend.MODE] != null ? new OverlayBlend() : null;
+	}
+
+	static function pixiBlend(b:BlendMode):Int {
+		if (b == null)
+			return js.Syntax.code("PIXI.BLEND_MODES.NORMAL");
+		return b == ERASE ? js.Syntax.code("PIXI.BLEND_MODES.ERASE") : BlendMode.toPixi(b);
+	}
+
+	// the colour transform of draw: the alpha alone on the alpha of the drawn object, anything else as a colour matrix
+	static function ctFilter(ct:ColorTransform):Dynamic {
+		if (ct == null || (ct.redMultiplier == 1 && ct.greenMultiplier == 1 && ct.blueMultiplier == 1 && ct.redOffset == 0 && ct.greenOffset == 0
+			&& ct.blueOffset == 0 && ct.alphaOffset == 0))
+			return null;
+		return new ColorMatrixFilter([
+			ct.redMultiplier, 0, 0, 0, ct.redOffset,
+			0, ct.greenMultiplier, 0, 0, ct.greenOffset,
+			0, 0, ct.blueMultiplier, 0, ct.blueOffset,
+			0, 0, 0, 1, ct.alphaOffset
+		]).toPixi();
+	}
+
+	// renders `o` (a PIXI object at its own place) into the RenderTexture with these extra filters and this blend; the
+	// blends of its leaves and filters are put back after
+	function renderWith(o:Dynamic, extra:Array<Dynamic>, blend:BlendMode, ?transform:Matrix) {
+		var saved:Array<Dynamic> = [];
+		var flts:Array<Dynamic> = o.filters;
+		var ov = overlayFilter(blend);
+		if (ov != null)
+			extra.push(ov);
+		var all:Array<Dynamic> = (flts == null ? [] : flts.copy()).concat(extra);
+		var pb = pixiBlend(blend);
+		if (all.length > 0) {
+			o.filters = all;
+			var last = all[all.length - 1];
+			if (ov == null) {
+				saved.push({o: last, b: last.blendMode});
+				last.blendMode = pb;
+			}
+		} else if (pb != pixiBlend(NORMAL)) {
+			collectBlends(o, saved);
+			BlendMode.apply(o, pb);
+		}
+		renderer().render(o, {renderTexture: rt, clear: false, transform: transform != null ? transform.toPixi() : null});
+		for (l in saved)
+			l.o.blendMode = l.b;
+		o.filters = flts;
+	}
+
+	function drawTexture(t:Dynamic, matrix:Matrix, ct:ColorTransform, blend:BlendMode) {
+		toGpu();
+		var s = new pixi.core.sprites.Sprite(t);
+		if (ct != null)
+			s.alpha = ct.alphaMultiplier;
+		var f = ctFilter(ct);
+		renderWith(s, f != null ? [f] : [], blend, matrix);
+		s.destroy();
+	}
+
+	// the region r of the texture t drawn at pt (through the PIXI filter f)
+	function drawRegion(t:Dynamic, r:Rectangle, pt:Point, f:Dynamic, blend:BlendMode) {
+		toGpu();
+		var sub:Dynamic = js.Syntax.code("new PIXI.Texture({0}.baseTexture, new PIXI.Rectangle({1}, {2}, {3}, {4}))", t, t.frame.x + r.x, t.frame.y + r.y,
+			r.width, r.height);
+		var s = new pixi.core.sprites.Sprite(sub);
+		s.x = pt.x;
+		s.y = pt.y;
+		var holder = new pixi.core.display.Container();
+		holder.addChild(s);
+		// (a filter works on the whole target)
+		untyped holder.filterArea = new pixi.core.math.shapes.Rectangle(0, 0, width, height);
+		renderWith(holder, f != null ? [f] : [], blend);
+		holder.destroy({children: true});
+		sub.destroy(false);
+	}
+
+	// a display object drawn as Flash draws it: at its current Flash state, without its own transform (the matrix of draw),
+	// with its filters, the colour transform and the blend mode of draw
+	function drawObject(o:DisplayObject, matrix:Matrix, ct:ColorTransform, blend:BlendMode) {
+		toGpu();
+		var n:Dynamic = o.node;
+		o.show(1);
+		n.updateGraphics(1);
+		var px = n.position.x, py = n.position.y, sx = n.scale.x, sy = n.scale.y, rot = n.rotation, al = n.alpha, vis = n.visible;
+		var k = o.nodeScaleOf();
+		n.position.set(0, 0);
+		n.scale.set(k, k);
+		n.rotation = 0;
+		n.alpha = ct != null ? ct.alphaMultiplier : 1;
+		n.visible = true;
+		var f = ctFilter(ct);
+		renderWith(n, f != null ? [f] : [], blend, matrix);
+		n.position.set(px, py);
+		n.scale.set(sx, sy);
+		n.rotation = rot;
+		n.alpha = al;
+		n.visible = vis;
+	}
+
+	static function collectBlends(o:Dynamic, out:Array<Dynamic>) {
+		if (o.texture != null || o.geometry != null)
+			out.push({o: o, b: o.blendMode});
+		if (o.filters != null)
+			for (f in (o.filters : Array<Dynamic>))
+				out.push({o: f, b: f.blendMode});
+		if (o.children != null)
+			for (c in (o.children : Array<Dynamic>))
+				collectBlends(c, out);
 	}
 }

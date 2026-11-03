@@ -1,7 +1,7 @@
 package arkadeo;
 
 enum GlowStyle {
-	// Flash's: the alpha blurred by a box (FlashGlow, outer only)
+	// Flash's: the alpha blurred by a box (FlashGlow)
 	FLASH;
 	// the shader of pixi-filters (SampledGlow)
 	SAMPLED;
@@ -35,7 +35,7 @@ class GlowFilter extends BitmapFilter {
 
 	override public function toPixi():Dynamic {
 		return switch (style) {
-			case FLASH: new FlashGlow(blurX, blurY, strength, color, alpha);
+			case FLASH: new FlashGlow(blurX, blurY, strength, color, alpha, inner);
 			case SAMPLED: new SampledGlow(color, alpha, blurX, blurY, strength, quality, inner);
 		}
 	}

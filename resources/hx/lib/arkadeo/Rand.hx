@@ -24,6 +24,19 @@ class Rand {
 		return (int() % 10007) / 10007.0;
 	}
 
+	// (Fafi 360) the inclusive draws of mt.Rand: [min, max], a random sign when randSign
+	public inline function range(min:Float, max:Float, ?randSign:Bool = false):Float {
+		return (min + rand() * (max - min)) * (randSign ? random(2) * 2 - 1 : 1);
+	}
+
+	public inline function irange(min:Int, max:Int, ?randSign:Bool = false):Int {
+		return (min + random(max - min + 1)) * (randSign ? random(2) * 2 - 1 : 1);
+	}
+
+	public inline function sign():Int {
+		return random(2) * 2 - 1;
+	}
+
 	public function initSeed(n:Int, ?k:Int = 5) {
 		for (i in 0...k) {
 			n ^= (n << 7) & 0x2b5b2500;

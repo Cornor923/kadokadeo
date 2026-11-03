@@ -56,6 +56,49 @@ class TextField extends DisplayObject {
 		fonts = new Map();
 	}
 
+	// the colour of the glyphs of an embedded font (white pictures tinted): textColor, or the color of defaultTextFormat; the
+	// <font color="#rrggbb"> runs of htmlText colour their characters
+	public var textColor(get, set):Int;
+
+	var color:Int = 0xFFFFFF;
+	var runs:Array<Null<Int>> = null;
+
+	inline function get_textColor()
+		return color;
+
+	function set_textColor(c:Int) {
+		color = c;
+		runs = null;
+		if (pixiText != null)
+			(pixiText.style : Dynamic).fill = c;
+		else
+			layout();
+		return c;
+	}
+
+	// (the format of the whole text: its colour)
+	public function getTextFormat():TextFormat {
+		var f = new TextFormat();
+		if (defaultTextFormat != null) {
+			f.font = defaultTextFormat.font;
+			f.size = defaultTextFormat.size;
+			f.bold = defaultTextFormat.bold;
+			f.align = defaultTextFormat.align;
+		}
+		f.color = color;
+		return f;
+	}
+
+	public function setTextFormat(f:TextFormat) {
+		if (f.color != null)
+			textColor = f.color;
+	}
+
+	// the box of the field (Flash's bounds: Lib.flatten)
+	public function boxRect():Rectangle {
+		return new Rectangle(0, 0, Math.max(boxW, textWidth + 4), Math.max(boxH, textHeight + 4));
+	}
+
 	public function new(?fontName:String) {
 		super(new Node());
 		if (fontName != null) {
@@ -84,6 +127,7 @@ class TextField extends DisplayObject {
 
 	function set_text(s:String) {
 		str = s == null ? "" : s;
+		runs = null;
 		if (pixiText != null)
 			pixiText.text = str;
 		else
@@ -96,9 +140,38 @@ class TextField extends DisplayObject {
 	inline function get_htmlText()
 		return str;
 
-	// (the tags are removed)
+	// (the tags are removed, the colours of <font color> kept for the embedded fonts)
 	function set_htmlText(v:String) {
-		text = ~/<[^>]*>/g.replace(v, "");
+		var plain = new StringBuf();
+		var cols:Array<Null<Int>> = [];
+		var stack:Array<Null<Int>> = [];
+		var cur:Null<Int> = null;
+		var tag = ~/^<(\/?)([a-zA-Z]+)([^>]*)>/;
+		var colRe = ~/color\s*=\s*['"]#([0-9a-fA-F]{6})['"]/;
+		var i = 0;
+		while (i < v.length) {
+			if (v.charAt(i) == "<" && tag.match(v.substr(i))) {
+				if (tag.matched(2).toLowerCase() == "font") {
+					if (tag.matched(1) == "/")
+						cur = stack.length > 0 ? stack.pop() : null;
+					else {
+						stack.push(cur);
+						if (colRe.match(tag.matched(3)))
+							cur = Std.parseInt("0x" + colRe.matched(1));
+					}
+				}
+				i += tag.matched(0).length;
+				continue;
+			}
+			plain.add(v.charAt(i));
+			cols.push(cur);
+			i++;
+		}
+		text = plain.toString();
+		if (pixiText == null && cols.filter(c -> c != null).length > 0) {
+			runs = cols;
+			layout();
+		}
 		return v;
 	}
 
@@ -114,6 +187,11 @@ class TextField extends DisplayObject {
 				st.fontSize = f.size;
 			if (f.color != null)
 				st.fill = f.color;
+		}
+		if (f.color != null)
+			color = f.color;
+		if (pixiText != null) {
+			var st:Dynamic = pixiText.style;
 			if (f.font != null)
 				st.fontFamily = "sans-serif";
 			if (f.bold == true)
@@ -180,6 +258,7 @@ class TextField extends DisplayObject {
 		var lh = d.ascent + d.descent + d.leading;
 		th = lines.length * lh - d.leading;
 		var y = 2 + d.ascent;
+		var ci = 0;
 		for (l in lines) {
 			var w = lineWidth(l);
 			var x = 2.0;
@@ -189,15 +268,18 @@ class TextField extends DisplayObject {
 				x = (fieldWidth - w) * 0.5;
 			for (i in 0...l.length) {
 				var j = font.idx.get(l.charAt(i));
+				var rc = runs != null ? runs[ci + i] : null;
 				if (j == null)
 					continue;
 				var s = new PixiSprite(font.tex[j]);
+				s.tint = rc != null ? rc : color;
 				s.anchor.copyFrom(font.tex[j].defaultAnchor);
 				s.x = x;
 				s.y = y;
 				node.addChild(s);
 				x += d.adv[j];
 			}
+			ci += l.length + 1;
 			y += lh;
 		}
 	}

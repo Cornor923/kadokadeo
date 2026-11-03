@@ -41,6 +41,17 @@ class MovieClip extends DisplayObject {
 		return clip.baseScale;
 	}
 
+	// (width / height, Lib.flatten: the layout of the pictures, never the game) the pictures of the current frame, in
+	// Flash pixels
+	override public function contentRect():Rectangle {
+		clip.updateGraphics(1);
+		var b = clip.getLocalBounds();
+		if (b.width <= 0 && b.height <= 0)
+			return null;
+		var k = clip.baseScale;
+		return new Rectangle(b.x * k, b.y * k, b.width * k, b.height * k);
+	}
+
 	public var smc(get, never):Clip;
 
 	inline function get_smc()

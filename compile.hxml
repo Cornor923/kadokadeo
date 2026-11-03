@@ -238,3 +238,6 @@ brutalteenagecrisis.Game
 --next
 -js ./resources/js/games/rockfaller.js
 rockfaller.Game
+--next
+-js ./resources/js/games/fafi360.js
+fafi360.Game

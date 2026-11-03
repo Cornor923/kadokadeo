@@ -132,6 +132,9 @@ class Exporter:
         # ColorMatrixFilter of each frame, offsets in 0..255, 0 = none), with the glows of `effects`; off: dropped with
         # a warning
         self.color_matrix = False
+        # a named instance driven by the code is a nested clip even with a single frame (Fafi 360: the code plays the
+        # _skin / _shoes of every pose of a player, some have one picture); off: a single picture is a CUT layer
+        self.code_clips = False
 
     # ------------------------------------------------------------------ helpers
     @staticmethod
@@ -434,7 +437,7 @@ class Exporter:
                 sub = e['inst']
                 is_dyn = sub is not None and (e['name'] in code or self.alive(sub.sid, ctrl))
                 is_named_leaf = sub is not None and e['name'] in code and not self.alive(sub.sid, ctrl) and \
-                    G.sprites[sub.sid].nframes == 1
+                    G.sprites[sub.sid].nframes == 1 and not self.code_clips
                 keep_mask = self.flat_masks and e['clip'] is not None and any(
                     d < d2 <= e['clip'] and st.display[d2]['inst'] is not None and
                     (st.display[d2]['name'] in code or self.alive(st.display[d2]['inst'].sid, ctrl)) for d2 in depths)

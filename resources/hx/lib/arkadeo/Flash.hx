@@ -39,6 +39,8 @@ class Flash {
 		BlurFilter.scale = 0.5;
 		BlurFilter.forceQuality = 2;
 		GlowFilter.style = FLASH;
+		FlashGlow.maxStageScale = 1;
+		BitmapData.gpuScaleMode = 1;
 		MovieClip.all = [];
 		Clip.reset();
 	}

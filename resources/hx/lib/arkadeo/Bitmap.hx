@@ -9,7 +9,8 @@ class Bitmap extends DisplayObject {
 
 	public var anim(default, null):String;
 
-	public function new(?anim:String, ?frame:Int = 1, ?bitmapData:BitmapData) {
+	// (Flash's pixelSnapping / smoothing: the scale mode is the texture's)
+	public function new(?anim:String, ?frame:Int = 1, ?bitmapData:BitmapData, ?pixelSnapping:String, ?smoothing:Bool) {
 		super(new Node());
 		if (anim != null)
 			setAnim(anim, frame);
@@ -21,10 +22,14 @@ class Bitmap extends DisplayObject {
 	public var bitmapData(default, set):BitmapData = null;
 
 	function set_bitmapData(b:BitmapData):BitmapData {
+		if (bitmapData != null)
+			bitmapData.removeUser(this);
 		bitmapData = b;
-		if (b != null)
+		if (b != null) {
+			// (given the RenderTexture if the BitmapData moves to the GPU)
+			b.addUser(this);
 			setTexture(b.getTexture(), b.width, b.height);
-		else
+		} else
 			setTexture(Texture.EMPTY, 0, 0);
 		return b;
 	}

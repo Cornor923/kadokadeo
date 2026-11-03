@@ -1,5 +1,6 @@
 package mt.deepnight;
 
+#if flash
 import flash.display.Sprite;
 import flash.display.Bitmap;
 import Texture;
@@ -337,3 +338,45 @@ class Buffer {
 		}
 	}
 }
+
+#else
+// (arkadeo, the AS3 games) the buffer of a game drawn at a low resolution: the scene (container, its planes in dm) is shown
+// `upscale` times bigger by `render`, on the display list, instead of being drawn into a BitmapData at each update (Fafi
+// 360: its 300 x 230 scene shown x2, pictures without smoothing); the background colour under it when not transparent
+class Buffer {
+	public var render(default, null):arkadeo.Sprite;
+	public var container(default, null):arkadeo.Sprite;
+	public var dm:arkadeo.DepthManager;
+
+	public var width(default, null):Int;
+	public var height(default, null):Int;
+	public var upscale(default, null):Float;
+	public var fl_transparent(default, null):Bool;
+	public var bgColor(default, null):Int;
+
+	public function new(w:Int, h:Int, up:Float, fl_transp:Bool, col:Int, ?useScale2x = false, ?pixelRatio = 1.0) {
+		width = w;
+		height = h;
+		upscale = up;
+		fl_transparent = fl_transp;
+		bgColor = col;
+		render = new arkadeo.Sprite();
+		if (!fl_transp) {
+			render.graphics.beginFill(col & 0xFFFFFF, 1);
+			render.graphics.drawRect(0, 0, w * up, h * up);
+			render.graphics.endFill();
+		}
+		container = new arkadeo.Sprite();
+		container.scaleX = up;
+		container.scaleY = up / pixelRatio;
+		// (Flash filtered the scene in the BitmapData of the buffer: the filters of its objects are drawn x upscale)
+		untyped container.node.flashStageScale = up;
+		arkadeo.FlashGlow.maxStageScale = Math.max(arkadeo.FlashGlow.maxStageScale, up);
+		render.addChild(container);
+		dm = new arkadeo.DepthManager(container);
+	}
+
+	// (the scene is drawn by PIXI with the rest of the display list)
+	public function update() {}
+}
+#end

@@ -404,6 +404,33 @@ class Lib {
 	}
 	#end
 
+	#if js
+	// (arkadeo, the AS3 games) the object drawn into a BitmapData of its bounds in its own space (+ padding), as a Bitmap
+	// placed at these bounds (in the space of the object, or of its parent with copyTransforms)
+	public static function flatten(o:arkadeo.DisplayObject, ?uniqId:String, ?padding = 0.0, ?copyTransforms = false):arkadeo.Bitmap {
+		var tf = Std.downcast(o, arkadeo.TextField);
+		var b = tf != null ? tf.boxRect() : o.contentRect();
+		if (b == null)
+			b = new arkadeo.Rectangle(0, 0, 1, 1);
+		var bmp = new arkadeo.Bitmap(new arkadeo.BitmapData(Math.ceil(b.width + padding * 2), Math.ceil(b.height + padding * 2), true, 0x0));
+		var m = new arkadeo.Matrix();
+		m.translate(-b.x, -b.y);
+		m.translate(padding, padding);
+		bmp.bitmapData.draw(o, m, o.transform.colorTransform);
+
+		var m = new arkadeo.Matrix();
+		m.translate(b.x, b.y);
+		m.translate(-padding, -padding);
+		if (copyTransforms) {
+			m.scale(o.scaleX, o.scaleY);
+			m.rotate(rad(o.rotation));
+			m.translate(o.x, o.y);
+		}
+		bmp.transform.matrix = m;
+		return bmp;
+	}
+	#end
+
 	// Credits : http://brianin3d.blogspot.fr/2008/11/haxe-bresenhams-line-drawing-algorithm.html
 	public static function bresenham(x0:Int, y0:Int, x1:Int, y1:Int, ?cb:Int->Int->Void) {
 		var pts = [];

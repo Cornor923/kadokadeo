@@ -520,6 +520,25 @@ class Color {
 			                0,                 0,                 0, 1.0, 0,
 		]);
 	}
+
+	// (the name of the same filter in the mt lib of Fafi 360)
+	public static inline function getColorizeFilter(col:Int, ?ratioNewColor = 1.0, ?ratioOldColor = 1.0) {
+		return getColorizeMatrixFilter(col, ratioNewColor, ratioOldColor);
+	}
+
+	// the ColorTransform of the flash9 version, in arkadeo
+	public static inline function getColorizeCT(?col:Col, ?colInt:Int, ratio:Float) {
+		if (col == null)
+			col = intToRgb(colInt);
+		var ct = new arkadeo.ColorTransform();
+		ct.redOffset = col.r * ratio;
+		ct.greenOffset = col.g * ratio;
+		ct.blueOffset = col.b * ratio;
+		ct.redMultiplier = 1 - ratio;
+		ct.greenMultiplier = 1 - ratio;
+		ct.blueMultiplier = 1 - ratio;
+		return ct;
+	}
 	#end
 
 	// Renvoie une matrice pour utiliser avec un ColorMatrixFilter

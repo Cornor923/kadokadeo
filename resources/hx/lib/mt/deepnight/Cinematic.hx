@@ -80,7 +80,7 @@ class Cinematic {
 	
 	
 	
-	#if !CinematicDebug
+	#if (!CinematicDebug && !js) // (demo: flash.Lib.current)
 	/****************************************************/
 	public static function demo() {
 		var cm = new Cinematic();
@@ -142,7 +142,7 @@ class Cinematic {
 	var queues			: Array< Array<CinematicEvent> >;
 	//var lastTime		: Float;
 	var curQueue		: Array<CinematicEvent>;
-	var persistSignals	: Hash<Bool>;
+	var persistSignals	: Map<String, Bool>;
 	//var time			: Float;
 	var fps				: Int;
 	#end
@@ -155,7 +155,7 @@ class Cinematic {
 		queues = new Array();
 		//time = 0;
 		//lastTime = Date.now().getTime();
-		persistSignals = new Hash();
+		persistSignals = new Map();
 		#end
 	}
 	
@@ -177,7 +177,7 @@ class Cinematic {
 		return null;
 	}
 	
-	@:macro public function create(ethis:Expr, block:Expr) : Expr {
+	macro public function create(ethis:Expr, block:Expr) : Expr {
 		var r = __rchain(ethis, block);
 		r = macro {
 			$ethis.__beginNewQueue();
@@ -189,7 +189,7 @@ class Cinematic {
 		return r;
 	}
 	
-	@:macro public function chainToLast(ethis:Expr, block:Expr) : Expr {
+	macro public function chainToLast(ethis:Expr, block:Expr) : Expr {
 		var r = __rchain(ethis, block);
 		r = macro {
 			if( $ethis.isEmpty() )
@@ -336,7 +336,7 @@ class Cinematic {
 							
 			}
 			
-			return macro {$[exprs];};
+			return {expr: EBlock(exprs), pos: block.pos}; // (Haxe 4: no $[] reification)
 		default:
 			return __rchain(ethis, macro {$block;});
 		}
