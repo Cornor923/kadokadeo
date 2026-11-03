@@ -17,6 +17,8 @@ const load = () =>
     tournament.value = data.tournament
   })
 watchEffect(load)
+// an attack received, repelled, won, a defense reserved, a war declared: at once
+onClanUpdated(() => props.clan.id, ['status'], load)
 
 // only the kinds of attacks there are
 const sections = computed(() => [

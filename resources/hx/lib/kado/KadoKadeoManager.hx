@@ -92,8 +92,9 @@ class KadoKadeoManager extends Application {
 	// (the parameters of the game over: no function kept in a field of the manager, see Integrity)
 	var deferredSubmit:Bool = false;
 	var deferredSubmitParams:Dynamic = null;
-	// last value given to the page ("runState" event)
+	// last values given to the page ("runState" and "runPlaying" events)
 	var canChangeRunSent:Null<Bool> = null;
+	var playingSent:Bool = false;
 
 	var fpsText:pixi.core.text.Text;
 	var fpsFrames:Int = 0;
@@ -681,6 +682,12 @@ class KadoKadeoManager extends Application {
 		if (can != canChangeRunSent) {
 			canChangeRunSent = can;
 			emitWindowEvent("runState", {canChangeRun: can});
+		}
+		// a live run being played (until its score is sent): the page holds its toasts until "gameFinished"
+		var playing = params.replayData == null && (runFlow.state == Playing || runFlow.state == SubmittingRun);
+		if (playing != playingSent) {
+			playingSent = playing;
+			emitWindowEvent("runPlaying", {playing: playing});
 		}
 	}
 

@@ -29,6 +29,11 @@ const loadMembers = () => fetchMembers(props.clan.id).then((data) => {
 })
 loadApplications()
 loadMembers()
+// a new application, answered by another manager, the members changed: at once
+onClanUpdated(() => props.clan.id, ['members'], () => {
+  loadApplications()
+  loadMembers()
+})
 
 const taken = (role) => members.value.filter((m) => m.combat_role === role).length
 

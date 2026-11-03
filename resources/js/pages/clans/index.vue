@@ -5,30 +5,17 @@ const route = useRoute()
 const router = useRouter()
 const clanStore = useClanStore()
 const authStore = useAuthStore()
-const { fetchRanking, isLoading, error } = useClans()
 // (its own error)
 const { createClan, isLoading: isCreating, error: createError } = useClans()
 
 const tab = computed(() => ['war', 'missions', 'create'].includes(route.query.tab) ? route.query.tab : 'war')
 const search = ref(route.query.q ?? '')
-const clans = ref([])
-const meta = ref(null)
-const tournament = ref(null)
-
-const load = (page = 1) => {
-  if (tab.value === 'create') {
-    return
-  }
-  fetchRanking({ ranking: tab.value, q: route.query.q || undefined, page }).then((data) => {
-    clans.value = page === 1 ? data.data : [...clans.value, ...data.data]
-    meta.value = data.meta
-    tournament.value = data.tournament
-  })
-}
-watch(() => [route.query.tab, route.query.q], () => load(), { immediate: true })
+// (none on the tab of the creation)
+const { items: clans, tournament, hasNextPage, loadMore, isLoading, error } = useClanRanking(
+  () => (tab.value === 'create' ? null : { ranking: tab.value, q: route.query.q || undefined }),
+)
 clanStore.reload()
 
-const hasNextPage = computed(() => meta.value && meta.value.current_page < meta.value.last_page)
 const doSearch = () => router.push({ query: { ...route.query, q: search.value || undefined } })
 
 const name = ref('')
@@ -187,7 +174,7 @@ const selectedIndex = computed(() => tabs.findIndex((t) => t.value === tab.value
         </KadoTable>
       </div>
       <p v-if="hasNextPage" class="mx-2.5 my-4 text-center">
-        <FormButton size="lg" @click="load(meta.current_page + 1)">Charger plus de clans</FormButton>
+        <FormButton size="lg" @click="loadMore()">Charger plus de clans</FormButton>
       </p>
     </template>
   </div>

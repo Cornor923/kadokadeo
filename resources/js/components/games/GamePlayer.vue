@@ -8,7 +8,7 @@ const props = defineProps({
   args: { type: Object, default: () => ({}) },
 })
 
-const { isLoading: isFavoriteLoading, error: favoriteError, put } = useApi()
+const { isLoading: isFavoriteLoading, error: favoriteError, setFavorite } = useGames()
 // the game itself: « Changer de partie » (GameScript.vue)
 const gameScript = ref(null)
 const isArkadeo = computed(() => props.game.is_arkadeo ?? false)
@@ -44,9 +44,9 @@ watch(() => props.game.is_favorite, (value) => {
 function toggleFavorite() {
   if (isFavoriteLoading.value) return
 
-  put(`/games/${props.game.id}/favorite`, { is_favorite: !isFavorite.value })
-    .then((response) => {
-      isFavorite.value = response.data.is_favorite
+  setFavorite(props.game.id, !isFavorite.value)
+    .then((data) => {
+      isFavorite.value = data.is_favorite
     })
     .catch(() => null)
 }
@@ -64,7 +64,8 @@ watchEffect((onInvalidate) => {
 
 <template>
   <MessageError v-if="favoriteError">{{ favoriteError }}</MessageError>
-  <div :class="{'w-full h-full fixed z-20 inset-0 bg-black/75': isZoomed}">
+  <!-- zoomed: above the bar of Eternaltwin (z-40), under the toasts (z-50) -->
+  <div :class="{'w-full h-full fixed z-45 inset-0 bg-black/75': isZoomed}">
     <div :class="isZoomed ? 'fixed w-screen h-dvh flex flex-col overflow-hidden' : 'relative w-full mt-[30px] mb-[50px] mx-auto'" :style="gameInterfaceStyle">
       <div v-if="isZoomed" class="w-full text-center tracking-widest">
         <div class="text-white p-1 cursor-pointer bg-black/75 border border-solid border-black hover:bg-black hover:border-white" @click.prevent="isZoomed = false">

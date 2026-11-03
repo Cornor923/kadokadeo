@@ -44,7 +44,7 @@ The players can change the look of the site in « Mon compte »: the KadoKado th
 
 ### Clans
 
-The tournament of the clans lasts a period (`App\Services\ClanService`), with two rankings at the same time as on KadoKado since 2011: the attacks (the score of a run becomes an attack, the attacked clan has some hours to beat it) and the missions (a series of games to complete in a given time, more games in a bigger clan, harder scores with each mission: a completed mission gives points and opens the next one, a mission not finished in time loses a point by game not completed, minus one). Clan runs of missions are free, attacks and defenses have their own free games each day (given again by `kado:reset-daily-games`), then a paid clan game (bought by packs with Kado points, which their owner uses or gives to his clan, distributed by the leader and the right hands). The scores, the missions and the options start again from 0 on the first day of the next period (the clans and their members stay). It is closed with the period by `kado:prepare-new-period`, and `kado:clans:resolve-attacks` (scheduled every 5 minutes) gives their points to the attacks not repelled in time.
+The tournament of the clans lasts a period (`App\Services\ClanService`), with two rankings at the same time as on KadoKado since 2011: the attacks (the score of a run becomes an attack, the attacked clan has some hours to beat it) and the missions (a series of games to complete in a given time, more games in a bigger clan, harder scores with each mission: a completed mission gives points and opens the next one, a mission not finished in time loses a point by game not completed, minus one). Clan runs of missions are free, attacks and defenses have their own free games each day (given again by `kado:reset-daily-games`), then a paid clan game (bought by packs with Kado points, which their owner uses or gives to his clan, distributed by the leader and the right hands). The scores, the missions and the options start again from 0 on the first day of the next period (the clans and their members stay). It is closed with the period by `kado:prepare-new-period`, and `kado:clans:resolve-attacks` (scheduled every 5 minutes) gives their points to the attacks not repelled in time, `kado:clans:expire-missions` (every 5 minutes too) fails the missions not finished in time.
 
 All the rules (durations, points, steps, options, packs of paid games, rewards...) are settings of `App\Settings\ClanSettings` changed in the admin, « Paramètres > Clans », with their default values in [`database/settings`](database/settings). The help page shows them as they are set (`GET /api/clans/overview`, `rules`).
 
@@ -74,6 +74,34 @@ Per-game analyzers of the moves (`resources/js/replay-verifier/analyzers/<game_k
 | Variable                           | Description                                                                         | Default   |
 | ---------------------------------- | ----------------------------------------------------------------------------------- | --------- |
 | `KADO_REPLAY_ANALYSIS_QUEUE`       | Queue of these analysis jobs                                                        | `default` |
+
+### Realtime (Reverb)
+
+The pages are kept up to date by events sent to [Laravel Reverb](https://reverb.laravel.com) (`App\Support\Realtime::send`, after the transaction and the response, never queued: a Reverb down or slow never makes an action fail, the error is reported). The browsers listen with Laravel Echo (`resources/js/stores/realtime.js`, `useChannel` in `resources/js/composables/useRealtime.js`) and reload what they show when the socket connects again; without Reverb (`BROADCAST_CONNECTION=log` / `null`) or while it is cut, they poll as before. What is sent: the announcement, the private messages and the notifications of the player (`App\Services\NotificationService`: comments, answers and likes of the replays, applications to the clan, `user_notifications` pruned after 2 months), his Kado points and games, the clans (feats of the members in toasts, their pages and forum), the comments, answers and likes of the replay being watched, the leaderboards of a game (a run in the top 10 of its league or a record) and of the daily game, a new period, the daily game. The channels are in [`routes/channels.php`](routes/channels.php), authorized by `POST /api/broadcasting/auth` with the session of the site.
+
+Reverb is started by `kado:worker` (with the queue) and listens on `REVERB_SERVER_HOST:WS_PORT` (`0.0.0.0:8080`; `WS_PORT` is given by Katal in production, `REVERB_SERVER_PORT` without it); PHP needs the `pcntl` extension. Without the `uv` extension (`apt install libuv1-dev && pecl install uv-beta`, then `extension=uv.so` for the CLI) Reverb waits on its sockets with `stream_select`, limited to 1024 files: install it before raising `REVERB_APP_MAX_CONNECTIONS` above 1000, and give the service the files it needs (`LimitNOFILE=65536` in its systemd unit, each browser tab is a socket). The events of a request are sent after its response (`App\Support\RealtimeOutbox`, each once); after a failure nothing is sent for 30 seconds. The web server sends the WebSocket paths to it:
+
+```nginx
+location ~ ^/(app|apps)/ {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_read_timeout 120s;
+}
+```
+
+| Variable                    | Description                                                                         | Default                 |
+| --------------------------- | ----------------------------------------------------------------------------------- | ----------------------- |
+| `BROADCAST_CONNECTION`      | `reverb`, or `log` / `null` to turn the realtime off                                | `null`                  |
+| `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET` | The application of Reverb (random strings, the key is public)   |                         |
+| `WS_PORT`                   | Where Reverb listens (given by Katal in production; `REVERB_SERVER_PORT` without it) | `8080`                 |
+| `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME` | Where Laravel sends the events (Reverb on the same machine: `localhost`, `WS_PORT`, `http`) | `REVERB_PORT`: `WS_PORT` |
+| `REVERB_PUBLIC_HOST`, `REVERB_PUBLIC_PORT`, `REVERB_PUBLIC_SCHEME` | Where the browsers connect (`window.Kado.reverb`), through the web server | the host, port (443) and scheme of the page |
+| `REVERB_ALLOWED_ORIGINS`    | Hosts of the pages allowed to connect, separated by commas (`*.example.org`, `*` for any) | the host of `SELF_URL` |
+| `REVERB_APP_MAX_CONNECTIONS` | Sockets at most (the others poll): above 1000 only with `ext-uv`                    | `1000`                  |
+| `REVERB_APP_RATE_LIMIT_MAX_ATTEMPTS`, `REVERB_APP_RATE_LIMIT_DECAY_SECONDS` | Messages of a socket at most (subscriptions, pings) in that many seconds, then it is cut (`REVERB_APP_RATE_LIMITING_ENABLED=false`: no limit) | `120`, `60` |
 
 ### External services
 
@@ -117,7 +145,8 @@ openssl rsa -in keypair.pem -pubout -out public.pem
 | `kado:reset-daily-games`                         | Resets the daily games for every user to the configured value (« Paramètres > Site »)                                                                                 | ✅ Everyday at 00:00                                           |
 | `kado:prepare-daily-game`                        | Picks the daily game of today (a random active game, its seed and contract). Does nothing if it already exists                                                       | ✅ Everyday at 00:00                                           |
 | `kado:game-builds:keep`                          | Lists the game versions still used by replays in `storage/app/game-builds/keep.json`: the next build removes the others (see « Paramètres > Site »)              | ✅ Everyday at 00:00                                           |
-| `model:prune --model="App\Models\ReplayVerification"` | Removes the replay verifications that went well after 30 days                                                                                                 | ✅ Everyday at 00:00                                           |
+| `model:prune --model="App\Models\ReplayVerification" --model="App\Models\UserNotification"` | Removes the replay verifications that went well after 30 days, the notifications of the players two months after their last change | ✅ Everyday at 00:00 |
+| `kado:clans:expire-missions`                     | Fails the clan missions not finished in time: their members are told a new mission is available (it is made when one of them opens the missions) | ✅ Every 5 minutes |
 | `kado:replays:analyze {game}`                    | Runs the move analyzer of a game on the replays of its runs and shows its metrics, to calibrate the thresholds (nothing is stored). Options: `--since=`, `--limit=50`, `--user=` | ❌                                                             |
 | `kado:clean-old-runs`                            | Deletes for good the runs older than two months without a score                                                                                                       | ❌ (disabled in `routes/console.php`)                          |
 | `kado:reset-scores {gameId?}`                    | ⚠️ Soft-deletes the runs of every game, or of one game, and erases their replays                                                                                                | ❌                                                             |

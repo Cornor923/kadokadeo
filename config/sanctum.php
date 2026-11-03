@@ -34,7 +34,8 @@ return [
     |
     */
 
-    'guard' => [],
+    // the session of the site (the SPA and the games, statefulApi in bootstrap/app.php)
+    'guard' => ['web'],
 
     /*
     |--------------------------------------------------------------------------

@@ -10,6 +10,8 @@ const props = defineProps({
   reasons: { type: Array, default: () => [] },
   // the replay is at this comment
   active: { type: Boolean, default: false },
+  // reached by a link (a notification): shown for a moment
+  highlighted: { type: Boolean, default: false },
 })
 const emit = defineEmits(['seek', 'reply', 'changed'])
 
@@ -62,7 +64,7 @@ const formatDate = (date) => dayjs(date).format('DD/MM/YY à HH:mm')
 
 <template>
   <article class="border border-solid border-kado-teal-400 bg-white text-xs"
-           :class="[isReply ? 'ml-6 border-t-0 sm:ml-10' : '', active ? 'outline-2 outline-kado-orange-500 outline-solid' : '']">
+           :class="[isReply ? 'ml-6 border-t-0 sm:ml-10' : '', active ? 'outline-2 outline-kado-orange-500 outline-solid' : '', highlighted ? 'shadow-[0_0_0_3px] shadow-kado-pink-600' : '']">
     <div class="flex flex-wrap items-center gap-x-2 border-0 border-b border-solid border-kado-teal-400 bg-kado-teal-100 bg-[url(/assets/img/gfx/gui/forum_info_bg.jpg)] bg-no-repeat px-2 py-0.5 text-2xs text-kado-slate-700">
       <button v-if="!isReply"
               type="button"

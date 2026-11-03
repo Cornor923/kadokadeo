@@ -4,6 +4,7 @@ import { computed, onMounted, onUnmounted } from 'vue'
 
 import Error from '@/components/message/Error.vue'
 import Success from '@/components/message/Success.vue'
+import { onRealtimeReconnect, usePolling } from '@/composables/useRealtime'
 import { useAnnouncementStore } from '@/stores/announcement'
 
 const REFRESH_INTERVAL = 5 * 60 * 1000
@@ -19,16 +20,16 @@ const refreshIfVisible = () => {
   }
 }
 
-let refreshTimer = null
+// sent by the server when it changes (stores/announcement.js): polled only without the realtime
+usePolling(refreshIfVisible, REFRESH_INTERVAL, { channel: 'site' })
+onRealtimeReconnect(refreshIfVisible)
 
 onMounted(() => {
   announcementStore.fetchAnnouncement()
-  refreshTimer = setInterval(refreshIfVisible, REFRESH_INTERVAL)
   document.addEventListener('visibilitychange', refreshIfVisible)
 })
 
 onUnmounted(() => {
-  clearInterval(refreshTimer)
   document.removeEventListener('visibilitychange', refreshIfVisible)
 })
 </script>

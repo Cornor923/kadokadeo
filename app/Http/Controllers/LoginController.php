@@ -15,6 +15,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 
 class LoginController extends Controller implements HasMiddleware
 {
@@ -81,12 +82,22 @@ class LoginController extends Controller implements HasMiddleware
 
     public function logout(Request $request)
     {
-        // $request->session()->invalidate();
-        // $request->session()->regenerateToken();
-        $request->user()->currentAccessToken()->delete();
+        // a page opened before the session cookies still sends its token: it goes with the logout (whether the request
+        // was authenticated by it or by the session)
+        if ($bearer = $request->bearerToken()) {
+            Sanctum::personalAccessTokenModel()::findToken($bearer)?->delete();
+        }
+        Auth::guard('web')->logout();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return response()->noContent();
     }
 
-    // Get the callback from Eternal-twin when connected successfully, then create the session
+    // Get the callback from Eternal-twin when connected successfully, then create the session: its cookie (HttpOnly) and
+    // the one of « remember me » keep the player logged in, no token is given to the page
     public function loginCallback(Request $request)
     {
         $data = $request->validate([
@@ -132,11 +143,12 @@ class LoginController extends Controller implements HasMiddleware
         }
         $dbUser->save();
         Auth::login($dbUser, true);
-
-        $token = $dbUser->createToken('kadokadeo')->plainTextToken;
+        // (a new id for the session of a logged in player, and a new CSRF token: against the fixation of the session)
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return response()->json([
-            'token' => $token,
             'user' => UserResource::make($dbUser),
         ])->withoutCookie(self::OAUTH_STATE_COOKIE, self::OAUTH_STATE_COOKIE_PATH);
     }

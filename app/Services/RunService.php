@@ -3,13 +3,16 @@
 namespace App\Services;
 
 use App\Enums\AntiCheatBit;
+use App\Events\UserRefresh;
 use App\Exceptions\RunAlreadyCompletedException;
 use App\Models\GamePeriodStar;
 use App\Models\Run;
 use App\Models\UserPoint;
 use App\Settings\AntiCheatSettings;
 use App\Settings\ReplaySettings;
+use App\Support\Realtime;
 use App\Support\ReplayHeader;
+use App\Support\ScoreBoards;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -165,6 +168,9 @@ class RunService
             report($e);
         }
         $this->forgetPromotionScores($run);
+        // out of the leaderboards shown, the stars of the player read again
+        ScoreBoards::changed($run);
+        Realtime::send(new UserRefresh($run->user_id));
     }
 
     public function rewardStars(Run $run)

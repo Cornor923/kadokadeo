@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Run extends Model
@@ -39,12 +40,14 @@ class Run extends Model
         'comments_count' => 'integer',
     ];
 
-    public function game()
+    /** @return BelongsTo<Game, $this> */
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
 
-    public function user()
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

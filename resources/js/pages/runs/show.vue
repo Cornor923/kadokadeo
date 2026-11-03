@@ -1,5 +1,6 @@
 <script setup>
 const route = useRoute()
+const authStore = useAuthStore()
 const { isLoading, fetchRun } = useRuns()
 const { fetchComments, recordView } = useRunComments()
 const runId = route.params.id
@@ -7,6 +8,7 @@ const run = ref(null)
 
 fetchRun(runId).then((data) => {
   run.value = data.data
+  goToLinkedComment()
 })
 
 // the replay is played by the version of the game it was recorded with (run.gamedata)
@@ -31,8 +33,53 @@ const loadComments = () => fetchComments(runId).then((data) => {
   if (run.value) {
     run.value.comments_count = data.data.filter((comment) => !comment.is_deleted).length
   }
+  goToLinkedComment()
 })
 loadComments()
+
+// LIVE: the comments of the others (App\Events\RunCommentsChanged) loaded again (what the viewer may do with them comes
+// with them), their likes counted at once; again after a cut of the realtime
+const reloadComments = refetchSoon(loadComments, { delay: 300, jitter: 700 })
+useChannel(`runs.${runId}`, {
+  'comments.changed': (e) => {
+    if (e.likes_count !== null) {
+      const comment = comments.value.find((c) => c.id === e.comment_id)
+      if (comment) {
+        comment.likes_count = e.likes_count
+      }
+    } else if (e.by !== authStore.user?.etwin_id) {
+      reloadComments()
+    }
+  },
+}, { resync: loadComments })
+
+// the link of a notification (?comment=<id>): the replay at the frame of the comment, the comment shown for a moment
+const highlightId = ref(null)
+let linkedFrame = null
+const goToLinkedComment = () => {
+  const id = Number(route.query.comment)
+  // (once the run and the comments are there: the page shows them)
+  const comment = id && run.value && highlightId.value === null && linkedFrame === null ? comments.value.find((c) => c.id === id) : null
+  if (!comment) {
+    return
+  }
+  highlightId.value = id
+  linkedFrame = comment.frame
+  nextTick(() => document.getElementById(`comment-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+  setTimeout(() => {
+    highlightId.value = null
+  }, 5000)
+  if (gameStarted) {
+    clock.seek(linkedFrame)
+  }
+}
+let gameStarted = false
+// another comment of the same replay (a notification clicked on this page): the comments again, with the new ones
+watch(() => route.query.comment, () => {
+  highlightId.value = null
+  linkedFrame = null
+  loadComments()
+})
 
 // the comments with a mark in the progress bar of the game (in its order: the index of the event "replayMarker")
 const marked = computed(() => comments.value.filter((comment) => !comment.parent_id && !comment.is_deleted))
@@ -41,6 +88,10 @@ watch(marked, (list) => clock.setMarkers(list.map((comment) => comment.frame)))
 const onGameMounted = () => {
   clock.setMarkers(marked.value.map((comment) => comment.frame))
   clock.start()
+  gameStarted = true
+  if (linkedFrame !== null) {
+    clock.seek(linkedFrame)
+  }
 }
 
 const hovered = ref(-1)
@@ -50,14 +101,15 @@ const onMarker = (event) => {
 onMounted(() => window.evts?.addEventListener('replayMarker', onMarker))
 onBeforeUnmount(() => window.evts?.removeEventListener('replayMarker', onMarker))
 
-// on a computer the comments are shown in the game, above its controls (on a phone: at the top of the screen)
-const desktopQuery = window.matchMedia('(min-width: 1024px)')
-const isDesktop = ref(desktopQuery.matches)
-const onDesktopChange = (event) => {
-  isDesktop.value = event.matches
-}
-onMounted(() => desktopQuery.addEventListener('change', onDesktopChange))
-onBeforeUnmount(() => desktopQuery.removeEventListener('change', onDesktopChange))
+// the comment reached by the replay, shown in the game (above its controls)
+useReplayComments({
+  comments: marked,
+  frame: () => clock.frame.value,
+  seeking: () => clock.seeking.value,
+  hovered,
+  hidden: () => !clock.commentsShown.value,
+  onChange: clock.setComment,
+})
 
 const seek = (frame) => {
   clock.seek(frame)
@@ -126,13 +178,6 @@ watch(clock.frame, (frame, previous) => {
             :game-height="320"
             @mounted="onGameMounted"
           />
-          <RunsCommentsOverlay :comments="marked"
-                               :frame="clock.frame.value"
-                               :seeking="clock.seeking.value"
-                               :hovered="hovered"
-                               :in-game="isDesktop"
-                               :hidden="!clock.commentsShown.value"
-                               @change="clock.setComment" />
         </div>
       </div>
     </div>
@@ -153,6 +198,7 @@ watch(clock.frame, (frame, previous) => {
                         :max-length="limits.max_length"
                         :reasons="reasons"
                         :frame="clock.frame.value"
+                        :highlight-id="highlightId"
                         @seek="seek"
                         @changed="loadComments" />
     </section>

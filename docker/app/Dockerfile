@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libicu-dev \
     libzip-dev \
+    libuv1-dev \
     supervisor \
     cron \
     haxe \
@@ -18,6 +19,12 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install intl zip pdo pdo_pgsql pgsql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Reverb (reverb:start, run by kado:worker) handles its signals with pcntl, and waits on its sockets with ext-uv (libuv)
+# rather than stream_select, limited to 1024 files
+RUN docker-php-ext-install pcntl \
+    && pecl install uv-beta \
+    && docker-php-ext-enable uv
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -55,6 +62,7 @@ COPY ["docker/app/conf/php.ini", "$PHP_INI_DIR/app.ini"]
 COPY ["docker/app/conf/crontab", "/etc/cron.d/kadokadeo"]
 COPY ["docker/app/conf/supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"]
 
-EXPOSE 9000
+# php-fpm, Reverb (kado:worker)
+EXPOSE 9000 8080
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

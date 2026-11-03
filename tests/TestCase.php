@@ -7,6 +7,14 @@ use Spatie\LaravelSettings\Settings;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // what the app defers after the response (the events of the realtime, App\Support\RealtimeOutbox) runs at once:
+        // the tests that call a service see them ($this->withDefer() to test the deferring)
+        $this->withoutDefer();
+    }
+
     /**
      * Changes settings of the site (App\Settings\*) for a test: saved, as from the admin panel.
      *

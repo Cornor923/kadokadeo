@@ -12,6 +12,8 @@
             achievements_enabled: @json(app(App\Settings\SiteSettings::class)->achievements_enabled),
             // the clans are open (App\Settings\ClanSettings::$enabled), else their pages say "Prochainement disponible"
             clans_enabled: @json((bool) app(App\Settings\ClanSettings::class)->enabled),
+            // the realtime (App\Support\Realtime), null: the pages poll
+            reverb: @json(App\Support\Realtime::clientConfig()),
         }
         window.evts = new EventTarget();
         // window.evts.addEventListener('score', console.log);

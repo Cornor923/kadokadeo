@@ -17,6 +17,17 @@ const load = () =>
     result.value = data
   })
 watch([clanId, topicId, page], load, { immediate: true })
+// answered, edited, moderated by another member: at once (deleted: back to the topics)
+onClanForumUpdated(clanId, (e) => {
+  if (String(e.topic_id) !== String(topicId.value)) {
+    return
+  }
+  if (e.deleted) {
+    router.push({ name: 'clans.forum', params: { id: clanId.value } })
+  } else {
+    load()
+  }
+}, { resync: load })
 
 const topic = computed(() => result.value?.topic ?? null)
 const viewer = computed(() => result.value?.viewer ?? {})

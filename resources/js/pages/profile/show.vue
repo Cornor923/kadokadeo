@@ -8,10 +8,10 @@ const authStore = useAuthStore()
 // the player of the page: the one of the url, or the player logged in (/profile)
 const playerId = computed(() => route.params.id ?? authStore.user?.etwin_id)
 const isMe = computed(() => playerId.value === authStore.user?.etwin_id)
-const { isLoading: isHistoryLoading, error: historyError, results: historyResults, hasNextPage: historyHasNextPage, fetchGameHistory } = useUserGameHistory(playerId)
+const { isLoading: isHistoryLoading, error: historyError, results: historyResults, hasNextPage: historyHasNextPage, loadMore: loadMoreHistory } = useUserGameHistory(playerId)
 
 const { fetchProfile, isLoading, error } = useProfile()
-const { isLoading: isRecordsLoading, error: recordsError, get } = useApi()
+const { isLoading: isRecordsLoading, error: recordsError, fetchRecords } = useProfile()
 const leagueStore = useLeagueStore()
 const achievementStore = useAchievementStore()
 
@@ -56,9 +56,9 @@ watch(playerId, (id) => {
       profile.value = data
     }
   }).catch(() => {}) // (shown by error)
-  get(`/users/${id}/records`).then((response) => {
+  fetchRecords(id).then((records) => {
     if (current === request) {
-      playerRecords.value = response.data
+      playerRecords.value = records
     }
   }).catch(() => {}) // (shown by recordsError)
 }, { immediate: true })
@@ -292,7 +292,7 @@ const gameAchievements = computed(() => {
                                  :scores="historyResults" />
             <div v-if="historyHasNextPage" class="mt-4 text-center">
               <button
-                @click="fetchGameHistory()"
+                @click="loadMoreHistory()"
                 :disabled="isHistoryLoading"
                 class="py-2 text-kado-orange-500 underline cursor-pointer hover:text-kado-orange-700"
               >

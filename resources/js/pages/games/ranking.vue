@@ -3,7 +3,10 @@ const route = useRoute()
 const router = useRouter()
 const gameId = route.params.id
 const { isLoading: isGameLoading, error: gameError, fetchGame } = useGames()
-const { isLoading, error, period, league, results, hasNextPage, fetchGameRanking } = useGameRanking(gameId)
+const { isLoading, error, period, league, results, hasNextPage, loadMore } = useGameRanking(gameId, {
+  period: route.query.period || null,
+  league: route.query.league || null,
+})
 const periodStore = usePeriodStore()
 const leagueStore = useLeagueStore()
 const game = ref(null)
@@ -12,17 +15,12 @@ fetchGame(gameId).then((data) => {
   game.value = data.data
 })
 
-period.value = route.query.period || null
-league.value = route.query.league || null
-
 watch(period, (newVal) => {
   router.push({ query: { ...route.query, period: newVal || undefined } })
 })
 watch(league, (newVal) => {
   router.push({ query: { ...route.query, league: newVal || undefined } })
 })
-
-fetchGameRanking()
 </script>
 
 <template>
@@ -48,7 +46,7 @@ fetchGameRanking()
     <GamesGameScoreTable :scores="results" />
     <div v-if="hasNextPage" class="mt-4 text-center">
       <button
-        @click="fetchGameRanking()"
+        @click="loadMore()"
         :disabled="isLoading"
         class="text-kado-orange-500 underline cursor-pointer hover:text-kado-orange-700"
       >

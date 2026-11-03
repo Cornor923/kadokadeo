@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Achievements\Events\GameRunCompleted;
 use App\Enums\RunVerification;
+use App\Events\DailyScoresChanged;
+use App\Events\UserCountersChanged;
 use App\Exceptions\RunAlreadyCompletedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RunEndRequest;
@@ -30,6 +32,8 @@ use App\Services\RunService;
 use App\Services\ScoreService;
 use App\Settings\ClanSettings;
 use App\Settings\SiteSettings;
+use App\Support\Realtime;
+use App\Support\ScoreBoards;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -170,6 +174,9 @@ class RunController extends Controller implements HasMiddleware
     private function useGame(User $user): bool
     {
         $used = User::query()->whereKey($user->id)->where('kado_games', '>', 0)->decrement('kado_games') > 0;
+        if ($used) {
+            Realtime::send(new UserCountersChanged($user->id));
+        }
 
         return $used || app(SiteSettings::class)->games_per_day <= 0;
     }
@@ -269,6 +276,19 @@ class RunController extends Controller implements HasMiddleware
 
         $toBeatCount = $scoreService->countPlayersAbove($run->game, $periodId, $run->league_id, $run->score);
         $previousStar = $run->game->getStarFromScore($previousBestScore);
+
+        // the pages showing the leaderboards: a new best of the player in the top 10 of his league, or a record of the game
+        // (realtime, App\Support\ScoreBoards); the top 10 of the daily game
+        if (!$run->is_cheat && $run->score > $previousBestScore) {
+            $worldBest = $scoreService->countPlayersAbove($run->game, null, null, $run->score) === 0;
+            if ($toBeatCount < 10 || $worldBest) {
+                ScoreBoards::changed($run, $worldBest, daily: false);
+            }
+        }
+        if (!$run->is_cheat && $run->daily_game_id
+            && Run::query()->where('daily_game_id', $run->daily_game_id)->where('is_cheat', false)->where('score', '>', $run->score)->count() < 10) {
+            Realtime::send(new DailyScoresChanged($run->daily_game_id));
+        }
 
         return [
             'data' => [

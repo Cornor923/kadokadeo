@@ -1,25 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/AnalyzeReplays.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/AnalyzeReplays.php
-
-		-
 			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/AnalyzeReplays.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Console/Commands/AnalyzeReplays.php
@@ -185,18 +167,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Filament/Resources/RunFlags/Tables/RunFlagsTable.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$parent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$comments_count\.$#'
@@ -373,12 +343,6 @@ parameters:
 			path: app/Http/Controllers/Api/ClanController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanApplication\:\:\$clan\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanMember\:\:\$user\.$#'
 			identifier: property.notFound
 			count: 1
@@ -427,12 +391,6 @@ parameters:
 			path: app/Http/Controllers/Api/ClanController.php
 
 		-
-			message: '#^Relation ''clan'' is not found in App\\Models\\ClanApplication model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
 			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
 			identifier: larastan.relationExistence
 			count: 2
@@ -448,12 +406,6 @@ parameters:
 			message: '#^Relation ''defenseRun'' is not found in App\\Models\\ClanAttack model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
-			path: app/Http/Controllers/Api/ClanController.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Http/Controllers/Api/ClanController.php
 
 		-
@@ -535,19 +487,7 @@ parameters:
 			path: app/Http/Controllers/Api/ClanController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanForumMessage\:\:\$topic\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/ClanForumController.php
-
-		-
 			message: '#^Relation ''lastMessageUser'' is not found in App\\Models\\ClanForumTopic model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/ClanForumController.php
-
-		-
-			message: '#^Relation ''topic'' is not found in App\\Models\\ClanForumMessage model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/ClanForumController.php
@@ -592,12 +532,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$completedBy\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Api/ClanMissionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 5
 			path: app/Http/Controllers/Api/ClanMissionController.php
 
 		-
@@ -685,19 +619,7 @@ parameters:
 			path: app/Http/Controllers/Api/DebugClanController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanAttack\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$steps\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanMissionStep\:\:\$game\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/DebugClanController.php
@@ -734,12 +656,6 @@ parameters:
 
 		-
 			message: '#^Relation ''defenderClan'' is not found in App\\Models\\ClanAttack model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/DebugClanController.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\ClanAttack model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/DebugClanController.php
@@ -799,33 +715,9 @@ parameters:
 			path: app/Http/Controllers/Api/GameScoreController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Message\:\:\$recipient\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/MessageController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Message\:\:\$sender\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/MessageController.php
-
-		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\User\|null given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Http/Controllers/Api/MessageController.php
-
-		-
-			message: '#^Relation ''recipient'' is not found in App\\Models\\Message model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Api/MessageController.php
-
-		-
-			message: '#^Relation ''sender'' is not found in App\\Models\\Message model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Http/Controllers/Api/MessageController.php
 
 		-
@@ -835,31 +727,7 @@ parameters:
 			path: app/Http/Controllers/Api/PeriodController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$run\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/RunCommentController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 9
-			path: app/Http/Controllers/Api/RunController.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/RunController.php
-
-		-
 			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/RunController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/RunController.php
@@ -889,20 +757,8 @@ parameters:
 			path: app/Http/Controllers/Api/UserController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/RunReplayController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Run\:\:\$gameBuild\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/RunReplayController.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/RunReplayController.php
 
@@ -1747,31 +1603,7 @@ parameters:
 			path: app/Http/Resources/UserStarResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Jobs/VerifyRunReplay.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Jobs/VerifyRunReplay.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Jobs/VerifyRunReplay.php
-
-		-
 			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Jobs/VerifyRunReplay.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Jobs/VerifyRunReplay.php
@@ -1799,12 +1631,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Models/Report.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/RunComment.php
 
 		-
 			message: '#^Cannot call method message\(\) on string\.$#'
@@ -1855,18 +1681,6 @@ parameters:
 			path: app/Services/AchievementService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ClanForumMessage\:\:\$topic\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/ClanForumService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanForumTopic\:\:\$clan\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/ClanForumService.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanBonus\:\:\$clan\.$#'
 			identifier: property.notFound
 			count: 2
@@ -1874,12 +1688,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$clan\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ClanMissionService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanMission\:\:\$period\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Services/ClanMissionService.php
@@ -1961,12 +1769,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/ClanRunService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ClanApplication\:\:\$clan\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ClanService.php
 
 		-
 			message: '#^Parameter \#1 \$application of method App\\Services\\ClanService\:\:closeApplication\(\) expects App\\Models\\ClanApplication, Illuminate\\Database\\Eloquent\\Model given\.$#'
@@ -2119,12 +1921,6 @@ parameters:
 			path: app/Services/PoidsPlumeService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/ReplayVerifier.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Run\:\:\$gameBuild\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2137,30 +1933,6 @@ parameters:
 			path: app/Services/ReportService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\RunComment\:\:\$run\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/RunCommentService.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\RunComment model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/RunCommentService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/RunService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Run\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/RunService.php
-
-		-
 			message: '#^Match expression does not handle remaining value\: int\<4, max\>$#'
 			identifier: match.unhandled
 			count: 1
@@ -2171,18 +1943,6 @@ parameters:
 			identifier: match.unhandled
 			count: 1
 			path: app/Services/RunService.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/ScoreService.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Services/ScoreService.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'

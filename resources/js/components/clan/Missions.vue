@@ -32,6 +32,8 @@ const load = () =>
     tournament.value = response.tournament
   })
 watchEffect(load)
+// a step done, reserved, an option used, the mission over (by any member): at once
+onClanUpdated(() => props.clan.id, ['missions'], load)
 if (props.clan.viewer.can_manage) {
   fetchGames().then((response) => {
     games.value = response.data.filter((game) => !game.is_arkadeo)

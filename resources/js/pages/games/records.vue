@@ -1,14 +1,17 @@
 <script setup>
 const route = useRoute()
-const { isLoading, error, get } = useApi()
+const { isLoading, error, fetchPeriodRecords } = useGames()
 const history = ref(null)
 const scoredPeriods = computed(() => (history.value?.periods ?? []).filter((period) => period.score != null))
 
 watch(() => route.params.id, (gameId) => {
   history.value = null
-  get(`/games/${gameId}/period-records`)
-    .then((response) => {
-      history.value = response.data
+  fetchPeriodRecords(gameId)
+    .then((data) => {
+      // (another game asked meanwhile: not this one)
+      if (gameId === route.params.id) {
+        history.value = data
+      }
     })
     .catch(() => {})
 }, { immediate: true })

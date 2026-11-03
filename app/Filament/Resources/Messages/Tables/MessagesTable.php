@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Messages\Tables;
 
+use App\Events\UnreadCountsChanged;
 use App\Models\Message;
+use App\Support\Realtime;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Support\Icons\Heroicon;
@@ -79,7 +81,9 @@ class MessagesTable
                 DeleteAction::make()
                     ->label('Supprimer')
                     ->modalHeading('Supprimer ce message')
-                    ->modalDescription('Le message disparaît des boîtes de l\'expéditeur et du destinataire.'),
+                    ->modalDescription('Le message disparaît des boîtes de l\'expéditeur et du destinataire.')
+                    // the badge of the recipient
+                    ->after(fn (Message $record) => Realtime::send(new UnreadCountsChanged($record->recipient_id))),
             ]);
     }
 }

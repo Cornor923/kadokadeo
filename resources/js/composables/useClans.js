@@ -1,4 +1,7 @@
+import { ref, toValue } from 'vue'
+
 import { useApi } from './useApi'
+import { usePaginatedList } from './usePaginatedList'
 
 // the clans (App\Http\Controllers\Api\Clan*Controller)
 export function useClans() {
@@ -9,14 +12,11 @@ export function useClans() {
   return {
     isLoading,
     error,
-    fetchRanking: (params = {}) => get('/clans', { params }).then(data),
-    fetchOverview: () => get('/clans/overview').then(data),
     createClan: (payload) => post('/clans', payload).then(data),
     fetchClan: (id) => get(`/clans/${id}`).then(data),
     updateClan: (id, payload) => put(`/clans/${id}`, payload),
     fetchMembers: (id) => get(`/clans/${id}/members`).then(data),
     fetchStatus: (id) => get(`/clans/${id}/status`).then(data),
-    fetchHistory: (id, page = 1) => get(`/clans/${id}/history`, { params: { page } }).then(data),
     fetchMissions: (id) => get(`/clans/${id}/missions`).then(data),
     fetchApplications: (id) => get(`/clans/${id}/applications`).then(data),
     apply: (id, message) => post(`/clans/${id}/applications`, { message }).then(data),
@@ -47,5 +47,37 @@ export function useClans() {
     buyClanGames: (count) => post('/clan-games/buy', { count }),
     donateClanGames: (id, count) => post(`/clans/${id}/games/donate`, { count }),
     distributeClanGames: (id, etwinId, count) => post(`/clans/${id}/members/${etwinId}/games`, { count }),
+  }
+}
+
+// the ranking of the clans of the period, page by page: { ranking: 'war' | 'missions', q } (a getter; null: no ranking),
+// and the tournament of the period that comes with it
+export function useClanRanking(params) {
+  const tournament = ref(null)
+  const list = usePaginatedList(() => (toValue(params) ? '/clans' : null), {
+    params: () => toValue(params) ?? {},
+    onPage: (data) => {
+      tournament.value = data.tournament
+    },
+  })
+
+  return { ...list, tournament }
+}
+
+// the finished attacks and defenses of a clan, page by page (its id: a ref or a getter)
+export function useClanHistory(clanId) {
+  return usePaginatedList(() => `/clans/${toValue(clanId)}/history`)
+}
+
+// the tools to try the clans alone (KADO_DEBUG_TOOLS, App\Http\Controllers\Api\ClanDebugController)
+export function useClanDebug() {
+  const { isLoading, error, get, post } = useApi()
+
+  return {
+    isLoading,
+    error,
+    fetchState: () => get('/debug/clans').then((response) => response.data.data),
+    // an action: 'attack', 'attacks/{id}/defend', 'mission-steps/{id}', 'time', 'end-period'
+    run: (action, payload = {}) => post(`/debug/clans/${action}`, payload).then((response) => response.data.data),
   }
 }

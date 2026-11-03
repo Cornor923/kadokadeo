@@ -14,6 +14,8 @@ const load = () => fetchMembers(props.clan.id).then((data) => {
   members.value = data.data
 })
 watchEffect(load)
+// the members, their points (steps, attacks, defenses): at once
+onClanUpdated(() => props.clan.id, ['members', 'status', 'missions'], load)
 
 const sorts = {
   names: (a, b) => a.user.display_name.localeCompare(b.user.display_name),

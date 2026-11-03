@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClanMissionStep extends Model
 {
@@ -32,7 +33,8 @@ class ClanMissionStep extends Model
         return $this->belongsTo(ClanMission::class, 'clan_mission_id');
     }
 
-    public function game()
+    /** @return BelongsTo<Game, $this> */
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClanMission extends Model
 {
@@ -29,7 +30,8 @@ class ClanMission extends Model
         return $this->belongsTo(Clan::class);
     }
 
-    public function period()
+    /** @return BelongsTo<Period, $this> */
+    public function period(): BelongsTo
     {
         return $this->belongsTo(Period::class);
     }

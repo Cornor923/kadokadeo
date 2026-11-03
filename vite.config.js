@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -10,6 +11,9 @@ import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import wasm from 'vite-plugin-wasm'
 import svgLoader from 'vite-svg-loader'
+
+// the version of the site (package.json), shown in the bar of the top (nav/TopBar.vue)
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 
 export default defineConfig({
   plugins: [
@@ -77,6 +81,9 @@ export default defineConfig({
   // (esbuild can't pre-bundle its .wasm import: vite-plugin-wasm loads it)
   optimizeDeps: {
     exclude: ['@eternaltwin/marktwin'],
+  },
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
   },
   publicDir: 'public',
   server: {

@@ -1,14 +1,16 @@
 import axios from 'axios'
 import { ref } from 'vue'
 
+// the player is authenticated by the session cookie of the site (Sanctum, HttpOnly: no script reads it); the CSRF token
+// is the one of the cookie XSRF-TOKEN, sent back as X-XSRF-TOKEN (it changes at the login: not the one of the page)
 export const client = axios.create({
   baseURL: '/api',
   withCredentials: true,
+  withXSRFToken: true,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
-    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
   },
 })
 

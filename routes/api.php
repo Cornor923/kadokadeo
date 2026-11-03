@@ -46,6 +46,14 @@ Route::post('/messages', [App\Http\Controllers\Api\MessageController::class, 'st
 Route::get('/messages/{message}', [App\Http\Controllers\Api\MessageController::class, 'show'])->whereNumber('message');
 Route::delete('/messages/{message}', [App\Http\Controllers\Api\MessageController::class, 'destroy'])->whereNumber('message');
 
+// the notifications of the player (the tab « Notifications » of the messages) and his preferences
+Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
+Route::get('/notifications/unread', [App\Http\Controllers\Api\NotificationController::class, 'unread']);
+Route::post('/notifications/read', [App\Http\Controllers\Api\NotificationController::class, 'read']);
+Route::delete('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'destroyAll']);
+Route::delete('/notifications/{notification}', [App\Http\Controllers\Api\NotificationController::class, 'destroy'])->whereNumber('notification');
+Route::put('/user/preferences', [App\Http\Controllers\Api\UserPreferenceController::class, 'update']);
+
 // the forum of Eternaltwin, called as the player (Eternaltwin sends no CORS headers)
 Route::prefix('/etwin-forum')->group(function () {
     Route::get('/status', [App\Http\Controllers\Api\EtwinForumController::class, 'status']);

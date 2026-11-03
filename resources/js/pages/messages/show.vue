@@ -4,14 +4,17 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const messagesStore = useMessagesStore()
-const { get, del, isLoading, error } = useApi()
+const { fetchMessage, deleteMessage, isLoading, error } = useMessages()
 
 const message = ref(null)
 watch(() => route.params.id, (id) => {
-  get(`/messages/${id}`).then((response) => {
-    message.value = response.data.data
-    messagesStore.reload()
-  })
+  fetchMessage(id).then((data) => {
+    // (another message asked meanwhile: this one is not shown)
+    if (id === route.params.id) {
+      message.value = data
+      messagesStore.reload()
+    }
+  }).catch(() => {}) // (shown by error)
 }, { immediate: true })
 
 const received = computed(() => message.value?.recipient.etwin_id === authStore.user?.etwin_id)
@@ -24,7 +27,7 @@ const answer = () => router.push({
 })
 const remove = () => {
   if (confirm('Supprimer ce message ?')) {
-    del(`/messages/${message.value.id}`).then(() => router.push({ name: received.value ? 'messages.inbox' : 'messages.sent' }))
+    deleteMessage(message.value.id).then(() => router.push({ name: received.value ? 'messages.inbox' : 'messages.sent' }))
   }
 }
 const date = (iso) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
@@ -36,6 +39,7 @@ const date = (iso) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', d
       { label: 'Reçus', value: 'inbox', route: { name: 'messages.inbox' } },
       { label: 'Envoyés', value: 'sent', route: { name: 'messages.sent' } },
       { label: 'Écrire', value: 'new', route: { name: 'messages.new' } },
+      { label: messagesStore.notificationsUnread ? `Notifications (${messagesStore.notificationsUnread})` : 'Notifications', value: 'notifications', route: { name: 'messages.notifications' } },
     ]"
     :selected-index="received ? 0 : 1"
   />

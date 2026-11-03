@@ -2,25 +2,30 @@
 
 namespace App\Services;
 
+use App\Events\RunCommentsChanged;
 use App\Exceptions\RunCommentException;
 use App\Models\Run;
 use App\Models\RunComment;
 use App\Models\RunCommentLike;
 use App\Models\User;
 use App\Settings\ReplaySettings;
+use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 // The comments of a replay, SoundCloud style: each one at a frame of the replay (a mark in the progress bar of the
 // replay, shown over the game when the replay reaches it), the answers (one level) at the frame of the comment they
 // answer. Plain text on one line. Their author edits and deletes them, the player of the run and the admins delete them
-// (the admins restore them). Counters kept on the rows (runs.comments_count, run_comments.replies_count / likes_count):
+// (the admins restore them). The player of the run and the author of the comment answered are notified, the author of
+// a comment of its likes (App\Services\NotificationService); the pages of the replay open follow its comments
+// (App\Events\RunCommentsChanged). Counters kept on the rows (runs.comments_count, run_comments.replies_count / likes_count):
 // the replay page reads them without counting. Limits: App\Settings\ReplaySettings.
 class RunCommentService
 {
     public function __construct(
         private readonly ReplaySettings $settings,
         private readonly ReportService $reportService,
+        private readonly NotificationService $notifications,
     ) {}
 
     // the comments of the replay page, in the order of the replay: a deleted comment is still there (without its text)
@@ -79,7 +84,7 @@ class RunCommentService
         }
         $frame = max(0, $run->replay_frames > 0 ? min($frame, $run->replay_frames) : $frame);
 
-        return DB::transaction(function () use ($user, $run, $frame, $content, $parent) {
+        $comment = DB::transaction(function () use ($user, $run, $frame, $content, $parent) {
             // the run locked until the comment is counted: comments sent at once can't all pass the limits
             $run->comments_count = (int) Run::withTrashed()->whereKey($run->id)->lockForUpdate()->value('comments_count');
             if ($run->comments_count >= $this->settings->comments_max_per_run) {
@@ -105,6 +110,10 @@ class RunCommentService
 
             return $comment->setRelation('run', $run)->setRelation('user', $user);
         });
+        $this->notifications->commentCreated($comment);
+        Realtime::send(RunCommentsChanged::comment($comment, $user));
+
+        return $comment;
     }
 
     public function canEdit(?User $user, RunComment $comment): bool
@@ -129,6 +138,7 @@ class RunCommentService
             throw new RunCommentException('Vous ne pouvez pas modifier ce commentaire.');
         }
         $comment->update(['content' => $this->clean($content), 'edited_at' => now()]);
+        Realtime::send(RunCommentsChanged::comment($comment, $user));
 
         return $comment;
     }
@@ -154,6 +164,8 @@ class RunCommentService
                 RunComment::withTrashed()->whereKey($comment->parent_id)->where('replies_count', '>', 0)->toBase()->decrement('replies_count');
             }
             $this->reportService->actionAll($comment, $user);
+            $this->notifications->commentDeleted($comment);
+            Realtime::send(RunCommentsChanged::comment($comment, $user));
         });
     }
 
@@ -163,13 +175,14 @@ class RunCommentService
         if (!$comment->trashed() || !$user->is_admin) {
             return;
         }
-        DB::transaction(function () use ($comment) {
+        DB::transaction(function () use ($user, $comment) {
             // (only if it is still deleted: restored twice at once, it is counted once)
             if (RunComment::onlyTrashed()->whereKey($comment->id)->update(['deleted_at' => null, 'deleted_by' => null]) === 0) {
                 return;
             }
             $comment->forceFill(['deleted_at' => null, 'deleted_by' => null])->syncOriginal();
             $this->count($comment->run, 1);
+            Realtime::send(RunCommentsChanged::comment($comment, $user));
             if ($comment->parent_id) {
                 RunComment::withTrashed()->whereKey($comment->parent_id)->toBase()->increment('replies_count');
             }
@@ -191,6 +204,8 @@ class RunCommentService
                 RunComment::withTrashed()->whereKey($comment->parent_id)->where('replies_count', '>', 0)->toBase()->decrement('replies_count');
             }
             $this->reportService->actionAll($comment, $user);
+            $this->notifications->commentDeleted($comment, withReplies: true);
+            Realtime::send(RunCommentsChanged::comment($comment, $user));
             $comment->forceDelete();
         });
     }
@@ -208,9 +223,14 @@ class RunCommentService
         ]);
         if ($added > 0) {
             RunComment::withTrashed()->whereKey($comment->id)->toBase()->increment('likes_count');
+            $this->notifications->commentLiked($comment, $user);
+        }
+        $likes = (int) RunComment::withTrashed()->whereKey($comment->id)->value('likes_count');
+        if ($added > 0) {
+            Realtime::send(RunCommentsChanged::likes($comment, $user, $likes));
         }
 
-        return (int) RunComment::withTrashed()->whereKey($comment->id)->value('likes_count');
+        return $likes;
     }
 
     public function unlike(User $user, RunComment $comment): int
@@ -218,9 +238,14 @@ class RunCommentService
         $removed = RunCommentLike::query()->where('comment_id', $comment->id)->where('user_id', $user->id)->delete();
         if ($removed > 0) {
             RunComment::withTrashed()->whereKey($comment->id)->where('likes_count', '>', 0)->toBase()->decrement('likes_count');
+            $this->notifications->commentUnliked($comment, $user);
+        }
+        $likes = (int) RunComment::withTrashed()->whereKey($comment->id)->value('likes_count');
+        if ($removed > 0) {
+            Realtime::send(RunCommentsChanged::likes($comment, $user, $likes));
         }
 
-        return (int) RunComment::withTrashed()->whereKey($comment->id)->value('likes_count');
+        return $likes;
     }
 
     // one line: the line breaks and the runs of spaces become one space

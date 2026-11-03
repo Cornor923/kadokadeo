@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ClanAttackStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClanAttack extends Model
 {
@@ -39,7 +40,8 @@ class ClanAttack extends Model
         return $this->belongsTo(Period::class);
     }
 
-    public function game()
+    /** @return BelongsTo<Game, $this> */
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }

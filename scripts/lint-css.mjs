@@ -2,7 +2,8 @@
 //   node scripts/lint-css.mjs
 // - no <style> in the components: Tailwind utilities, the looks shared by components in app.css
 // - no !important (class!, !class, !important): the layers of Tailwind give the order
-// - no hex colour in the classes, nor the default palette of Tailwind: the palette is the @theme of app.css
+// - no hex colour in the classes, nor the default palette of Tailwind: the palette is the @theme of app.css, whose tokens
+//   exist (a kado-* or twinoid-* colour that is not in it gives no class)
 // - in app.css: no colour outside @theme, and no rule on a tag outside @layer base (which styles the document only)
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -12,6 +13,10 @@ const JS = join(ROOT, 'resources/js')
 // generated or not part of the site: the games (Haxe), the replay verifier (Node)
 const SKIP = [join(JS, 'games'), join(JS, 'replay-verifier')]
 const CSS = join(ROOT, 'resources/css/app.css')
+
+// the colours and the shadows of the @theme of app.css
+const THEME_TOKENS = new Set([...readFileSync(CSS, 'utf8').matchAll(/--(?:color|shadow)-((?:kado|twinoid|etwin)-[a-z0-9-]+)\s*:/g)].map((m) => m[1]))
+const TOKEN_USE = /(?:^|[\s"'`:])(?:text|bg|border(?:-[trblxyse])?|fill|stroke|from|via|to|outline|ring|decoration|shadow|divide|accent|caret|placeholder)-((?:kado|twinoid|etwin)-[a-z0-9-]+?)(?:\/\d+)?(?=$|[\s"'`\]])/g
 
 const errors = []
 const report = (file, line, message) => errors.push(`${relative(ROOT, file)}:${line}  ${message}`)
@@ -48,6 +53,9 @@ for (const file of files(JS)) {
     if (IMPORTANT.test(value)) report(file, line, `!important in the classes (${value.match(IMPORTANT)[0].trim()}): the layers give the order`)
     if (HEX_CLASS.test(value)) report(file, line, `hex colour in the classes (${value.match(HEX_CLASS)[0]}): a token of the palette`)
     if (DEFAULT_PALETTE.test(value)) report(file, line, `default colour of Tailwind (${value.match(DEFAULT_PALETTE)[0].trim()}): a token of the palette (kado-*)`)
+    for (const use of value.matchAll(TOKEN_USE)) {
+      if (!THEME_TOKENS.has(use[1])) report(file, line, `${use[1]} is not in the @theme of app.css: no class is made`)
+    }
   }
 }
 

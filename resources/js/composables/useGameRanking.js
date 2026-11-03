@@ -1,59 +1,14 @@
-import { computed, ref, watch } from 'vue'
+import { ref } from 'vue'
 
-import { useApi } from './useApi'
+import { usePaginatedList } from './usePaginatedList'
 
-export function useGameRanking(gameId) {
-  const { isLoading, error, get } = useApi()
-  const period = ref(null)
-  const league = ref(null)
-  const meta = ref({
-    current_page: 0,
-    last_page: 0,
-  })
-  const results = ref([])
-  const hasNextPage = computed(() => {
-    return meta.value.current_page < meta.value.last_page
+// the ranking of a game, page by page, for a period and a league (null: the current period, the league of the player)
+export function useGameRanking(gameId, { period: initialPeriod = null, league: initialLeague = null } = {}) {
+  const period = ref(initialPeriod)
+  const league = ref(initialLeague)
+  const { items, ...list } = usePaginatedList(() => `/games/${gameId}/ranking`, {
+    params: () => ({ period: period.value || undefined, league: league.value || undefined }),
   })
 
-  function fetchGameRanking() {
-    const params = {
-      page: meta.value.current_page + 1,
-    }
-    if (period.value) {
-      params.period = period.value
-    }
-    if (league.value) {
-      params.league = league.value
-    }
-    return get(`/games/${gameId}/ranking`, {
-      params,
-    }).then((response) => {
-      meta.value = response.data.meta
-      if (meta.value.current_page === 1) {
-        results.value = []
-      }
-      results.value = results.value.concat(response.data.data)
-    })
-  }
-
-  watch(period, () => {
-    meta.value.current_page = 0
-    fetchGameRanking()
-  })
-
-  watch(league, () => {
-    meta.value.current_page = 0
-    fetchGameRanking()
-  })
-
-  return {
-    isLoading,
-    error,
-    period,
-    league,
-    meta,
-    results,
-    hasNextPage,
-    fetchGameRanking,
-  }
+  return { ...list, period, league, results: items }
 }

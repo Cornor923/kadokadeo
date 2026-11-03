@@ -14,7 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // the SPA is authenticated by its session (Sanctum, statefulApi below): /api/broadcasting/auth, banned users refused
+    // (api group)
+    ->withBroadcasting(__DIR__.'/../routes/channels.php', ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']])
     ->withMiddleware(function (Middleware $middleware): void {
+        // the SPA and the games (same origin) are authenticated by the session cookie of the site (HttpOnly: no script
+        // reads it) and protected by the CSRF token of the cookie XSRF-TOKEN; the requests of other origins need a token
+        $middleware->statefulApi();
         $middleware->api(append: [
             EnsureUserIsNotBanned::class,
         ]);

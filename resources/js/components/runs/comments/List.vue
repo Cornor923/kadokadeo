@@ -8,6 +8,8 @@ const props = defineProps({
   reasons: { type: Array, default: () => [] },
   // the frame of the replay shown
   frame: { type: Number, default: -1 },
+  // the comment reached by a link (a notification)
+  highlightId: { type: Number, default: null },
 })
 const emit = defineEmits(['seek', 'changed'])
 
@@ -52,6 +54,7 @@ const answered = () => {
                         :max-length="maxLength"
                         :reasons="reasons"
                         :active="comment.id === activeId"
+                        :highlighted="comment.id === highlightId"
                         @seek="emit('seek', $event)"
                         @reply="answering = $event.id"
                         @changed="emit('changed')" />
@@ -60,6 +63,7 @@ const answered = () => {
                         :run-id="runId"
                         :comment="reply"
                         is-reply
+                        :highlighted="reply.id === highlightId"
                         :max-length="maxLength"
                         :reasons="reasons"
                         @changed="emit('changed')" />

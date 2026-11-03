@@ -13,5 +13,9 @@ export function useProfile() {
     isLoading,
     error,
     fetchProfile,
+    // the records of a player by game (the tab « stats » of the profile)
+    fetchRecords: (id) => get(`/users/${id}/records`).then((response) => response.data),
+    // the summary of a finished period of a player (null: the last one; App\Services\PeriodSummaryService)
+    fetchPeriodSummary: (id, periodId = null) => get(`/users/${id}/periods${periodId ? `/${periodId}` : ''}`).then((response) => response.data.data),
   }
 }

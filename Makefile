@@ -35,13 +35,17 @@ install-app:
 	docker compose run kadokadeo_app php artisan key:generate --ansi
 	docker compose run kadokadeo_app php artisan migrate:fresh --force --seed
 
-install-eternaltwin:
+install-eternaltwin: eternaltwin/eternaltwin.toml
 	docker compose run --rm kadokadeo_eternaltwin eternaltwin db sync
+
+# Created once from the example (never overwritten): without it, Eternaltwin looks for Postgres on localhost.
+eternaltwin/eternaltwin.toml:
+	cp eternaltwin/eternaltwin.toml.example eternaltwin/eternaltwin.toml
 
 reset-database:
 	docker compose run kadokadeo_app php artisan migrate:fresh --force --seed
 
-reset-eternaltwin-database:
+reset-eternaltwin-database: eternaltwin/eternaltwin.toml
 	docker compose run --rm kadokadeo_eternaltwin eternaltwin db reset
 
 start-kadokadeo-database:

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ClanBonusType;
 use App\Enums\ClanCombatRole;
 use App\Enums\ClanRole;
+use App\Events\ClanUpdated;
 use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanAction;
@@ -17,6 +18,7 @@ use App\Models\Period;
 use App\Models\User;
 use App\Rules\ClanName;
 use App\Settings\ClanSettings;
+use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +29,8 @@ use Illuminate\Validation\ValidationException;
 // missions and the options start again from 0 on the first day of the next period (the clans and their members stay).
 class ClanService
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function currentPeriod(): ?Period
     {
         return Period::current()->first();
@@ -185,6 +189,9 @@ class ClanService
                 'cost' => $price,
             ]);
             $this->spend($user, $price, 'clan application', ClanApplication::class, $application->id);
+            // (sent once committed)
+            $this->notifications->clanApplied($application);
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
 
             return $application;
         });
@@ -200,7 +207,9 @@ class ClanService
             }
 
             $this->refund($application);
+            $this->notifications->clanApplicationClosed($application);
             $application->delete();
+            Realtime::send(new ClanUpdated($application->clan_id, [ClanUpdated::MEMBERS]));
         });
     }
 
@@ -210,7 +219,7 @@ class ClanService
         $clan = $application->clan;
         $this->assertManager($manager, $clan);
 
-        $alreadyInClan = DB::transaction(function () use ($clan, $application) {
+        $alreadyInClan = DB::transaction(function () use ($clan, $application, $manager) {
             // the clan is locked (PostgreSQL does not lock an aggregate): one acceptation at a time; then the player: two
             // clans accepting him together
             Clan::query()->lockForUpdate()->find($clan->id);
@@ -231,7 +240,10 @@ class ClanService
             // he can't leave nor be excluded during this period
             $clan->members()->create(['user_id' => $application->user_id, 'joined_period_id' => $this->currentPeriod()?->id]);
             $application->update(['status' => ClanApplication::ACCEPTED]);
+            $this->notifications->clanApplicationClosed($application);
+            $this->notifications->clanAccepted($application, $manager);
             $this->closeApplications(ClanApplication::query()->where('user_id', $application->user_id), ClanApplication::CANCELLED);
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
 
             return false;
         });
@@ -246,13 +258,15 @@ class ClanService
     {
         $this->assertManager($manager, $application->clan);
 
-        DB::transaction(function () use ($application) {
+        DB::transaction(function () use ($manager, $application) {
             $application = ClanApplication::query()->lockForUpdate()->findOrFail($application->id);
             if ($application->status !== ClanApplication::PENDING) {
                 throw new ClanException('Cette candidature a déjà été traitée.');
             }
 
             $this->closeApplication($application, ClanApplication::REFUSED);
+            $this->notifications->clanRefused($application, $manager);
+            Realtime::send(new ClanUpdated($application->clan_id, [ClanUpdated::MEMBERS]));
         });
     }
 
@@ -275,6 +289,7 @@ class ClanService
     {
         $this->refund($application);
         $application->update(['status' => $status]);
+        $this->notifications->clanApplicationClosed($application);
     }
 
     // the Kado points of an application given back, once
@@ -335,6 +350,8 @@ class ClanService
             $this->forgetClanActions($user, $clan);
             if ($membersCount <= 1) {
                 $clan->delete();
+            } else {
+                Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
             }
         });
     }
@@ -357,6 +374,8 @@ class ClanService
 
             $clan->members()->where('user_id', $member->id)->delete();
             $this->forgetClanActions($member, $clan);
+            // (the excluded one too, his pages still listen to the clan: they see he is out)
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
         });
     }
 
@@ -372,6 +391,7 @@ class ClanService
             $clan->update(['leader_id' => $member->id]);
             $clan->members()->where('user_id', $member->id)->update(['role' => ClanRole::MEMBER]);
             $clan->members()->where('user_id', $leader->id)->update(['role' => ClanRole::RIGHT_HAND]);
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
         });
     }
 
@@ -409,6 +429,7 @@ class ClanService
         $this->assertMember($member, $clan);
 
         $clan->members()->where('user_id', $member->id)->update(['role' => $role]);
+        Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
     }
 
     // "Attaquant", "Défenseur" or none, within the seats of the clan; then locked until the next period
@@ -436,6 +457,7 @@ class ClanService
                 }
             }
             $clan->members()->where('user_id', $member->id)->update(['combat_role' => $role, 'combat_role_period_id' => $period->id]);
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
         });
     }
 
@@ -450,6 +472,7 @@ class ClanService
 
         $status = trim($status ?? '');
         $clan->members()->where('user_id', $member->id)->update(['status' => $status !== '' ? $status : null]);
+        Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
     }
 
     // accepted in the clan during the current period: he can't leave nor be excluded before the next one
@@ -469,6 +492,8 @@ class ClanService
     {
         $this->assertLeader($leader, $clan);
 
+        // (sent first: the members see their clan is gone)
+        Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::MEMBERS]));
         $clan->delete();
     }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 // a topic of the private forum of a clan (App\Services\ClanForumService)
 class ClanForumTopic extends Model
@@ -25,7 +26,8 @@ class ClanForumTopic extends Model
         'last_message_at' => 'datetime',
     ];
 
-    public function clan()
+    /** @return BelongsTo<Clan, $this> */
+    public function clan(): BelongsTo
     {
         return $this->belongsTo(Clan::class);
     }

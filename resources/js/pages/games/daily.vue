@@ -2,21 +2,21 @@
 const dailyGameStore = useDailyGameStore()
 const game = toRef(dailyGameStore, 'game')
 
-let intervalId = null
-
 const waitAndRefresh = () => {
   setTimeout(() => {
     dailyGameStore.fetchScores()
   }, 2000)
 }
 
+// a run in the top 10 of the day, a run taken out (App\Events\DailyScoresChanged): polled only without the realtime
+useChannel('daily', { 'scores.changed': refetchSoon(dailyGameStore.fetchScores, { delay: 1000, jitter: 3000 }) }, { isPrivate: false, resync: dailyGameStore.fetchScores })
+usePolling(dailyGameStore.fetchScores, 1200000, { channel: 'daily' })
+
 onMounted(() => {
-  intervalId = setInterval(dailyGameStore.fetchScores, 1200000)
   window.evts.addEventListener('gameFinished', waitAndRefresh)
   dailyGameStore.fetchDailyGameIfNecessary()
 })
 onUnmounted(() => {
-  clearInterval(intervalId)
   window.evts.removeEventListener('gameFinished', waitAndRefresh)
 })
 </script>

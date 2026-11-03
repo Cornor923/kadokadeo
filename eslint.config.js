@@ -79,6 +79,18 @@ export default defineConfig([
     },
   },
 
+  // the pages and the components call the API through the composables of resources/js/composables (useGames, useClans,
+  // usePaginatedList...): they do not know its URLs
+  {
+    files: ['resources/js/pages/**/*.vue', 'resources/js/components/**/*.vue', 'resources/js/layouts/**/*.vue'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.name='useApi']",
+        message: 'Call the API through a composable of resources/js/composables (a new one if needed), not useApi() in a page or a component.',
+      }],
+    },
+  },
+
   // Node scripts (run on the server)
   {
     files: ['resources/js/replay-verifier/**/*.mjs'],

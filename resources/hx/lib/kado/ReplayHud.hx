@@ -52,8 +52,9 @@ private typedef KeyCap = {
 // time, speed, keys pressed by the player, keyboard shortcuts. They hide while the replay plays and the pointer stays
 // still, and come back when it moves (a thin progress line stays). A click on the game plays / pauses (a tap shows /
 // hides the controls on a touch screen). Marks in the bar (setMarkers: the comments of the replay page) show moments of
-// the replay, the comment reached is shown on one line above the controls and the keys (setComment); C hides / shows
-// them. Nothing is drawn again unless it changed.
+// the replay, the comment reached is shown on one line above the controls and the keys (setComment), larger where the
+// game is shown smaller (a phone); C or the bubble of the controls hides / shows them. Nothing is drawn again unless it
+// changed.
 class ReplayHud extends Container {
 	public static var SPEEDS:Array<Float> = [0.1, 0.25, 0.5, 1, 1.5, 2, 4, 8];
 
@@ -80,12 +81,15 @@ class ReplayHud extends Container {
 	static inline var CAP_GAP = 3;
 	static inline var PREF_KEYS = "kadokadeo.replay.keys";
 	static inline var PREF_COMMENTS = "kadokadeo.replay.comments";
-	// a comment stays this long on the screen (resources/js/components/runs/comments/Overlay.vue): its mark covers it
+	// a comment stays this long on the screen (resources/js/composables/useReplayComments.js): its mark covers it
 	static inline var COMMENT_SECONDS = 3;
 	// the narrowest mark, in pixels of the screen
 	static inline var MARK_MIN_PX = 3;
 	static inline var COMMENT_MARGIN = 10;
 	static inline var COMMENT_H = 26;
+	// the text of a comment at least this tall on the screen (CSS pixels): bigger where the game is shown smaller (a phone)
+	static inline var COMMENT_MIN_TEXT_PX = 12;
+	static inline var COMMENT_TEXT = 13;
 	static inline var FONT = "Fredoka Bold, Arial, sans-serif";
 
 	var canvas:CanvasElement;
@@ -141,6 +145,8 @@ class ReplayHud extends Container {
 	var commentAuthor:Text;
 	var commentText:Text;
 	var commentMore:Text;
+	// the size of the comment (commentScaleNow)
+	var commentScale:Float = 1;
 	var toast:Container;
 	var toastBg:Graphics;
 	var toastText:Text;
@@ -313,6 +319,7 @@ class ReplayHud extends Container {
 	function onResize(_):Void {
 		pixel = -1;
 		marksVersion++;
+		layoutComment();
 	}
 
 	// one pixel of the screen, in pixels of the game (measured again when the window changes size)
@@ -467,8 +474,8 @@ class ReplayHud extends Container {
 		commentBg = new Graphics();
 		commentBox.addChild(commentBg);
 		commentTime = text("", 12, ORANGE);
-		commentAuthor = text("", 13, 0xFFFFFF);
-		commentText = text("", 13, 0xD9F4FA, false);
+		commentAuthor = text("", COMMENT_TEXT, 0xFFFFFF);
+		commentText = text("", COMMENT_TEXT, 0xD9F4FA, false);
 		commentMore = text("", 12, 0x9FB8BE, false);
 		for (t in [commentTime, commentAuthor, commentText, commentMore]) {
 			t.anchor.set(0, 0.5);
@@ -498,12 +505,29 @@ class ReplayHud extends Container {
 			return;
 		if (fresh)
 			commentBox.alpha = 0;
+		layoutComment();
+	}
+
+	// the size of the comment: as in the game, larger when the game is shown smaller than its size (W units in fewer CSS
+	// pixels), its text never below COMMENT_MIN_TEXT_PX on the screen
+	function commentScaleNow():Float {
+		var w = canvas.clientWidth;
+		return w <= 0 ? 1 : Math.max(1, COMMENT_MIN_TEXT_PX * (W / w) / COMMENT_TEXT);
+	}
+
+	// the comment on one line as wide as the game at most (again when the size of the game changes)
+	function layoutComment():Void {
+		var c = comment;
+		if (c == null)
+			return;
+		commentScale = commentScaleNow();
+		commentBox.scale.set(commentScale, commentScale);
 		var pad = 10;
 		var gap = 8;
 		commentTime.text = c.time;
 		commentAuthor.text = c.author;
 		commentMore.text = c.more > 0 ? "+" + c.more : "";
-		var max = W - COMMENT_MARGIN * 2;
+		var max = (W - COMMENT_MARGIN * 2) / commentScale;
 		commentTime.x = pad + 3;
 		commentAuthor.x = commentTime.x + commentTime.width + gap;
 		commentText.x = commentAuthor.x + commentAuthor.width + gap;
@@ -545,7 +569,7 @@ class ReplayHud extends Container {
 		var bottom = BOTTOM - 8 - (PANEL_H - 22) * shown;
 		if (keysOn && hasKeys())
 			bottom = BOTTOM - 14 - keysH - (PANEL_H - 22) * shown - 6;
-		commentBox.y = Math.round(bottom - 6 - COMMENT_H);
+		commentBox.y = Math.round(bottom - 6 - COMMENT_H * commentScale);
 	}
 
 	// s in t, cut with "…" to fit in max pixels
@@ -578,6 +602,7 @@ class ReplayHud extends Container {
 			{id: "back", x: 62.0, w: 34.0},
 			{id: "play", x: 102.0, w: 40.0},
 			{id: "forward", x: 142.0, w: 34.0},
+			{id: "comments", x: 436.0, w: 34.0},
 			{id: "keys", x: 478.0, w: 34.0},
 			{id: "speed", x: 526.0, w: 50.0},
 			{id: "help", x: 572.0, w: 30.0}
@@ -608,6 +633,7 @@ class ReplayHud extends Container {
 	function drawButtons():Void {
 		var key = (ended ? "e" : paused ? "p" : "r")
 			+ (keysOn ? "k" : "")
+			+ (commentsOn ? "c" : "")
 			+ (menuOpen ? "m" : "")
 			+ (helpOpen ? "h" : "")
 			+ hoverButton
@@ -647,6 +673,21 @@ class ReplayHud extends Container {
 					g.drawPolygon([-9, -7, -9, 7, 0, 0]);
 					g.drawPolygon([0, -7, 0, 7, 9, 0]);
 					g.endFill();
+				case "comments":
+					// speech bubble, underlined in cyan when the comments are shown (a tap on a phone: no C there)
+					g.lineStyle(2, 0xFFFFFF, 1);
+					g.drawRoundedRect(-10, -8, 20, 13, 4);
+					g.lineStyle(0);
+					g.beginFill(0xFFFFFF);
+					g.drawPolygon([-5, 4, -1, 4, -6, 9]);
+					for (i in 0...3)
+						g.drawCircle(-5 + i * 5, -1.5, 1.4);
+					g.endFill();
+					if (commentsOn) {
+						g.beginFill(CYAN);
+						g.drawRect(-10, 10, 20, 3);
+						g.endFill();
+					}
 				case "keys":
 					// small keyboard, underlined in cyan when the keys of the player are shown
 					g.lineStyle(2, 0xFFFFFF, 1);
@@ -724,6 +765,8 @@ class ReplayHud extends Container {
 				jump(-10);
 			case "forward":
 				jump(10);
+			case "comments":
+				toggleComments();
 			case "keys":
 				toggleKeys();
 			case "speed":
@@ -745,6 +788,7 @@ class ReplayHud extends Container {
 			case "restart": "Revoir depuis le début (Début)";
 			case "back": "Reculer de 10 s (J)";
 			case "forward": "Avancer de 10 s (L)";
+			case "comments": (commentsOn ? "Masquer" : "Afficher") + " les commentaires (C)";
 			case "keys": (keysOn ? "Masquer" : "Afficher") + " les touches et la souris du joueur (I)";
 			case "speed": "Vitesse (< >)";
 			case "help": "Raccourcis clavier (H)";
@@ -790,7 +834,8 @@ class ReplayHud extends Container {
 		}
 		label.y = 1;
 		badge.addChild(label);
-		badge.x = 448 - w * 0.5 - 6;
+		// (left of the button of the comments, x 419-453)
+		badge.x = 418 - w * 0.5 - 6;
 		badge.y = ROW_Y;
 		controls.addChild(badge);
 	}

@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\ClanActionType;
 use App\Enums\ClanBonusType;
+use App\Events\ClanToast;
+use App\Events\ClanUpdated;
 use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanAction;
@@ -16,13 +18,16 @@ use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Settings\ClanSettings;
+use App\Support\Realtime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 // the collaborative missions of the clans: a score (a palier of the stars) to reach on several games within
 // ClanSettings::$mission_hours, more games in a bigger clan, higher paliers with each mission. A completed mission gives up
 // to 10 points (one less every 10 missions) and opens the next one; a mission not finished in time loses 1 point by game
-// not completed, minus one, and the clan gets a new mission of the same number. The runs of the missions are free.
+// not completed, minus one, and the clan gets a new mission of the same number. The runs of the missions are free. The
+// members see the changes at once (App\Events\ClanUpdated), a toast for a step done and for the next mission available
+// (App\Events\ClanToast: the mission itself is made when a member opens the missions, its time starting then).
 class ClanMissionService
 {
     public function __construct(private readonly ClanService $clanService) {}
@@ -68,8 +73,9 @@ class ClanMissionService
         });
     }
 
-    // the missions not finished in time are failed
-    private function failExpired(Clan $clan, Period $period): void
+    // the missions not finished in time are failed (also every 5 minutes, kado:clans:expire-missions: the members are told
+    // a new mission is there without opening the missions)
+    public function failExpired(Clan $clan, Period $period): void
     {
         $expired = ClanMission::query()
             ->where('clan_id', $clan->id)
@@ -115,6 +121,7 @@ class ClanMissionService
                     'target_score' => $paliers->targetScore($game, $levels[$index]),
                 ]);
             }
+            ClanUpdated::send([$clan->id], [ClanUpdated::MISSIONS]);
 
             return $mission->load('steps');
         });
@@ -158,6 +165,7 @@ class ClanMissionService
         $step->update($step->reserved_by_user_id === $user->id
             ? ['reserved_by_user_id' => null, 'reserved_at' => null]
             : ['reserved_by_user_id' => $user->id, 'reserved_at' => now()]);
+        ClanUpdated::send([$mission->clan_id], [ClanUpdated::MISSIONS]);
     }
 
     // a step completed gives a point to its player in the ranking of the clan
@@ -181,6 +189,11 @@ class ClanMissionService
                 'completed_at' => now(),
             ]);
             $this->clanService->memberStat($mission->clan_id, $action->user_id, $mission->period_id)->increment('mission_steps');
+            ClanUpdated::send([$mission->clan_id], [ClanUpdated::MISSIONS, ClanUpdated::HISTORY]);
+            $player = User::query()->find($action->user_id);
+            if ($player && $step->game) {
+                Realtime::send(ClanToast::stepCompleted($mission->clan_id, $player, $step->game, (int) $run->score));
+            }
             $this->completeMissionIfDone($mission);
 
             return 'completed';
@@ -203,6 +216,7 @@ class ClanMissionService
                     ->where('mission_steps', '>', 0)
                     ->decrement('mission_steps');
                 $step->update(['completed_by_user_id' => null, 'run_id' => null, 'score' => null, 'completed_at' => null]);
+                ClanUpdated::send([$mission->clan_id], [ClanUpdated::MISSIONS, ClanUpdated::HISTORY]);
             }
         });
     }
@@ -225,7 +239,17 @@ class ClanMissionService
                 $score->decrement('mission_score', $lost);
             }
             $mission->update(['status' => $status, 'points' => -$lost]);
+            $this->missionEnded($mission);
         });
+    }
+
+    // the next mission can be opened (not after the end of the period: the tournament starts again)
+    private function missionEnded(ClanMission $mission): void
+    {
+        ClanUpdated::send([$mission->clan_id], [ClanUpdated::MISSIONS, ClanUpdated::HISTORY]);
+        if ($mission->period?->end_at?->isFuture()) {
+            Realtime::send(ClanToast::missionAvailable($mission->clan_id));
+        }
     }
 
     // the points of a completed mission: one less every ClanSettings::$mission_points_every missions (1 to 9: 10, 10 to
@@ -298,6 +322,7 @@ class ClanMissionService
             }
 
             $bonus->update(['used_at' => now(), 'game_id' => $gameId]);
+            ClanUpdated::send([$clan->id], [ClanUpdated::MISSIONS]);
         });
     }
 
@@ -374,6 +399,7 @@ class ClanMissionService
         $score->increment('mission_score', $points);
         $score->increment('missions_completed');
         $mission->update(['status' => ClanMission::COMPLETED, 'points' => $points, 'completed_at' => now()]);
+        $this->missionEnded($mission);
 
         if (randomNumber() < app(ClanSettings::class)->bonus_chance) {
             ClanBonus::query()->create([

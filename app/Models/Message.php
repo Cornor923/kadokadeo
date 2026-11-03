@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 // a private message (sender null: a message of the site, signed "KadoKado")
 class Message extends Model
@@ -15,12 +16,14 @@ class Message extends Model
         'recipient_deleted_at' => 'datetime',
     ];
 
-    public function sender()
+    /** @return BelongsTo<User, $this> */
+    public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function recipient()
+    /** @return BelongsTo<User, $this> */
+    public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_id');
     }

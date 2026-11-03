@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Enums\BanReason;
+use App\Events\DailyScoresChanged;
+use App\Events\GameScoresChanged;
+use App\Events\UserCountersChanged;
+use App\Events\UserRefresh;
 use App\Models\Game;
 use App\Models\GamePeriodStar;
 use App\Models\Period;
@@ -10,6 +14,8 @@ use App\Models\Run;
 use App\Models\User;
 use App\Models\UserPoint;
 use App\Models\UserStar;
+use App\Support\Realtime;
+use App\Support\ScoreBoards;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -66,6 +72,8 @@ class ModerationService
             $this->recomputeStars($run);
         });
         $this->forgetPromotionScores($run);
+        ScoreBoards::changed($run);
+        Realtime::send(new UserRefresh($run->user_id));
 
         return true;
     }
@@ -89,6 +97,8 @@ class ModerationService
             $this->recomputeStars($run);
         });
         $this->forgetPromotionScores($run);
+        ScoreBoards::changed($run);
+        Realtime::send(new UserRefresh($run->user_id));
 
         return true;
     }
@@ -105,6 +115,7 @@ class ModerationService
 
         return DB::transaction(function () use ($user, $delta, $admin) {
             User::query()->whereKey($user->id)->increment('kado_points', $delta);
+            Realtime::send(new UserCountersChanged($user->id));
             $user->userPoints()->create([
                 'period_id' => Period::current()->value('id'),
                 'delta' => $delta,
@@ -135,7 +146,12 @@ class ModerationService
             }
         }
 
-        return $query->toBase()->incrementEach($deltas, ['updated_at' => now()]) > 0;
+        $changed = $query->toBase()->incrementEach($deltas, ['updated_at' => now()]) > 0;
+        if ($changed) {
+            Realtime::send(new UserCountersChanged($user->id));
+        }
+
+        return $changed;
     }
 
     private function deleteScoresAfter(User $user, ?Closure $before = null): int
@@ -145,13 +161,16 @@ class ModerationService
                 $before();
             }
 
-            // leaderboards used to compute the league promotions of the next period
-            $promotionCaches = $user->runs()
+            // leaderboards used to compute the league promotions of the next period (and shown by the pages)
+            $boards = $user->runs()
                 ->whereNotNull('period_id')
                 ->select('game_id', 'period_id')
                 ->distinct()
-                ->get()
-                ->map(fn ($run) => $this->promotionScoresKey($run));
+                ->get();
+            $promotionCaches = $boards->map(fn ($run) => $this->promotionScoresKey($run));
+            $boards->each(fn (Run $run) => Realtime::send(new GameScoresChanged($run->game_id, $run->period_id, null)));
+            $user->runs()->whereNotNull('daily_game_id')->distinct()->pluck('daily_game_id')
+                ->each(fn (int $dailyGameId) => Realtime::send(new DailyScoresChanged($dailyGameId)));
 
             $deleted = $user->runs()->delete();
             $user->gamePeriodStars()->delete();
@@ -198,6 +217,7 @@ class ModerationService
     private function giveContractPoints(Run $run, int $delta, string $reason): void
     {
         User::query()->whereKey($run->user_id)->increment('kado_points', $delta);
+        Realtime::send(new UserCountersChanged($run->user_id));
         UserPoint::query()->create([
             'user_id' => $run->user_id,
             'period_id' => $run->period_id,

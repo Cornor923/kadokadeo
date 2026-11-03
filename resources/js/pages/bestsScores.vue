@@ -1,11 +1,11 @@
 <script setup>
 import PlayButton from '@svg/playButton.svg'
-const { isLoading, error, get } = useApi()
+const { isLoading, error, fetchSiteRecords } = useGames()
 const siteRecords = ref([])
 
-get('/site-records')
-  .then((response) => {
-    siteRecords.value = response.data
+fetchSiteRecords()
+  .then((data) => {
+    siteRecords.value = data
   })
   .catch(() => null)
 </script>

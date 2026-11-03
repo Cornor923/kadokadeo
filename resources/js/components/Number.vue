@@ -28,7 +28,8 @@ const charUrls = computed(() => {
 </script>
 
 <template>
-  <span>
+  <!-- nowrap: a browser may break a line between two images -->
+  <span class="whitespace-nowrap">
     <img
       v-for="(charUrl, index) in charUrls"
       :key="index"

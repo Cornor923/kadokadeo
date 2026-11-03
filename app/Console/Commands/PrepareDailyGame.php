@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Events\DailyGameStarted;
 use App\Models\DailyGame;
 use App\Models\Game;
 use App\Services\GameService;
+use App\Support\Realtime;
 use Illuminate\Console\Command;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
@@ -89,6 +91,7 @@ class PrepareDailyGame extends Command
         ]);
 
         $this->info("Daily game for '{$game->name}' created: score {$contract} to win {$points} kado points.");
+        Realtime::send(new DailyGameStarted());
         $this->sendTopScoresToDiscord();
     }
 

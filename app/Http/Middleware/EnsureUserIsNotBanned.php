@@ -4,11 +4,12 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Logs out a banned user on their next API request: their tokens are revoked and the front shows the reason
- * of the ban (`banned` in the response).
+ * Logs out a banned user on their next API request: their session ends, their tokens are revoked and the front shows
+ * the reason of the ban (`banned` in the response).
  */
 class EnsureUserIsNotBanned
 {
@@ -18,6 +19,11 @@ class EnsureUserIsNotBanned
 
         if ($user?->isBanned()) {
             $user->tokens()->delete();
+            Auth::guard('web')->logout();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
             return response()->json([
                 'message' => $user->banMessage(),

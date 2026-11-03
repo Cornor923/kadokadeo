@@ -1,5 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
+    "version": "1.0.0",
     "private": true,
     "type": "module",
     "engines": {
@@ -21,8 +22,10 @@
         "axios": "^1.13.2",
         "dayjs": "^1.11.19",
         "jsencrypt": "^3.5.4",
+        "laravel-echo": "^2.6.1",
         "pako": "^2.1.0",
         "pinia": "^3.0.3",
+        "pusher-js": "^8.6.0",
         "vite-svg-loader": "^5.1.1",
         "vue": "^3.5.22",
         "vue-lazyload": "^3.0.0",

@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Events\ClanUpdated;
+use App\Events\UserCountersChanged;
 use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanGameTransfer;
 use App\Models\User;
 use App\Settings\ClanSettings;
+use App\Support\Realtime;
 use Illuminate\Support\Facades\DB;
 
 // the paid clan games: bought with Kado points by packs (ClanSettings::$game_packs), used for the attacks and the defenses once
@@ -59,6 +62,8 @@ class ClanGameService
             $user->decrement('clan_games', $count);
             Clan::query()->whereKey($clan->id)->increment('clan_games', $count);
             $clan->gameTransfers()->create(['type' => ClanGameTransfer::DONATION, 'from_user_id' => $user->id, 'count' => $count]);
+            // (the games of the clan, the page « Parties de clan » of the managers)
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::CLAN]));
         });
     }
 
@@ -75,6 +80,8 @@ class ClanGameService
 
             $clan->decrement('clan_games', $count);
             User::query()->whereKey($member->id)->increment('clan_games', $count);
+            Realtime::send(new UserCountersChanged($member->id));
+            Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::CLAN]));
             $clan->gameTransfers()->create([
                 'type' => ClanGameTransfer::DISTRIBUTION,
                 'from_user_id' => $manager->id,

@@ -7,12 +7,11 @@ const props = defineProps({
   // more paliers: [{ score, img, alt }] (a clan defense, a mission step...)
   goals: { type: Array, default: () => [] },
 })
-const { isLoading, get } = useApi()
+const { isLoading, fetchScores } = useGames()
 const authStore = useAuthStore()
 const periodStore = usePeriodStore()
 const leagueStore = useLeagueStore()
 const achievementStore = useAchievementStore()
-let intervalId = null
 
 const scores = ref([])
 const personalBestForPeriod = ref(null)
@@ -55,19 +54,28 @@ const palliers = computed(() => {
   s.sort((a, b) => b.score - a.score)
   return s
 })
+// record of the period, mine, of the world: the run being played beats them on screen
+const records = computed(() =>
+  [personalBestForPeriod, personalBest, worldsBest].map((record) => Math.max(record.value?.score ?? 0, currentScore.value)),
+)
+// the three hold in the panel (345px) up to 7 digits at the height of the GIFs (15px), smaller beyond
+const recordSize = computed(() => {
+  const digits = String(Math.max(...records.value)).length
+  return digits <= 7 ? null : digits === 8 ? 13 : digits === 9 ? 12 : 10
+})
 const nextPallierIndex = computed(() => {
   return palliers.value.findLastIndex((p) => currentScore.value < p.score)
 })
 const notZoomedHiddenState = computed(() => (props.isZoomed ? '' : 'hidden'))
 
 const refreshScores = () => {
-  return get(`/games/${props.game.id}/scores`).then((data) => {
-    scores.value = data.data.scores
-    worldsBest.value = data.data.worlds_best
-    personalBest.value = data.data.personal_best
-    personalBestForPeriod.value = data.data.personal_best_for_period
-    league.value = data.data.league ?? null
-    leaguesScores.value = data.data.leagues_scores ?? {}
+  return fetchScores(props.game.id).then((data) => {
+    scores.value = data.scores
+    worldsBest.value = data.worlds_best
+    personalBest.value = data.personal_best
+    personalBestForPeriod.value = data.personal_best_for_period
+    league.value = data.league ?? null
+    leaguesScores.value = data.leagues_scores ?? {}
   })
 }
 
@@ -77,14 +85,27 @@ const updateCurrentScore = (evt) => {
   }
 }
 
+// a run in the top 10 of the league of the player, a record of the game, a run taken out (App\Events\GameScoresChanged): the
+// leaderboard again, a bit later (the players watching the game do not all ask at once). Polled only without the realtime
+const refreshSoon = refetchSoon(refreshScores, { delay: 1000, jitter: 3000 })
+const gameChannel = () => `games.${props.game.id}`
+useChannel(gameChannel, {
+  'scores.changed': (e) => {
+    const samePeriod = !e.period_id || !periodStore.period || e.period_id === periodStore.period.id
+    if (samePeriod && (!e.league_id || e.league_id === league.value?.id || e.world_best)) {
+      refreshSoon()
+    }
+  },
+}, { isPrivate: false, resync: refreshScores })
+useChannel('site', { 'period.started': refetchSoon(refreshScores, { delay: 2000, jitter: 10000 }) }, { isPrivate: false })
+usePolling(refreshScores, 1200000, { channel: gameChannel })
+
 onMounted(() => {
-  intervalId = setInterval(refreshScores, 1200000)
-  window.evts.addEventListener('gameFinished', refreshScores)
+  // window.evts.addEventListener('gameFinished', refreshScores)
   window.evts.addEventListener('score', updateCurrentScore)
 })
 onUnmounted(() => {
-  clearInterval(intervalId)
-  window.evts.removeEventListener('gameFinished', refreshScores)
+  // window.evts.removeEventListener('gameFinished', refreshScores)
   window.evts.removeEventListener('score', updateCurrentScore)
 })
 
@@ -161,14 +182,8 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
           </thead>
           <tbody>
             <tr>
-              <td>
-                <Number :value="Math.max(personalBestForPeriod?.score ?? 0, currentScore)" color="orange" />
-              </td>
-              <td>
-                <Number :value="Math.max(personalBest?.score ?? 0, currentScore)" color="orange" />
-              </td>
-              <td>
-                <Number :value="Math.max(worldsBest?.score ?? 0, currentScore)" color="orange" />
+              <td v-for="(record, index) in records" :key="index">
+                <Number :value="record" color="orange" :size="recordSize" />
               </td>
             </tr>
           </tbody>

@@ -4,18 +4,9 @@ const props = defineProps({
   clan: { type: Object, required: true },
 })
 
-const { fetchHistory, isLoading, error } = useClans()
-const rows = ref([])
-const meta = ref(null)
-
-const load = (page = 1) =>
-  fetchHistory(props.clan.id, page).then((data) => {
-    rows.value = page === 1 ? data.data : [...rows.value, ...data.data]
-    meta.value = data.meta
-  })
-watch(() => props.clan.id, () => load(), { immediate: true })
-
-const hasNextPage = computed(() => meta.value && meta.value.current_page < meta.value.last_page)
+const { items: rows, meta, hasNextPage, loadMore, reload, isLoading, error } = useClanHistory(() => props.clan.id)
+// a new line: the first page again
+onClanUpdated(() => props.clan.id, ['history'], reload)
 const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â€”')
 </script>
 
@@ -89,7 +80,7 @@ const formatDate = (date) => (date ? dayjs(date).format('DD/MM/YYYY HH:mm') : 'â
     </div>
 
     <div v-if="hasNextPage" class="text-center">
-      <FormButton size="lg" :disabled="isLoading" @click="load(meta.current_page + 1)">Charger plus</FormButton>
+      <FormButton size="lg" :disabled="isLoading" @click="loadMore()">Charger plus</FormButton>
     </div>
   </div>
 </template>

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ClanActionType;
 use App\Enums\ClanAttackStatus;
+use App\Events\UserCountersChanged;
 use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanAction;
@@ -14,6 +15,7 @@ use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Settings\ClanSettings;
+use App\Support\Realtime;
 
 // a clan run is a normal run (contract, rankings): the player asks for it on the clan pages (ClanAction), then the run he
 // begins on its page (/clans/play/{action}: the game sends the action, pageAction, no time limit), or else the next run he
@@ -301,8 +303,13 @@ class ClanRunService
     // an attack game of the day, else a paid clan game; false when there is none left
     public function useClanGame(User $user): bool
     {
-        return User::query()->whereKey($user->id)->where('clan_attack_games', '>', 0)->decrement('clan_attack_games') > 0
+        $used = User::query()->whereKey($user->id)->where('clan_attack_games', '>', 0)->decrement('clan_attack_games') > 0
             || User::query()->whereKey($user->id)->where('clan_games', '>', 0)->decrement('clan_games') > 0;
+        if ($used) {
+            Realtime::send(new UserCountersChanged($user->id));
+        }
+
+        return $used;
     }
 
     // shown in the bottom bar of the game instead of the contract: the score to reach (a mission step, a defense: higher than

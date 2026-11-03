@@ -1,7 +1,14 @@
 <script setup>
-// "Mon compte": the theme of the site, bought with Kado points (App\Http\Controllers\Api\ThemeController)
+// "Mon compte": the theme of the site, bought with Kado points (App\Http\Controllers\Api\ThemeController); the preferences
+// of the player (components/account/Preferences.vue)
+const route = useRoute()
 const authStore = useAuthStore()
-const { get, post, put, isLoading, error } = useApi()
+const tab = computed(() => route.meta.tab ?? 'account')
+const tabs = [
+  { label: 'Mon compte', value: 'account', route: { name: 'account' } },
+  { label: 'Préférences', value: 'preferences', route: { name: 'account.preferences' } },
+]
+const { fetchThemes, buyTheme, chooseTheme, isLoading, error } = useAccount()
 
 const themes = ref([])
 const notice = ref(null)
@@ -11,9 +18,9 @@ const previews = {
   karbon: { pattern: '/gfx/themes/karbon/patternBG.jpg', title: '/gfx/themes/karbon/greyh2_bg.jpg', panel: 'bg-kado-slate-50' },
 }
 
-const load = () => get('/themes').then((response) => {
-  themes.value = response.data.data
-})
+const load = () => fetchThemes().then((data) => {
+  themes.value = data
+}).catch(() => {}) // (shown by error)
 load()
 
 const refresh = (message) => {
@@ -24,19 +31,24 @@ const refresh = (message) => {
 const buy = (theme) => {
   if (confirm(`Acheter le thème ${theme.name} pour ${formatScore(theme.price)} points Kado ?`)) {
     notice.value = null
-    post(`/themes/${theme.key}/buy`).then(() => refresh(`Le thème ${theme.name} est à vous ! Il est maintenant utilisé sur le site.`))
+    buyTheme(theme.key).then(() => refresh(`Le thème ${theme.name} est à vous ! Il est maintenant utilisé sur le site.`))
   }
 }
 const use = (theme) => {
   notice.value = null
-  put('/user/theme', { theme: theme.key }).then(() => refresh(`Le thème ${theme.name} est maintenant utilisé sur le site.`))
+  chooseTheme(theme.key).then(() => refresh(`Le thème ${theme.name} est maintenant utilisé sur le site.`))
 }
 </script>
 
 <template>
-  <NavTabs :items="[{ label: 'Mon compte', value: 'account' }]" />
+  <NavTabs :items="tabs" :selected-index="tabs.findIndex((t) => t.value === tab)" />
 
   <div class="relative px-2 space-y-4">
+    <div v-if="tab === 'preferences'" class="relative px-2 space-y-4">
+      <KadoPageTitle>Préférences</KadoPageTitle>
+      <AccountPreferences />
+    </div>
+
     <KadoPageTitle>Mon compte</KadoPageTitle>
 
     <KadoSectionTitle>Thème du site</KadoSectionTitle>

@@ -7,6 +7,7 @@ use App\Enums\ClanAttackStatus;
 use App\Enums\ClanBonusType;
 use App\Enums\ClanCombatRole;
 use App\Enums\ClanRole;
+use App\Events\ClanUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ClanAttackResource;
 use App\Http\Resources\ClanHistoryResource;
@@ -28,6 +29,7 @@ use App\Services\ClanService;
 use App\Services\ClanWarService;
 use App\Settings\ClanSettings;
 use App\Support\ClanMarkdown;
+use App\Support\Realtime;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -226,6 +228,7 @@ class ClanController extends Controller implements HasMiddleware
             'is_recruiting' => ['sometimes', 'boolean'],
         ]);
         $clan->update($validated);
+        Realtime::send(new ClanUpdated($clan->id, [ClanUpdated::CLAN]));
 
         return response()->noContent();
     }

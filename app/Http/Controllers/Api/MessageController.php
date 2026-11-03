@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserLightResource;
+use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\MessageService;
@@ -38,7 +38,7 @@ class MessageController extends Controller implements HasMiddleware
             ->paginate(30);
 
         return response()->json([
-            'data' => $messages->getCollection()->map(fn (Message $message) => $this->summary($message)),
+            'data' => MessageResource::collection($messages->getCollection())->resolve(),
             'meta' => ['current_page' => $messages->currentPage(), 'last_page' => $messages->lastPage()],
             'unread' => $this->messageService->unreadCount($user),
         ]);
@@ -56,11 +56,11 @@ class MessageController extends Controller implements HasMiddleware
         $isSender = $message->sender_id === $user->id && !$message->sender_deleted_at;
         abort_unless($isRecipient || $isSender, 404);
 
-        if ($isRecipient && !$message->read_at) {
-            $message->update(['read_at' => now()]);
+        if ($isRecipient) {
+            $this->messageService->markRead($message);
         }
 
-        return ['data' => [...$this->summary($message->load('sender', 'recipient')), 'body' => $message->body]];
+        return ['data' => [...MessageResource::make($message->load('sender', 'recipient'))->resolve(), 'body' => $message->body]];
     }
 
     public function store(Request $request)
@@ -93,18 +93,5 @@ class MessageController extends Controller implements HasMiddleware
         $this->messageService->delete($user, $message);
 
         return response()->noContent();
-    }
-
-    private function summary(Message $message): array
-    {
-        return [
-            'id' => $message->id,
-            'subject' => $message->subject,
-            // null: a message of the site
-            'sender' => $message->sender ? UserLightResource::make($message->sender) : null,
-            'recipient' => UserLightResource::make($message->recipient),
-            'is_read' => $message->read_at !== null,
-            'created_at' => $message->created_at?->toIso8601String(),
-        ];
     }
 }

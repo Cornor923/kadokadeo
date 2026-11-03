@@ -14,6 +14,8 @@ const load = () =>
     result.value = data
   })
 watch([clanId, page, query], load, { immediate: true })
+// a topic new or answered by another member: at once
+onClanForumUpdated(clanId, load, { resync: load })
 
 const showSearch = ref(Boolean(query.value))
 const search = ref(query.value)

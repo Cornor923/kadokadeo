@@ -3,17 +3,20 @@
 namespace App\Services;
 
 use App\Enums\ClanRole;
+use App\Events\ClanForumUpdated;
 use App\Exceptions\ClanException;
 use App\Models\Clan;
 use App\Models\ClanForumMessage;
 use App\Models\ClanForumRead;
 use App\Models\ClanForumTopic;
 use App\Models\User;
+use App\Support\Realtime;
 use Illuminate\Support\Facades\DB;
 
 // the private forum of a clan: its members read it and write in it, its leader and its right hands moderate it (pin and
 // lock the topics, delete and restore the messages, delete the topics). The messages are written in Marktwin, rendered
-// by the client (resources/js/marktwin): the server keeps the text as it was written.
+// by the client (resources/js/marktwin): the server keeps the text as it was written. The pages of the members open on
+// the forum see the changes at once (App\Events\ClanForumUpdated).
 class ClanForumService
 {
     public function __construct(private readonly ClanService $clanService) {}
@@ -52,6 +55,7 @@ class ClanForumService
                 'last_message_at' => $message->created_at,
             ]);
             $this->markRead($user, $topic, $message->id);
+            $this->changed($topic);
 
             return $topic;
         });
@@ -72,6 +76,7 @@ class ClanForumService
                 'last_message_at' => $message->created_at,
             ]);
             $this->markRead($user, $topic, $message->id);
+            $this->changed($topic);
 
             return $message;
         });
@@ -96,6 +101,7 @@ class ClanForumService
             throw new ClanException('Vous ne pouvez pas modifier ce message.');
         }
         $message->update(['content' => $content, 'edited_at' => now(), 'edited_by' => $user->id]);
+        $this->changed($message->topic);
 
         return $message;
     }
@@ -110,6 +116,7 @@ class ClanForumService
         DB::transaction(function () use ($user, $message) {
             $message->update(['deleted_by' => $user->id]);
             $message->delete();
+            $this->changed($message->topic);
         });
     }
 
@@ -121,6 +128,7 @@ class ClanForumService
         }
         $message->deleted_by = null;
         $message->restore();
+        $this->changed($message->topic);
     }
 
     // the title: its author or a moderator; pinned and locked: a moderator
@@ -136,6 +144,7 @@ class ClanForumService
             throw new ClanException('Seuls le chef de clan et ses bras droits peuvent faire ça.');
         }
         $topic->update($changes);
+        $this->changed($topic);
 
         return $topic;
     }
@@ -144,6 +153,12 @@ class ClanForumService
     {
         $this->assertModerator($user, $topic->clan);
         $topic->delete();
+        Realtime::send(new ClanForumUpdated($topic->clan_id, $topic->id, deleted: true));
+    }
+
+    private function changed(ClanForumTopic $topic): void
+    {
+        Realtime::send(new ClanForumUpdated($topic->clan_id, $topic->id));
     }
 
     // the messages read up to $messageId (a page shown): the last read message only moves forward

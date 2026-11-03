@@ -1,8 +1,8 @@
 <script setup>
 import KadoPoints from '@svg/k.svg'
 
-const { isLoading: isRankingV1Loading, error: leaderboardError, get: getLeaderboard } = useApi()
-const { isLoading: isFeathersLoading, error: feathersError, get: getFeathersLeaderboard } = useApi()
+const { isLoading: isRankingV1Loading, error: leaderboardError, fetchRankingV1 } = useCompetition()
+const { isLoading: isFeathersLoading, error: feathersError, fetchFeathers } = useCompetition()
 const { isLoading: isGamesLoading, error: gamesError, fetchGames } = useGames()
 const route = useRoute()
 const router = useRouter()
@@ -24,7 +24,6 @@ const isCurrentPeriod = computed(() => selectedPeriod.value === null)
 const displayedPeriod = computed(() => selectedPeriod.value ?? currentPeriod.value)
 const canGoPrevious = computed(() => displayedPeriod.value !== null && displayedPeriod.value > 1)
 const periodLabel = computed(() => (isCurrentPeriod.value ? 'Période courante' : `Période ${selectedPeriod.value}`))
-const periodQuery = computed(() => (isCurrentPeriod.value ? '' : `?period=${selectedPeriod.value}`))
 const page = computed(() => Number(route.query.page) || 1)
 const pageRoute = (pageNumber) => ({ query: { ...route.query, page: pageNumber } })
 const isMe = (player) => player.user.etwin_id === myRanking.value?.user.etwin_id
@@ -45,25 +44,30 @@ function togglePlayerDetails(event) {
   selectedPlayerId.value = selectedPlayerId.value === playerId ? null : playerId
 }
 
+// (an answer for a page or a period asked before is ignored)
+let leaderboardRequest = 0
 function loadLeaderboard() {
   selectedPlayerId.value = null
-  const separator = periodQuery.value ? '&' : '?'
-
-  getLeaderboard(`/competition${periodQuery.value}${page.value > 1 ? `${separator}page=${page.value}` : ''}`)
-    .then((response) => {
-      leaderboard.value = response.data.data
-      leaderboardMeta.value = response.data.meta
-      myRanking.value = response.data.me
+  const current = ++leaderboardRequest
+  fetchRankingV1(selectedPeriod.value, page.value)
+    .then((data) => {
+      if (current !== leaderboardRequest) return
+      leaderboard.value = data.data
+      leaderboardMeta.value = data.meta
+      myRanking.value = data.me
     })
     .catch(() => null)
 }
 
 watch(page, loadLeaderboard)
 
+let feathersRequest = 0
 function loadFeathersLeaderboard() {
-  getFeathersLeaderboard(`/competition/poids-plumes${periodQuery.value}`)
-    .then((response) => {
-      feathersLeaderboard.value = response.data
+  const current = ++feathersRequest
+  fetchFeathers(selectedPeriod.value)
+    .then((data) => {
+      if (current !== feathersRequest) return
+      feathersLeaderboard.value = data
     })
     .catch(() => null)
 }

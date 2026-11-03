@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Achievements\AchievementRule;
+use App\Events\AnnouncementUpdated;
+use App\Settings\SiteSettings;
+use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Database\Events\NoPendingMigrations;
@@ -11,6 +14,7 @@ use Illuminate\Support\ServiceProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use Spatie\LaravelSettings\Events\SettingsSaved;
 use SplFileInfo;
 
 class AppServiceProvider extends ServiceProvider
@@ -87,6 +91,13 @@ class AppServiceProvider extends ServiceProvider
         Event::listen([MigrationsEnded::class, NoPendingMigrations::class], function () {
             if (config('settings.cache.enabled')) {
                 app(\Spatie\LaravelSettings\SettingsCache::class)->clear();
+            }
+        });
+
+        // the announcement saved in the admin (« Paramètres > Site »): the banner of the pages open changes at once
+        Event::listen(SettingsSaved::class, function (SettingsSaved $event) {
+            if ($event->settings instanceof SiteSettings) {
+                Realtime::send(AnnouncementUpdated::of($event->settings));
             }
         });
     }

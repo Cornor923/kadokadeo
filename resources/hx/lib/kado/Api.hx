@@ -5,14 +5,29 @@ import js.lib.Promise;
 class Api {
 	public static var baseUrl:String = "http://kadokadeo.localhost";
 
+	// the player is authenticated by the session cookie of the site, sent by the browser (same origin, HttpOnly: no
+	// script reads it); the requests carry back the CSRF token of the session (the cookie XSRF-TOKEN of Laravel)
 	public static function buildClient(url:String = null) {
 		var http = new haxe.Http(baseUrl + url);
 
 		http.setHeader("Content-Type", "application/json");
 		http.setHeader("Accept", "application/json");
-		http.setHeader("Authorization", "Bearer " + js.Browser.window.localStorage.getItem("kado:token"));
+		var xsrf = xsrfToken();
+		if (xsrf != null) {
+			http.setHeader("X-XSRF-TOKEN", xsrf);
+		}
 
 		return http;
+	}
+
+	static function xsrfToken():Null<String> {
+		for (cookie in js.Browser.document.cookie.split(";")) {
+			var pair = StringTools.trim(cookie);
+			if (StringTools.startsWith(pair, "XSRF-TOKEN=")) {
+				return js.Syntax.code("decodeURIComponent({0})", pair.substr("XSRF-TOKEN=".length));
+			}
+		}
+		return null;
 	}
 
 	// rejected with a Dto.ApiError (the message of the server: no games left, the daily game already played...)

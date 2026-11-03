@@ -13,7 +13,7 @@ const props = defineProps({
   isMe: { type: Boolean, default: false },
 })
 
-const { get, isLoading, error } = useApi()
+const { fetchPeriodSummary, isLoading, error } = useProfile()
 const summary = ref(null)
 // the period shown: null, the last finished one
 const periodId = ref(null)
@@ -22,9 +22,9 @@ const periodId = ref(null)
 let request = 0
 function load() {
   const current = ++request
-  get(`/users/${props.playerId}/periods${periodId.value ? `/${periodId.value}` : ''}`).then((response) => {
+  fetchPeriodSummary(props.playerId, periodId.value).then((data) => {
     if (current === request) {
-      summary.value = response.data.data
+      summary.value = data
     }
   }).catch(() => {}) // (shown by error)
 }

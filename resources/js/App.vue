@@ -32,6 +32,9 @@ const layout = computed(() => {
 
 <template>
   <component :is="layout">
-    <router-view />
+    <!-- meta.remount: a page made for one value of its params, made again when they change -->
+    <router-view v-slot="{ Component, route: shown }">
+      <component :is="Component" :key="shown.meta.remount ? shown.path : undefined" />
+    </router-view>
   </component>
 </template>

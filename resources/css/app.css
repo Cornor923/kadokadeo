@@ -202,6 +202,15 @@
   --color-kado-gauge-orange: #f6941e;
   --color-kado-gauge-green: #84ff7a;
 
+  /* the bar of the games of Eternaltwin (nav/TopBar.vue), the one of its other games (DinoRPG) */
+  --color-etwin-bar: #111317;
+  --color-etwin-text: #b7b9c6;
+  --color-etwin-orange: #fe7d00;
+  --color-etwin-blue: #0288d1;
+  --color-etwin-green: #2e7d32;
+  /* its height: the header of the page (the backgrounds of the body) starts under it */
+  --spacing-etwin-bar: 2.5rem;
+
   /* the forum of Eternaltwin in the look of the forum of Twinoid (data.twinoid.com/css/bar.css), and the dark panels
      of the clans (#1d2024 / #3d4045 in the original stylesheet) */
   --color-twinoid-500: #4e5162;
@@ -222,14 +231,14 @@
     justify-content: center;
     align-items: center;
     background:
-      url('/gfx/bgHeader.png') top repeat-x,
+      url('/gfx/bgHeader.png') 0 var(--spacing-etwin-bar) repeat-x,
       url('/gfx/bgBodyPattern.jpg') repeat;
     background-color: var(--color-kado-blue-200);
     color: var(--color-kado-blue-700);
 
     @variant karbon {
       background:
-        url('/gfx/themes/karbon/bg_header.jpg') top repeat-x,
+        url('/gfx/themes/karbon/bg_header.jpg') 0 var(--spacing-etwin-bar) repeat-x,
         url('/gfx/themes/karbon/patternBG.jpg') repeat;
       background-color: var(--color-kado-slate-800);
     }

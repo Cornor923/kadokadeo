@@ -2,9 +2,14 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import { useApi } from '@/composables/useApi'
+import { clanToast } from '@/composables/useNotifications'
+import { onRealtimeReconnect, refetchSoon, useChannel } from '@/composables/useRealtime'
+import { useAuthStore } from '@/stores/auth'
+import { useToastStore } from '@/stores/toast'
 
 // what the menus need about the clans: the period of the tournament, the clan of the player, the top 3 of the wars and of
-// the missions
+// the missions. The channel of the clan of the player is listened to while he is in it: the feats of the other members in
+// toasts (App\Events\ClanToast), the menus again when the members change (App\Events\ClanUpdated)
 export const useClanStore = defineStore('clan', () => {
   // the clans are open (App\Settings\ClanSettings::$enabled): else their pages are closed and their API refused
   const enabled = Boolean(window.Kado?.clans_enabled)
@@ -35,6 +40,21 @@ export const useClanStore = defineStore('clan', () => {
       rules.value = data.rules
     }).catch(() => {})
   }
+
+  const authStore = useAuthStore()
+  const toastStore = useToastStore()
+  const reloadSoon = refetchSoon(reload, { delay: 300, jitter: 700 })
+  useChannel(() => (enabled && clan.value ? `clans.${clan.value.id}` : null), {
+    'clan.toast': (e) => {
+      const toast = e.player?.etwin_id !== authStore.user?.etwin_id ? clanToast(e) : null
+      if (toast) {
+        toastStore.show(toast)
+      }
+    },
+    // excluded, the clan disbanded, a new right hand (can_manage)...
+    'clan.updated': (e) => (e.parts.includes('members') || e.parts.includes('clan')) && reloadSoon(),
+  })
+  onRealtimeReconnect(() => clan.value && reload())
 
   return {
     enabled,

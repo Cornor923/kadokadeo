@@ -21,6 +21,16 @@ const load = () =>
     tournament.value = data.tournament
   })
 watch(clanId, load, { immediate: true })
+// its presentation, its members (the viewer may be out of it now): at once
+onClanUpdated(clanId, ['clan', 'members'], load)
+// the application of the viewer answered (he is not in the clan yet: told on his own channel)
+useChannel(() => userChannel(authStore.user?.id), {
+  'notification.received': (e) => {
+    if (['clan_accepted', 'clan_refused'].includes(e.notification.type) && String(e.notification.clan?.id) === String(clanId.value)) {
+      load()
+    }
+  },
+})
 
 const viewer = computed(() => clan.value?.viewer ?? {})
 const applicationMessage = ref('')

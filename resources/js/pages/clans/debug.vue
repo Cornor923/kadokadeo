@@ -2,24 +2,24 @@
 // tools to try the clans alone (KADO_DEBUG_TOOLS, never in production): attacks and defenses with a chosen score,
 // mission steps, the time going by, the end of the period
 const clanStore = useClanStore()
-const { get, post, isLoading, error } = useApi()
+const { fetchState, run: runAction, isLoading, error } = useClanDebug()
 
 const data = ref(null)
 const log = ref([])
 const attack = reactive({ attacker_clan_id: null, defender_clan_id: null, game_id: null, score: 1000 })
 const defenseScores = reactive({})
 
-const load = () => get('/debug/clans').then((response) => {
-  data.value = response.data.data
+const load = () => fetchState().then((state) => {
+  data.value = state
   attack.attacker_clan_id ??= data.value.my_clan_id ?? data.value.clans[0]?.id ?? null
   attack.defender_clan_id ??= data.value.clans.find((c) => c.id !== attack.attacker_clan_id)?.id ?? null
   attack.game_id ??= data.value.games[0]?.id ?? null
 })
 load()
 
-const run = (url, payload = {}) =>
-  post(url, payload).then((response) => {
-    log.value.unshift(`${new Date().toLocaleTimeString('fr-FR')} — ${response.data.data.result}`)
+const run = (action, payload = {}) =>
+  runAction(action, payload).then((result) => {
+    log.value.unshift(`${new Date().toLocaleTimeString('fr-FR')} — ${result.result}`)
     clanStore.reload()
     load()
   })
@@ -28,7 +28,7 @@ const swap = () => {
 }
 const endPeriod = () => {
   if (confirm('Terminer la période en cours ? Les classements des clans sont calculés, les points Kado distribués et une nouvelle période commence.')) {
-    run('/debug/clans/end-period')
+    run('end-period')
   }
 }
 </script>
@@ -55,7 +55,7 @@ const endPeriod = () => {
       <p class="text-sm">Période {{ data.period?.id ?? '—' }}, fin le {{ data.period ? new Date(data.period.end_at).toLocaleString('fr-FR') : '—' }}</p>
 
       <KadoSectionTitle>Lancer une attaque</KadoSectionTitle>
-      <form class="flex flex-wrap items-end gap-2" @submit.prevent="run('/debug/clans/attack', attack)">
+      <form class="flex flex-wrap items-end gap-2" @submit.prevent="run('attack', attack)">
         <label class="flex flex-col text-sm">Clan attaquant
           <FormSelect v-model="attack.attacker_clan_id" class="p-1">
             <option v-for="c in data.clans" :key="c.id" :value="c.id">{{ c.name }} ({{ c.war_score }})</option>
@@ -105,7 +105,7 @@ const endPeriod = () => {
                          min="0"
                          :placeholder="a.score + 1"
                          class="w-20" />
-              <FormButton class="ml-1" @click="run(`/debug/clans/attacks/${a.id}/defend`, { score: defenseScores[a.id] ?? a.score + 1 })">Défendre</FormButton>
+              <FormButton class="ml-1" @click="run(`attacks/${a.id}/defend`, { score: defenseScores[a.id] ?? a.score + 1 })">Défendre</FormButton>
             </td>
           </tr>
         </tbody>
@@ -119,7 +119,7 @@ const endPeriod = () => {
           <li v-for="step in data.mission.steps" :key="step.id" class="flex items-center gap-2">
             <span>{{ step.game }} : {{ step.target_score }} pts</span>
             <strong v-if="step.done" class="text-kado-green-600">réussie</strong>
-            <FormButton v-else @click="run(`/debug/clans/mission-steps/${step.id}`)">Réussir l'étape</FormButton>
+            <FormButton v-else @click="run(`mission-steps/${step.id}`)">Réussir l'étape</FormButton>
           </li>
         </ul>
       </template>
@@ -129,7 +129,7 @@ const endPeriod = () => {
         <FormButton v-for="h in [1, 6, 12, 24]"
                     :key="h"
                     size="lg"
-                    @click="run('/debug/clans/time', { hours: h })">+{{ h }}h</FormButton>
+                    @click="run('time', { hours: h })">+{{ h }}h</FormButton>
         <FormButton size="lg" variant="pink" @click="endPeriod">Terminer la période</FormButton>
       </p>
       <p class="my-4 text-xs">« +12h » fait réussir les attaques non repoussées et échouer les missions en cours qui dépassent leur temps.</p>

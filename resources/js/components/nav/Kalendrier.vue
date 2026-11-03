@@ -8,8 +8,17 @@ const router = useRouter()
 clanStore.reload()
 messagesStore.watchUnread()
 
-const logout = () => {
-  authStore.logout()
+const mailTitle = computed(() => {
+  const parts = [
+    messagesStore.unread && `${messagesStore.unread} nouveau(x) message(s)`,
+    messagesStore.notificationsUnread && `${messagesStore.notificationsUnread} notification(s)`,
+  ].filter(Boolean)
+  return parts.length ? parts.join(', ') : 'Messages'
+})
+
+// the login page once the session is closed
+const logout = async() => {
+  await authStore.logout().catch(() => {})
   router.push('/login')
 }
 // the round buttons of the kalendrier
@@ -31,14 +40,17 @@ const bottomButton = `${button} mr-1.25`
       <p class="absolute top-[87px] left-[54px] h-3 w-[103px] text-center text-[0.8em] text-kado-slate-400">Période {{ periodStore.period?.id }} - Jour {{ periodStore.dayCount+1 }}</p>
     </aside>
     <ul class="absolute top-1.5 left-[166px] flex flex-col">
-      <li><RouterLink :class="rightButton" to="/" @click="logout"><img src="/gfx/kalendarPreviousDay.gif" alt="logout"></RouterLink></li>
+      <li><a href="/login"
+             :class="rightButton"
+             title="Déconnexion"
+             @click.prevent="logout"><img src="/gfx/kalendarPreviousDay.gif" alt="Déconnexion"></a></li>
       <!-- the yellow mail of KadoKado when a message is unread -->
       <li class="relative">
-        <RouterLink :class="rightButton" :to="{ name: 'messages.inbox' }" :title="messagesStore.unread ? `${messagesStore.unread} nouveau(x) message(s)` : 'Messages'">
-          <img :src="messagesStore.unread ? '/assets/img/gfx/icons/newMail.gif' : '/gfx/kalendarIconMail.gif'" alt="mail">
+        <RouterLink :class="rightButton" :to="{ name: !messagesStore.unread && messagesStore.notificationsUnread ? 'messages.notifications' : 'messages.inbox' }" :title="mailTitle">
+          <img :src="messagesStore.total ? '/assets/img/gfx/icons/newMail.gif' : '/gfx/kalendarIconMail.gif'" alt="mail">
         </RouterLink>
-        <span v-if="messagesStore.unread" class="pointer-events-none absolute -top-1 -right-1 min-w-4 rounded-full border border-white bg-kado-pink-600 px-0.5 text-center text-2xs leading-3.5 font-bold text-white">
-          {{ messagesStore.unread > 9 ? '9+' : messagesStore.unread }}
+        <span v-if="messagesStore.total" class="pointer-events-none absolute -top-1 -right-1 min-w-4 rounded-full border border-white bg-kado-pink-600 px-0.5 text-center text-2xs leading-3.5 font-bold text-white">
+          {{ messagesStore.total > 9 ? '9+' : messagesStore.total }}
         </span>
       </li>
       <li><RouterLink :class="rightButton" :to="{ name: 'forum.index' }" title="Forum"><img src="/gfx/kalendarIconForum.gif" alt="forum"></RouterLink></li>

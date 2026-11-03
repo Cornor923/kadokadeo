@@ -7,6 +7,7 @@ use App\Filament\Resources\Runs\RunResource;
 use App\Services\RunCommentService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 // a comment of a replay at one of its frames (App\Services\RunCommentService), or an answer to one (parent_id)
@@ -27,17 +28,20 @@ class RunComment extends Model implements Reportable
         'edited_at' => 'datetime',
     ];
 
-    public function run()
+    /** @return BelongsTo<Run, $this> */
+    public function run(): BelongsTo
     {
         return $this->belongsTo(Run::class)->withTrashed();
     }
 
-    public function user()
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function parent()
+    /** @return BelongsTo<self, $this> */
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id')->withTrashed();
     }

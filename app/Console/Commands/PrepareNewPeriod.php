@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Events\PeriodStarted;
 use App\Models\Period;
 use App\Services\ClanPeriodService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
+use App\Support\Realtime;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +73,8 @@ class PrepareNewPeriod extends Command
             $poidsPlumeService->closePeriod($period);
             $clanPeriodService->closePeriod($period);
         }
+        // the pages open: the period, the leagues, the scores, the clans
+        Realtime::send(new PeriodStarted());
 
         return 0;
     }
