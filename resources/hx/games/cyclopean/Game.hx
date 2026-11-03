@@ -1,7 +1,6 @@
 package cyclopean;
 
 import haxe.io.UInt16Array;
-import kado.TouchControlsConfig.TouchButtonShape;
 import kado.TouchControlsConfig.TouchControlsMode;
 import cyclopean.Element.ElementMC;
 import cyclopean.Level.Mat;
@@ -245,27 +244,25 @@ class Game implements kado.GameInterface {
 	public static inline var FRAME_RATE = 40;
 	public static var tmod:Float = 32 / FRAME_RATE;
 
-	// two arrows: turn the cave left / right
+	// like PiouPiou: a touch on the left half of the screen turns the cave left, on the right half right
 	public static var TOUCH_CONTROLS:kado.TouchControlsConfig = {
 		mode: TouchControlsMode.KEYBOARD,
 		buttons: [
 			{
-				id: "left",
-				label: "◀",
-				leftPx: 20,
-				bottomPx: 20,
-				size: 80,
+				id: "left_zone",
+				label: "",
+				leftPx: -450,
+				size: 600,
 				keyCode: KeyboardManager.LEFT,
-				shape: TouchButtonShape.SQUARE,
+				invisible: true,
 			},
 			{
-				id: "right",
-				label: "▶",
-				rightPx: 20,
-				bottomPx: 20,
-				size: 80,
+				id: "right_zone",
+				label: "",
+				rightPx: -450,
+				size: 600,
 				keyCode: KeyboardManager.RIGHT,
-				shape: TouchButtonShape.SQUARE,
+				invisible: true,
 			},
 		],
 	};
