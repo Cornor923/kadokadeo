@@ -20,6 +20,7 @@ use App\Services\ClanRunService;
 use App\Services\ClanService;
 use App\Services\ClanWarService;
 use App\Settings\ClanSettings;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -282,7 +283,7 @@ class ClanGuardsTest extends TestCase
 
         $foo->update(['name' => 'Foo 2']);
         $migration->up();
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(UniqueConstraintViolationException::class);
         DB::table('clans')->insert(['name' => 'FOO 2', 'created_at' => now(), 'updated_at' => now()]);
     }
 }

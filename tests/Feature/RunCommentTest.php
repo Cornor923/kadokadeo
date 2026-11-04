@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ReportStatus;
+use App\Exceptions\RunCommentException;
 use App\Http\Resources\RunResource;
 use App\Models\DailyGame;
 use App\Models\Report;
@@ -179,7 +180,7 @@ class RunCommentTest extends TestCase
         $stale = Run::find($this->run->id);
         $this->comment($this->viewer);
 
-        $this->expectException(\App\Exceptions\RunCommentException::class);
+        $this->expectException(RunCommentException::class);
         try {
             app(RunCommentService::class)->create($this->player, $stale, 10, 'Trop tard');
         } finally {

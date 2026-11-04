@@ -15,6 +15,7 @@ use App\Models\Run;
 use App\Models\User;
 use App\Services\ClanMissionService;
 use App\Services\ClanPeriodService;
+use App\Services\ClanRunService;
 use App\Services\ClanService;
 use App\Services\ClanWarService;
 use App\Services\DailyRankingService;
@@ -201,7 +202,7 @@ class DebugClanController extends Controller implements HasMiddleware
                 'completed_at' => now(),
             ]);
             $action->update(['run_id' => $run->id]);
-            $result = app(\App\Services\ClanRunService::class)->handleRunCompleted($run);
+            $result = app(ClanRunService::class)->handleRunCompleted($run);
 
             return ($result['message'] ?? 'Rien ne s\'est passé.').($action->type === ClanActionType::ATTACK && $result['result'] === 'launched'
                 ? ' (attaque de '.$action->user->display_name.')'

@@ -152,7 +152,7 @@ class ReplayVerificationTest extends TestCase
         $this->assertSame(RunVerification::VERIFIED, $run->verification);
         $this->assertFalse($run->is_cheat);
         $this->assertSame($analysis, ReplayVerification::first()->analysis);
-        $this->assertSame([\App\Enums\RunFlagRule::GAME_ANALYSIS], $run->flags->pluck('rule')->all());
+        $this->assertSame([RunFlagRule::GAME_ANALYSIS], $run->flags->pluck('rule')->all());
     }
 
     public function test_each_verification_is_recorded_with_its_scores(): void

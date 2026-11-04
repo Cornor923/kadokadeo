@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -123,7 +124,7 @@ class EtwinForumTest extends TestCase
 
     public function test_eternaltwin_down_is_reported(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        Http::fake(fn () => throw new ConnectionException('down'));
         $this->player(false);
 
         $this->getJson('/api/etwin-forum/sections')

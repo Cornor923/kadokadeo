@@ -16,15 +16,17 @@ use App\Services\ScoreService;
 use App\Settings\ClanSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class UserController extends Controller implements \Illuminate\Routing\Controllers\HasMiddleware
+class UserController extends Controller implements HasMiddleware
 {
     public static function middleware()
     {
         return [
-            new \Illuminate\Routing\Controllers\Middleware('auth:sanctum', only: ['index', 'show', 'showPeriod']),
+            new Middleware('auth:sanctum', only: ['index', 'show', 'showPeriod']),
         ];
     }
 

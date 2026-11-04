@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DailyGame;
 use App\Models\Run;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +17,7 @@ return new class() extends Migration
             $table->foreignId('daily_game_id')->nullable()->constrained('daily_games')->nullOnDelete();
         });
 
-        \App\Models\DailyGame::chunk(10, function ($dailyGames) {
+        DailyGame::chunk(10, function ($dailyGames) {
             foreach ($dailyGames as $dailyGame) {
                 Run::withTrashed()
                     ->leftJoin('daily_game_runs', 'runs.id', '=', 'daily_game_runs.run_id')

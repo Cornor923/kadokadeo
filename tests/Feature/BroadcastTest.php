@@ -27,6 +27,7 @@ use App\Services\RunService;
 use App\Settings\SiteSettings;
 use App\Support\Realtime;
 use App\Support\RealtimeOutbox;
+use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -279,7 +280,7 @@ class BroadcastTest extends TestCase
 
         $this->assertSame(2, Message::query()->count());
         Exceptions::assertReportedCount(1);
-        Exceptions::assertReported(\Illuminate\Broadcasting\BroadcastException::class);
+        Exceptions::assertReported(BroadcastException::class);
 
         $this->travel(RealtimeOutbox::DOWN_SECONDS + 1)->seconds();
         $this->postJson('/api/messages', ['to' => $recipient->display_name, 'subject' => 'Re', 'body' => 'Encore'])->assertCreated();

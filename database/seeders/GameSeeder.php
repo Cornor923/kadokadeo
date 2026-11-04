@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Game;
 use Illuminate\Database\Seeder;
 
@@ -16,8 +17,8 @@ class GameSeeder extends Seeder
      */
     public function run(): void
     {
-        $catAction = \App\Models\Category::firstOrCreate(['name' => 'Action']);
-        $catPuzzle = \App\Models\Category::firstOrCreate(['name' => 'Réflexion']);
+        $catAction = Category::firstOrCreate(['name' => 'Action']);
+        $catPuzzle = Category::firstOrCreate(['name' => 'Réflexion']);
 
         Game::truncate();
 

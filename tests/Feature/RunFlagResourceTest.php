@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\RunFlagRule;
 use App\Enums\RunFlagStatus;
+use App\Filament\AntiCheatNotices;
 use App\Filament\Resources\RunFlags\Pages\ListRunFlags;
 use App\Models\Run;
 use App\Models\RunFlag;
@@ -57,7 +58,7 @@ class RunFlagResourceTest extends TestCase
             ->assertMountedActionModalSee(['Marquées triche automatiquement', 'Code du jeu remplacé', 'Ignorées', 'Paramètres > Anti-triche']);
         $this->assertStringContainsString(
             'Envoyées ici pour examen : Affichage ajouté par un script, PIXI modifié, Faux événements, Vérification impossible. Ignorées : Fonctions du navigateur modifiées, Actions générées par un script.',
-            \App\Filament\AntiCheatNotices::detectionRules(),
+            AntiCheatNotices::detectionRules(),
         );
     }
 

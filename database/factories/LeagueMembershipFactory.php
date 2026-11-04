@@ -4,12 +4,13 @@ namespace Database\Factories;
 
 use App\Models\Game;
 use App\Models\League;
+use App\Models\LeagueMembership;
 use App\Models\Period;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LeagueMembership>
+ * @extends Factory<LeagueMembership>
  */
 class LeagueMembershipFactory extends Factory
 {

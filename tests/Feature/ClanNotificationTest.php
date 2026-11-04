@@ -8,6 +8,7 @@ use App\Events\ClanForumUpdated;
 use App\Events\ClanToast;
 use App\Events\ClanUpdated;
 use App\Models\Clan;
+use App\Models\ClanAttack;
 use App\Models\ClanMission;
 use App\Models\Game;
 use App\Models\Period;
@@ -117,7 +118,7 @@ class ClanNotificationTest extends TestCase
             && in_array(ClanUpdated::STATUS, $e->broadcastWith()['parts'], true));
 
         Sanctum::actingAs($defender);
-        $attackId = \App\Models\ClanAttack::query()->sole()->id;
+        $attackId = ClanAttack::query()->sole()->id;
         $this->postJson("/api/clan-attacks/{$attackId}/defend")->assertCreated();
         $this->assertSame('repelled', $this->playClanRun($defender, $game, $period, 501)['result']);
         Event::assertDispatched(ClanToast::class, fn (ClanToast $e) => $e->broadcastOn()->name === "private-clans.{$clanB->id}"

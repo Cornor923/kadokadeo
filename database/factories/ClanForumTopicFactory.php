@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Clan;
+use App\Models\ClanForumTopic;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ClanForumTopic>
+ * @extends Factory<ClanForumTopic>
  */
 class ClanForumTopicFactory extends Factory
 {

@@ -21,6 +21,7 @@ use App\Settings\ClanSettings;
 use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -593,7 +594,7 @@ class ClanService
     /**
      * @param  array<int, int>  $clanIds
      * @param  'war'|'missions'  $ranking
-     * @return \Illuminate\Support\Collection<int, int> by clan id
+     * @return Collection<int, int> by clan id
      */
     public function ranksOf(array $clanIds, Period $period, string $ranking = 'war')
     {

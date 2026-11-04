@@ -279,7 +279,7 @@ class RunEndTest extends TestCase
     {
         $this->setSettings(AntiCheatSettings::class, ['require_rng_stir' => true]);
         $game = Game::factory()->create();
-        $daily = \App\Models\DailyGame::create(['day' => today(), 'game_id' => $game->id, 'seed' => 'daily', 'contract_score' => 0, 'contract_points' => 0]);
+        $daily = DailyGame::create(['day' => today(), 'game_id' => $game->id, 'seed' => 'daily', 'contract_score' => 0, 'contract_points' => 0]);
         $run = Run::factory()->for($game)->create(['score' => 0, 'completed_at' => null, 'daily_game_id' => $daily->id]);
 
         $this->assertFalse($this->finishWithReplay($run, ReplayHeaderTest::replay(1))->is_cheat);

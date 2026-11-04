@@ -365,7 +365,7 @@ class ClanMissionService
     // the "Jeux caca" (never in the next missions of the period) and the "Jeux cool" (in the next missions first): the
     // games of the options used, in the order they were added
     /**
-     * @return array{banned: \Illuminate\Support\Collection<int, int>, forced: \Illuminate\Support\Collection<int, int>}
+     * @return array{banned: Collection<int, int>, forced: Collection<int, int>}
      */
     public function gameLists(Clan $clan, Period $period): array
     {
@@ -486,7 +486,7 @@ class ClanMissionService
     // the games of the missions: active, not Arkadeo, with their 3 stars (a step at most each: a mission has fewer steps
     // when there are not enough of them)
     /**
-     * @return \Illuminate\Support\Collection<int, Game>
+     * @return Collection<int, Game>
      */
     public function missionGames()
     {
@@ -501,9 +501,9 @@ class ClanMissionService
     // the "Jeux cool" first (some of them at random when there are more than the steps), then other games at random,
     // never a "Jeu caca"
     /**
-     * @param  \Illuminate\Support\Collection<int, int>  $bannedIds
-     * @param  \Illuminate\Support\Collection<int, int>  $forcedIds
-     * @return \Illuminate\Support\Collection<int, Game>
+     * @param  Collection<int, int>  $bannedIds
+     * @param  Collection<int, int>  $forcedIds
+     * @return Collection<int, Game>
      */
     private function pickGames(int $count, Collection $bannedIds, Collection $forcedIds)
     {

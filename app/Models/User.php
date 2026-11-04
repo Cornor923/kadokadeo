@@ -9,6 +9,7 @@ use App\Enums\UserPreference;
 use App\Events\UserCountersChanged;
 use App\Settings\SiteSettings;
 use App\Support\Realtime;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens;
 
     use HasFactory;

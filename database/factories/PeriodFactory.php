@@ -6,7 +6,7 @@ use App\Models\Period;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Period>
+ * @extends Factory<Period>
  */
 class PeriodFactory extends Factory
 {

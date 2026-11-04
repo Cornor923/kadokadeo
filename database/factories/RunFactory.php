@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Models\Game;
 use App\Models\Period;
+use App\Models\Run;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Run>
+ * @extends Factory<Run>
  */
 class RunFactory extends Factory
 {

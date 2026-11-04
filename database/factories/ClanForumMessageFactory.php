@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\ClanForumMessage;
 use App\Models\ClanForumTopic;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ClanForumMessage>
+ * @extends Factory<ClanForumMessage>
  */
 class ClanForumMessageFactory extends Factory
 {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Game;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ return new class() extends Migration
             $table->boolean('is_arkadeo')->default(false)->change();
         });
 
-        App\Models\Game::where('is_arkadeo', true)->update(['is_arkadeo' => false]);
+        Game::where('is_arkadeo', true)->update(['is_arkadeo' => false]);
     }
 
     /**

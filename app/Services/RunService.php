@@ -16,6 +16,7 @@ use App\Support\ScoreBoards;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 /**
  * le client génère une clé AES
@@ -73,7 +74,7 @@ class RunService
         ]);
 
         if ($validator->fails()) {
-            throw new \Illuminate\Validation\ValidationException($validator);
+            throw new ValidationException($validator);
         }
 
         return $validator->validated();

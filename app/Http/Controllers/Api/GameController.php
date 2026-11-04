@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GameResource;
+use App\Models\Category;
 use App\Models\Game;
+use App\Models\Period;
 use App\Models\UserFavoriteGame;
 use App\Services\GameService;
 use App\Services\LeagueService;
@@ -32,7 +34,7 @@ class GameController extends Controller implements HasMiddleware
             'category' => 'sometimes|required|string|max:255|exists:categories,name',
         ]);
         $categoryName = data_get($data, 'category');
-        $periodId = \App\Models\Period::current()->first()?->id;
+        $periodId = Period::current()->first()?->id;
 
         $gamesQ = Game::where('is_active', true);
         if ($categoryName) {
@@ -52,7 +54,7 @@ class GameController extends Controller implements HasMiddleware
 
         $request->user()->load('favorite');
 
-        $categories = \App\Models\Category::all();
+        $categories = Category::all();
 
         return GameResource::collection($games)->additional([
             'categories' => $categories,

@@ -6,6 +6,7 @@ use App\Contracts\Reportable;
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 // a player reports a content (App\Contracts\Reportable, App\Services\ReportService): the queue « Modération >
 // Signalements » of the admin
@@ -26,7 +27,7 @@ class Report extends Model
     /**
      * The reported content, deleted ones too (an admin reads what was deleted).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<Model&Reportable, $this>
+     * @return MorphTo<Model&Reportable, $this>
      */
     public function reportable()
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Games\Schemas;
 
+use App\Models\Category;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -23,7 +24,7 @@ class GameForm
                     ->columnSpanFull(),
                 Select::make('category_id')
                     ->label('Catégorie')
-                    ->options(fn () => \App\Models\Category::all()->pluck('name', 'id'))
+                    ->options(fn () => Category::all()->pluck('name', 'id'))
                     ->required(),
                 TextInput::make('image_path')->label('Image'),
                 Repeater::make('stars')->label('Étoiles')->simple(
