@@ -20,6 +20,8 @@ class RunsPlayedChart extends ChartWidget
 
     protected ?string $heading = 'Parties jouées';
 
+    protected int|string|array $columnSpan = 2;
+
     // counts over the runs table: computed again at most every 5 minutes by filters, not polled
     protected ?string $pollingInterval = null;
 
@@ -30,10 +32,10 @@ class RunsPlayedChart extends ChartWidget
 
     private function computeData(): array
     {
-        $startDate = data_get($this->filters, 'startDate');
-        $endDate = data_get($this->filters, 'endDate');
+        $startDate = data_get($this->filters, 'startDate') ?? now()->subDays(30)->toDateString();
+        $endDate = data_get($this->filters, 'endDate') ?? now()->toDateString();
         $game = data_get($this->filters, 'game');
-        $period = data_get($this->filters, 'period');
+        $period = data_get($this->filters, 'period') ?? 'day';
 
         $runQ = Run::query()->when($game, function ($query) use ($game) {
             return $query->where('game_id', $game);
@@ -54,7 +56,7 @@ class RunsPlayedChart extends ChartWidget
             'week' => [$dataCompleted->perWeek(), $dataNotCompleted->perWeek()],
             'month' => [$dataCompleted->perMonth(), $dataNotCompleted->perMonth()],
             'year' => [$dataCompleted->perYear(), $dataNotCompleted->perYear()],
-            default => [$dataCompleted->perMonth(), $dataNotCompleted->perMonth()]
+            default => [$dataCompleted->perDay(), $dataNotCompleted->perDay()]
         };
 
         $dataCompleted = $dataCompleted->count();

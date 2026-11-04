@@ -35,6 +35,15 @@ return [
         'path' => env('KADO_GAME_BUILDS_PATH', storage_path('app/game-builds')),
     ],
 
+    // the IP -> country database of the admin stats (App\Support\GeoIp), written by kado:geoip:update
+    'geoip' => [
+        'path' => env('KADO_GEOIP_PATH', storage_path('app/geoip/country.mmdb')),
+    ],
+
+    // the proxies in front of PHP, whose X-Forwarded-For gives the IP of the player: addresses separated by commas, or *.
+    // Empty: the IP is REMOTE_ADDR
+    'trusted_proxies' => env('KADO_TRUSTED_PROXIES'),
+
     'security' => [
         'private_key_path' => env('KADO_RSA_PRIVATE_KEY_PATH', storage_path('app/private/privkey.pem')),
         'public_key_path' => env('KADO_RSA_PUBLIC_KEY_PATH', storage_path('app/private/pubkey.pem')),

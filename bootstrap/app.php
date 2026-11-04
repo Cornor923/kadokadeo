@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LoginController;
 use App\Http\Middleware\EnsureUserIsNotBanned;
+use App\Http\Middleware\RecordVisit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->api(append: [
             EnsureUserIsNotBanned::class,
+            RecordVisit::class,
         ]);
         // set by the login page (web), read by the API at the end of the login: a random value, compared as it is
         $middleware->encryptCookies(except: [LoginController::OAUTH_STATE_COOKIE]);

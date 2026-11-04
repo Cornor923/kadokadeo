@@ -19,6 +19,8 @@ class CompletedRunsPerGameChart extends ChartWidget
 
     protected ?string $heading = 'Parties terminées par jeu';
 
+    protected int|string|array $columnSpan = 2;
+
     // counts over the runs table: computed again at most every 5 minutes by filters, not polled
     protected ?string $pollingInterval = null;
 

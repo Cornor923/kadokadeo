@@ -18,6 +18,8 @@ use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Database\Events\NoPendingMigrations;
+use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -95,6 +97,12 @@ class AppServiceProvider extends ServiceProvider
 
         // last_used_at written every 5 minutes, not at each request
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        // only the IP: the host and the scheme of the URLs stay the ones of the server
+        if ($proxies = config('kado.trusted_proxies')) {
+            TrustProxies::at($proxies);
+            TrustProxies::withHeaders(Request::HEADER_X_FORWARDED_FOR);
+        }
 
         // the settings cache (SETTINGS_CACHE_ENABLED) keeps serialized settings objects: a property added by a settings
         // migration stays uninitialized in them ("must not be accessed before initialization"), so every `migrate` clears it

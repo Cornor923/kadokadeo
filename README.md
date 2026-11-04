@@ -75,6 +75,15 @@ Per-game analyzers of the moves (`resources/js/replay-verifier/analyzers/<game_k
 | ---------------------------------- | ----------------------------------------------------------------------------------- | --------- |
 | `KADO_REPLAY_ANALYSIS_QUEUE`       | Queue of these analysis jobs                                                        | `default` |
 
+### Audience stats
+
+The admin page « Fréquentation » shows who is on the site, the visitors per day, the devices, the browsers and the countries (`App\Services\VisitService`), read from what the site does anyway: an ad blocker has nothing to block. Only logged in players are counted, once a day by device, browser and country (`site_visits`, pruned after 90 days, the IP is never kept). The countries come from [DB-IP Lite](https://db-ip.com/db/download/ip-to-country-lite) (CC BY 4.0: the widget links back to it), downloaded by `php artisan kado:geoip:update` (scheduled: back a few minutes after a deploy, then once a month), read locally.
+
+| Variable                 | Description                                                                                                              | Default                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| `KADO_GEOIP_PATH`        | Where the IP database is kept                                                                                            | `storage/app/geoip/country.mmdb` |
+| `KADO_TRUSTED_PROXIES`   | The proxies in front of PHP, whose `X-Forwarded-For` gives the IP of the player (addresses separated by commas, or `*`). Needed when `sessions.ip_address` shows the proxy: the countries would be the one of the proxy | (empty: `REMOTE_ADDR`) |
+
 ### Realtime (Reverb)
 
 The pages are kept up to date by events sent to [Laravel Reverb](https://reverb.laravel.com) (`App\Support\Realtime::send`, after the transaction and the response, never queued: a Reverb down or slow never makes an action fail, the error is reported). The browsers listen with Laravel Echo (`resources/js/stores/realtime.js`, `useChannel` in `resources/js/composables/useRealtime.js`) and reload what they show when the socket connects again; without Reverb (`BROADCAST_CONNECTION=log` / `null`) or while it is cut, they poll as before. What is sent: the announcement, the private messages and the notifications of the player (`App\Services\NotificationService`: comments, answers and likes of the replays, applications to the clan, `user_notifications` pruned after 2 months), his Kado points and games, the clans (feats of the members in toasts, their pages and forum), the comments, answers and likes of the replay being watched, the leaderboards of a game (a run in the top 10 of its league or a record) and of the daily game, a new period, the daily game. The channels are in [`routes/channels.php`](routes/channels.php), authorized by `POST /api/broadcasting/auth` with the session of the site.

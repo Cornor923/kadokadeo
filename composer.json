@@ -32,6 +32,7 @@
         "laravel/reverb": "^1.12",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "maxmind-db/reader": "^1.14",
         "spatie/laravel-discord-alerts": "^1.8"
     },
     "require-dev": {

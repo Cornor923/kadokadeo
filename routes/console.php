@@ -9,7 +9,9 @@ use App\Console\Commands\PrepareNewPeriod;
 use App\Console\Commands\ReapVerifierBrowsers;
 use App\Console\Commands\ResetDailyGames;
 use App\Console\Commands\ResolveClanAttacks;
+use App\Console\Commands\UpdateGeoIpDatabase;
 use App\Models\ReplayVerification;
+use App\Models\SiteVisit;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Schedule;
 
@@ -26,7 +28,9 @@ Schedule::command(ExpireClanMissions::class)->everyFiveMinutes()->withoutOverlap
 // versions of the games still used by replays (the next build removes the others)
 Schedule::command(KeepGameBuilds::class)->daily()->withoutOverlapping(60);
 // the verifications of replays that went well, after 30 days (App\Models\ReplayVerification); the notifications of the
-// players two months after their last change (App\Models\UserNotification)
-Schedule::command('model:prune', ['--model' => [ReplayVerification::class, UserNotification::class]])->daily()->withoutOverlapping(60);
+// players two months after their last change (App\Models\UserNotification); the visits after 90 days (App\Models\SiteVisit)
+Schedule::command('model:prune', ['--model' => [ReplayVerification::class, SiteVisit::class, UserNotification::class]])->daily()->withoutOverlapping(60);
+// the IP -> country database: back a few minutes after a deploy (storage/ is wiped), then once a month
+Schedule::command(UpdateGeoIpDatabase::class)->everyFiveMinutes()->withoutOverlapping(10);
 // the browsers of the replay verifier left running by a script killed (each one takes a CPU)
 Schedule::command(ReapVerifierBrowsers::class)->everyFiveMinutes()->withoutOverlapping(10);

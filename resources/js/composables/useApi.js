@@ -11,6 +11,8 @@ export const client = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
+    // an iPad says it is a Mac: tells them apart in the stats of the admin (App\Services\VisitService)
+    'X-Kado-Touch': navigator.maxTouchPoints,
   },
 })
 
