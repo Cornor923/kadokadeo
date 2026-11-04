@@ -699,8 +699,22 @@ class Game implements kado.GameInterface {
 			Snd.playMusic(0);
 		diffFactor = player != null && player.lives >= 4 ? 1.0 + 0.05 * (player.lives - 3) : 1.0;
 		destroyList(Data.HU_BAD);
-		for (b in getBadList())
+		// back to the anger of the level (startLevel), not to calm: dying must not make the deep levels easier
+		var anger = levelAnger();
+		for (b in getBadList()) {
 			b.calmDown();
+			if (b.isType(Data.BAD_CLEAR))
+				for (i in 0...anger)
+					b.angerMore();
+		}
+	}
+
+	// anger of the fruits from the start of the level, deep in the well (not in the original)
+	// (players: the big rise was felt from level 10: the bads angry from the start at level 14, faster a little
+	// slower)
+	function levelAnger():Int {
+		var depth = world.currentId;
+		return depth < 14 ? 0 : (depth < 26 ? 1 : 2);
 	}
 
 	// VITE ! comes sooner and sooner in the well (35 s then 25 s in the original)
@@ -951,10 +965,8 @@ class Game implements kado.GameInterface {
 		timers = [];
 		// the fruits get faster in the well, and angry from the start deep in it
 		var depth = world.currentId;
-		// (players: the big rise was felt from level 10: the bads angry from the start at level 14, faster a little
-		// slower)
 		speedFactor = 1.0 + Math.min(0.45, depth * 0.025);
-		var anger = depth < 14 ? 0 : (depth < 26 ? 1 : 2);
+		var anger = levelAnger();
 		var n = 0;
 		for (b in world.current.bads) {
 			// ScriptEngine E_BAD: in the case, on its ground

@@ -285,11 +285,11 @@ class SpecialManager {
 			case 4, 5:
 				player.maxBombs = player.initialMaxBombs;
 			case 7:
-				player.speedFactor = 1.0;
+				player.speedFactor = player.baseSpeed();
 			case 18:
 				player.fallFactor = 1.1;
 			case 22:
-				player.speedFactor = 1.0;
+				player.speedFactor = player.baseSpeed();
 				player.unstick();
 			case 29:
 				if (player.currentWeapon == Data.WEAPON_S_FIRE)

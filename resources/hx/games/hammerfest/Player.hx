@@ -35,6 +35,8 @@ class Player extends Physics {
 
 	public var pid:Int;
 	public var shieldMC:Animation;
+	// bubble of the protection of the arrival in a level (entryGuard)
+	var guardMC:Animation;
 
 	public var startX:Float;
 	public var extraLifeCurrent:Int;
@@ -167,7 +169,7 @@ class Player extends Physics {
 		killHit(dx);
 	}
 
-	// invincible without a bubble (coming in a level)
+	// invincible for a moment coming in a level (not in the original), shown by the bubble of the shield
 	public var entryGuard:Float = 0;
 
 	override public function killHit(dx:Null<Float>) {
@@ -306,6 +308,12 @@ class Player extends Physics {
 			if (shieldMC.mc._prevState != null)
 				shieldMC.mc._prevState.copyFrom(shieldMC.mc._curState);
 		}
+		if (guardMC != null && guardMC.mc != null) {
+			guardMC.mc._x = x;
+			guardMC.mc._y = y - 20;
+			if (guardMC.mc._prevState != null)
+				guardMC.mc._prevState.copyFrom(guardMC.mc._curState);
+		}
 	}
 
 	// death of the player (fell out of the field)
@@ -375,12 +383,16 @@ class Player extends Physics {
 		super.hide();
 		if (shieldMC != null)
 			shieldMC.mc._visible = false;
+		if (guardMC != null)
+			guardMC.mc._visible = false;
 	}
 
 	override public function show() {
 		super.show();
 		if (shieldMC != null)
 			shieldMC.mc._visible = true;
+		if (guardMC != null)
+			guardMC.mc._visible = true;
 	}
 
 	override public function scale(n:Float) {
@@ -395,6 +407,10 @@ class Player extends Physics {
 		if (shieldMC != null) {
 			shieldMC.destroy();
 			shieldMC = null;
+		}
+		if (guardMC != null) {
+			guardMC.destroy();
+			guardMC = null;
 		}
 		super.destroy();
 	}
@@ -716,15 +732,50 @@ class Player extends Physics {
 		}
 	}
 
+	// tornado mode (option « boost » of the original, never coded there): faster from level 26, the shoes (1.5) and the
+	// old shoe (0.6) still win
+	public function baseSpeed():Float {
+		return game.world.currentId >= 26 ? 1.3 : 1.0;
+	}
+
 	public function onStartLevel() {
 		this.show();
+		if (!specialMan.actives[7] && !specialMan.actives[22])
+			speedFactor = baseSpeed();
 		if (fl_shield && shieldMC == null)
 			shield(shieldTimer);
-		// (invincible for a moment when he comes in a level, without a bubble: a saw or a bad may be where he lands;
-		// not at the start of the game)
+		// (invincible for a moment when he comes in a level: a saw or a bad may be where he lands; not at the start of
+		// the game)
 		entryGuard = game.levelsDone > 0 ? Data.SECOND * 2 : 0;
 		startX = x;
 		fl_entering = true;
+	}
+
+	// the bubble of entryGuard (display only): the one of a real shield hides it, blinks in its last second
+	function updateGuard() {
+		var on = entryGuard > 0 && !fl_kill && !fl_shield;
+		if (!on) {
+			if (guardMC != null) {
+				if (entryGuard <= 0 && !fl_kill && !fl_shield)
+					game.fxMan.attachFx(x, y - 20, "popShield");
+				guardMC.destroy();
+				guardMC = null;
+			}
+			return;
+		}
+		if (guardMC == null) {
+			guardMC = game.fxMan.attachFx(x, y - 20, "playerShield");
+			if (guardMC == null)
+				return;
+			guardMC.fl_loop = true;
+			guardMC.loopFrame = 19; // gotoAndStop("loop")
+			guardMC.lifeTimer = 1e9;
+			guardMC.mc._visible = _visible;
+		}
+		if (entryGuard <= Data.SECOND)
+			guardMC.blink();
+		guardMC.mc._x = guardMC.mc._x + (this.x - guardMC.mc._x) * 0.75;
+		guardMC.mc._y = guardMC.mc._y + (this.y - 20 - guardMC.mc._y) * 0.75;
 	}
 
 	// UPDATES
@@ -736,6 +787,7 @@ class Player extends Physics {
 			shieldMC.mc._x = shieldMC.mc._x + (this.x - shieldMC.mc._x) * 0.75;
 			shieldMC.mc._y = shieldMC.mc._y + (this.y - 20 - shieldMC.mc._y) * 0.75;
 		}
+		updateGuard();
 		_xscale = dir * Math.abs(_xscale);
 		updateScarf();
 		updateHead();
