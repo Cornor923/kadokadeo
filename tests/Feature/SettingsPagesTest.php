@@ -99,6 +99,7 @@ class SettingsPagesTest extends TestCase
 
         Livewire::test(ManageSiteSettings::class)
             ->set('data.games_per_day', 25)
+            ->set('data.daily_ranking_kado_per_point', 7)
             ->set('data.achievements_enabled', true)
             ->set('data.theme_prices.karbon', 500)
             ->call('save')
@@ -106,6 +107,7 @@ class SettingsPagesTest extends TestCase
 
         $settings = app(SiteSettings::class)->refresh();
         $this->assertSame(25, $settings->games_per_day);
+        $this->assertSame(7, $settings->daily_ranking_kado_per_point);
         $this->assertTrue($settings->achievements_enabled);
         $this->assertSame(500, $settings->themePrice('karbon'));
         $this->assertSame(0, $settings->themePrice('base'));

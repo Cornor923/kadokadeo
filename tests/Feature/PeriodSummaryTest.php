@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Clan;
 use App\Models\ClanMemberStat;
+use App\Models\DailyRankingResult;
 use App\Models\Game;
 use App\Models\League;
 use App\Models\LeaguePromotion;
@@ -90,6 +91,19 @@ class PeriodSummaryTest extends TestCase
             ->assertJsonPath('data.stars.green', 23)
             ->assertJsonPath('data.stars.red', 21)
             ->assertJsonPath('data.total', 11538 + 5000 + 9091);
+    }
+
+    public function test_the_reward_of_the_daily_ranking_is_in_the_summary_and_its_total(): void
+    {
+        DailyRankingResult::create(['period_id' => $this->last->id, 'user_id' => $this->player->id, 'rank_position' => 3, 'points' => 42, 'reward' => 420]);
+
+        $this->actingAs($this->viewer, 'sanctum')
+            ->getJson("/api/users/{$this->player->etwin_id}/periods")
+            ->assertOk()
+            ->assertJsonPath('data.daily_ranking.rank', 3)
+            ->assertJsonPath('data.daily_ranking.points', 42)
+            ->assertJsonPath('data.daily_ranking.reward', 420)
+            ->assertJsonPath('data.total', 420);
     }
 
     public function test_an_older_period_and_the_one_after_it(): void

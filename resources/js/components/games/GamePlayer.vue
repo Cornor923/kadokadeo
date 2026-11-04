@@ -8,20 +8,24 @@ const props = defineProps({
   args: { type: Object, default: () => ({}) },
   // the tab of the side panel open first (GameSide.vue)
   sideTab: { type: String, default: 'gameRules' },
+  // where the zoom of the player is kept (a page that opens small whatever the zoom of the other games)
+  zoomKey: { type: String, default: 'isZoomed' },
+  // the daily game: only the zoom (one run, nothing to change; its game is kept in the browser, the favorite would be late)
+  daily: { type: Boolean, default: false },
 })
 
 const { isLoading: isFavoriteLoading, error: favoriteError, setFavorite } = useGames()
 // the game itself: « Changer de partie » (GameScript.vue)
 const gameScript = ref(null)
 const isArkadeo = computed(() => props.game.is_arkadeo ?? false)
-const _zoomed = ref(localStorage.getItem('isZoomed') === 'true')
+const _zoomed = ref(!isArkadeo.value && localStorage.getItem(props.zoomKey) === 'true')
 const isZoomed = computed({
   get() {
     return _zoomed.value
   },
   set(value) {
     _zoomed.value = value
-    localStorage.setItem('isZoomed', value)
+    localStorage.setItem(props.zoomKey, value)
   },
 })
 const gameWidth = computed(() => isArkadeo.value ? 600 :  (isZoomed.value ? 600 : 300))
@@ -80,7 +84,7 @@ watchEffect((onInvalidate) => {
           <div class="relative game-interface-1 mx-auto max-w-full shrink-0" :class="[game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado', {'order-2 mt-4 lg:order-1 lg:mt-0': isZoomed}]" :style="{ width: surfaceWidth + 'px' }">
             <nav class="absolute -top-10 right-0 text-xs">
               <ul class="flex justify-end gap-2">
-                <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
+                <li v-if="!daily" class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                   <button
                     type="button"
                     class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange-500 cursor-pointer disabled:cursor-wait"
@@ -93,7 +97,7 @@ watchEffect((onInvalidate) => {
                     Favori
                   </button>
                 </li>
-                <li class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
+                <li v-if="!daily" class="game-interface-button h-5 hover:h-[18px] hover:mt-0.5">
                   <button
                     type="button"
                     class="w-full h-full pt-1 font-bold text-center hover:text-kado-orange-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-inherit"
@@ -138,11 +142,13 @@ watchEffect((onInvalidate) => {
                :style="{ height: surfaceHeight + 'px' }"></div>
           <!-- Zoomed on mobile, the panel takes its full height: a single scroll goes through it then to the game (no nested scroll that keeps the gesture) -->
           <div class="game-interface-3 @container h-(--surface-height) min-w-[345px]" :class="{ 'w-full lg:max-w-sm flex-1 order-1 lg:order-2 max-lg:h-auto': isZoomed, 'w-full': game.is_arkadeo }" :style="{ '--surface-height': surfaceHeight + 'px' }">
-            <GamesGameSide class="overflow-y-auto overflow-x-hidden text-xs h-full"
-                           :is-zoomed="isZoomed"
-                           :game="game"
-                           :goals="goals"
-                           :initial-tab="sideTab" />
+            <slot name="side" :is-zoomed="isZoomed">
+              <GamesGameSide class="overflow-y-auto overflow-x-hidden text-xs h-full"
+                             :is-zoomed="isZoomed"
+                             :game="game"
+                             :goals="goals"
+                             :initial-tab="sideTab" />
+            </slot>
           </div>
         </div>
 

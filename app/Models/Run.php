@@ -62,6 +62,12 @@ class Run extends Model
         return $this->belongsTo(League::class);
     }
 
+    /** @return BelongsTo<DailyGame, $this> */
+    public function dailyGame()
+    {
+        return $this->belongsTo(DailyGame::class);
+    }
+
     // the version of the game the run was played with (its replay is played by the same version)
     public function gameBuild()
     {

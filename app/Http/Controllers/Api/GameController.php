@@ -93,7 +93,7 @@ class GameController extends Controller implements HasMiddleware
 
         // without its seed: the game gets it when its run begins (RunBeginResource), and the replays of the day are hidden
         // until the next day (the coming pieces)
-        return GameResource::make($dailyGame->game)->additional([
+        return GameResource::make($dailyGame->game->load('controls'))->additional([
             'dailyGame' => $dailyGame->makeHidden('seed'),
         ]);
     }

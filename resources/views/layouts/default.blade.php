@@ -12,6 +12,8 @@
             achievements_enabled: @json(app(App\Settings\SiteSettings::class)->achievements_enabled),
             // the clans are open (App\Settings\ClanSettings::$enabled), else their pages say "Prochainement disponible"
             clans_enabled: @json((bool) app(App\Settings\ClanSettings::class)->enabled),
+            // the kado points of a point of the daily ranking (App\Services\DailyRankingService)
+            daily_kado_per_point: @json(app(App\Settings\SiteSettings::class)->daily_ranking_kado_per_point),
             // the realtime (App\Support\Realtime), null: the pages poll
             reverb: @json(App\Support\Realtime::clientConfig()),
         }

@@ -121,39 +121,21 @@ const menus = [
   { id: 'gameRanking', label: 'Classement', icon: '/gfx/iconGameRanking.png' },
   ...(achievementStore.enabled ? [{ id: 'achievements', label: 'Succès', icon: '/gfx/iconAchievements.png' }] : []),
 ]
-// the tabs: the active one underlined in orange, the others in relief (white top and left, teal right and bottom),
-// sunken when hovered
-const activeTab = 'flex-1 border-b border-kado-orange-500 bg-kado-cream-200 font-bold text-kado-orange-500'
-const inactiveTab = [
-  'border-t-2 border-r border-b border-l border-t-white border-r-kado-teal-400 border-b-kado-teal-400 border-l-white',
-  'hover:border-t-kado-teal-400 hover:border-r-white hover:border-b-white hover:border-l-kado-teal-400',
-  'bg-kado-blue-600/10 text-kado-blue-700 hover:bg-kado-blue-100 hover:pt-1 hover:text-kado-orange-500',
-]
-const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-[1.3em] font-bold tracking-[1px] text-kado-blue-700'
 </script>
 
 <template>
   <div :class="{ 'grid @md:grid-cols-2': isZoomed }">
-    <nav v-if="!isZoomed">
-      <ul class="flex items-stretch">
-        <li v-for="menu in menus"
-            :key="menu.id"
-            @click="selectedTab = menu.id"
-            class="flex items-center justify-center text-center gap-1 pt-0.5 cursor-pointer h-7 px-2 @md:flex-1"
-            :class="selectedTab === menu.id ? activeTab : inactiveTab"
-            :title="menu.label">
-          <img v-if="menu.icon" :src="menu.icon" :alt="menu.label" />
-          <div class="overflow-hidden" :class="selectedTab === menu.id ? 'w-full' : 'w-0 @md:w-full'">{{ menu.label }}</div>
-          <img  v-if="menu.id === 'gameStars' && league"
-                :src="`/gfx/leagues/${league.level}s.svg`"
-                :alt="league.name"
-                class="w-6 h-auto" />
-        </li>
-      </ul>
-    </nav>
+    <GamesGameSideTabs v-if="!isZoomed" v-model="selectedTab" :tabs="menus">
+      <template #after="{ tab }">
+        <img  v-if="tab.id === 'gameStars' && league"
+              :src="`/gfx/leagues/${league.level}s.svg`"
+              :alt="league.name"
+              class="w-6 h-auto" />
+      </template>
+    </GamesGameSideTabs>
 
     <div>
-      <h3 v-if="isZoomed" :class="heading" class="text-center">Règles</h3>
+      <GamesGameSideHeading v-if="isZoomed" class="my-2 text-center">Règles</GamesGameSideHeading>
 
       <article id="gameRules" class="m-2" :class="selectedTab === 'gameRules' ? '' : notZoomedHiddenState">
         <p class="my-2">{{ game.description ?? '[WIP description]' }}</p>
@@ -163,12 +145,12 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
     </div>
 
     <div>
-      <h3 v-if="isZoomed" :class="heading" class="flex justify-center">Paliers
+      <GamesGameSideHeading v-if="isZoomed" class="my-2 flex justify-center">Paliers
         <img  v-if="league"
               :src="`/gfx/leagues/${league.level}s.svg`"
               :alt="league.name"
               class="w-6 h-auto" />
-      </h3>
+      </GamesGameSideHeading>
 
       <article id="gameStars" class="m-2" :class="selectedTab === 'gameStars' ? '' : notZoomedHiddenState">
         <KadoTable borderless
@@ -191,7 +173,7 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
           </tbody>
         </KadoTable>
 
-        <h3 :class="heading" class="text-right">Objectifs</h3>
+        <GamesGameSideHeading class="my-2 text-right">Objectifs</GamesGameSideHeading>
         <KadoTable borderless plain-header class="w-full">
           <thead>
             <tr>
@@ -226,7 +208,7 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
     </div>
 
     <div>
-      <h3 v-if="isZoomed" :class="heading" class="text-center">Classement</h3>
+      <GamesGameSideHeading v-if="isZoomed" class="my-2 text-center">Classement</GamesGameSideHeading>
 
       <article id="gameRanking" class="m-2" :class="selectedTab === 'gameRanking' ? '' : notZoomedHiddenState">
         <Loader v-if="isLoading">Chargement des scores...</Loader>
@@ -240,7 +222,7 @@ const heading = 'my-2 w-full border-b-3 border-double border-kado-blue-700 text-
     </div>
 
     <div v-if="achievementStore.enabled">
-      <h3 v-if="isZoomed" :class="heading" class="text-center">Succès</h3>
+      <GamesGameSideHeading v-if="isZoomed" class="my-2 text-center">Succès</GamesGameSideHeading>
 
       <article id="achievements" class="m-2" :class="selectedTab === 'achievements' ? '' : notZoomedHiddenState">
         <Loader v-if="achievementStore.isLoading">Chargement des succès...</Loader>

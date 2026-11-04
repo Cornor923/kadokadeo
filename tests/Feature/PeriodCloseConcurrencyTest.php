@@ -9,9 +9,11 @@ use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Services\ClanPeriodService;
+use App\Services\DailyRankingService;
 use App\Services\LeagueService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\PlayableGames;
 use Tests\TestCase;
@@ -76,7 +78,8 @@ class PeriodCloseConcurrencyTest extends TestCase
         $this->assertSame([$period->id], Period::query()->pluck('id')->all());
     }
 
-    // the rewards of the closed period (feathers, clans) come after the commit of the new period: a failure there leaves it
+    // the rewards of the closed period (feathers, clans, daily game) come after the commit of the new period: a failure
+    // there leaves it, the other rewards and the message to the pages, and the command fails
     public function test_new_period_stays_when_the_rewards_of_the_closed_period_fail(): void
     {
         $this->travelTo(now()->next('Monday')->startOfDay()->addSeconds(5));
@@ -93,14 +96,12 @@ class PeriodCloseConcurrencyTest extends TestCase
             ->shouldReceive('closePeriod')
             ->once()
             ->andThrow(new \RuntimeException('close failed'));
+        $this->mock(DailyRankingService::class)->shouldReceive('closePeriod')->once();
+        Exceptions::fake();
 
-        try {
-            $this->artisan('kado:prepare-new-period')->run();
-            $this->fail('The close should fail.');
-        } catch (\RuntimeException $e) {
-            $this->assertSame('close failed', $e->getMessage());
-        }
+        $this->artisan('kado:prepare-new-period')->assertFailed();
 
+        Exceptions::assertReported(fn (\RuntimeException $e) => $e->getMessage() === 'close failed');
         $newPeriod = Period::current()->firstOrFail();
         $this->assertNotSame($period->id, $newPeriod->id);
         $this->assertDatabaseHas('league_memberships', ['user_id' => $user->id, 'period_id' => $newPeriod->id]);

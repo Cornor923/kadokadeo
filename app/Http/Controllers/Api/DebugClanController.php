@@ -17,6 +17,7 @@ use App\Services\ClanMissionService;
 use App\Services\ClanPeriodService;
 use App\Services\ClanService;
 use App\Services\ClanWarService;
+use App\Services\DailyRankingService;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
@@ -150,7 +151,7 @@ class DebugClanController extends Controller implements HasMiddleware
     }
 
     // the end of the current period (as kado:prepare-new-period): rankings, rewards, and a new period from now
-    public function endPeriod(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService)
+    public function endPeriod(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService, DailyRankingService $dailyRankingService)
     {
         $period = $this->clanService->currentPeriod();
         abort_unless($period, 422, 'Aucune période en cours.');
@@ -163,6 +164,7 @@ class DebugClanController extends Controller implements HasMiddleware
         $leagueService->closePeriod($period, $next);
         $poidsPlumeService->closePeriod($period);
         $clanPeriodService->closePeriod($period);
+        $dailyRankingService->closePeriod($period);
 
         return ['data' => ['result' => "Période {$period->id} terminée, période {$next->id} commencée."]];
     }

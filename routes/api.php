@@ -21,6 +21,7 @@ Route::get('/competition/poids-plumes', [App\Http\Controllers\Api\GameScoreContr
 
 Route::get('/daily/game', [App\Http\Controllers\Api\GameController::class, 'daily']);
 Route::get('/daily/scores', [App\Http\Controllers\Api\GameScoreController::class, 'dailyScores']);
+Route::get('/daily/standings', [App\Http\Controllers\Api\GameScoreController::class, 'dailyStandings']);
 Route::get('/site-records', [App\Http\Controllers\Api\GameScoreController::class, 'siteRecords']);
 
 Route::resource('/games', App\Http\Controllers\Api\GameController::class)->only(['index', 'show'])->whereNumber('game');

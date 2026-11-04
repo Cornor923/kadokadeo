@@ -110,7 +110,7 @@ export const usePendingRunsStore = defineStore('pendingRuns', () => {
       return true
     } catch(e) {
       const status = e.response?.status ?? 0
-      // already finished: a previous sending did reach the server
+      // already finished (a previous sending did reach the server), or a daily game whose period is over
       if (status === 409) {
         discard(runId)
         return true

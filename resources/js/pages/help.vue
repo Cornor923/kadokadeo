@@ -17,6 +17,7 @@ const art = (name) => `/assets/img/gfx/art/${name}.jpg`
 const sections = [
   { id: 'bienvenue', title: 'Bienvenue', level: 2, art: art('general') },
   { id: 'periodes', title: 'Les périodes', level: 2, art: art('periode') },
+  { id: 'jeudujour', title: 'Le jeu du jour', level: 2, art: art('general') },
   { id: 'etoiles', title: 'Les étoiles', level: 2, art: art('star') },
   { id: 'niveaux', title: 'Les niveaux', level: 2, art: art('scoring') },
   { id: 'clans', title: 'Les clans', level: 2, art: art('clan'), clan: true },
@@ -30,6 +31,9 @@ const sections = [
   { id: 'compte', title: 'Mon compte', level: 2, art: art('pks') },
   { id: 'questions', title: 'Questions', level: 2, art: art('gem') },
 ].filter((section) => clanStore.enabled || !section.clan)
+
+// the kado points of a point of the daily ranking, set in the admin (App\Settings\SiteSettings)
+const dailyKadoPerPoint = window.Kado.daily_kado_per_point
 
 const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
 
@@ -132,7 +136,13 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
             <template v-else-if="section.id === 'periodes'">
               <p>Une période KadoKadéo se déroule sur deux semaines, soit <strong>14 jours</strong>. Le Kalendrier affiché en haut à droite du site indique la période actuelle ainsi que le jour actuel.</p>
-              <p>Quand une période se termine, les classements sont remis à zéro : les meilleurs joueurs de chaque niveau montent au niveau supérieur et remportent des points Kado<template v-if="clanStore.enabled">, et le tournoi des clans recommence</template>.</p>
+              <p>Quand une période se termine, les classements sont remis à zéro : les meilleurs joueurs de chaque niveau montent au niveau supérieur et remportent des points Kado<template v-if="clanStore.enabled">, et le tournoi des clans recommence</template>. Le classement du jeu du jour est lui aussi récompensé à ce moment-là.</p>
+            </template>
+
+            <template v-else-if="section.id === 'jeudujour'">
+              <p>Chaque jour à minuit (UTC), un jeu est tiré au sort. La partie est <strong>identique pour tous les joueurs</strong>, et vous n'avez droit qu'à <strong>une seule tentative</strong>. Elle vous propose aussi un contrat : un score à battre pour remporter des points Kado <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4" />.</p>
+              <p>Le top 10 de chaque jour gagne des <strong>points de classement</strong> : 10 points pour le 1er, 9 pour le 2e, et ainsi de suite jusqu'à 1 point pour le 10e. Ils s'additionnent jour après jour dans le classement de la période, visible à côté du jeu.</p>
+              <p>A la fin de la période, <strong>chaque joueur ayant au moins un point</strong> reçoit {{ dailyKadoPerPoint }} <img src="/gfx/skpoint.gif" alt="Kado" class="inline size-4" /> par point de classement. Le détail de votre récompense apparaît dans l'onglet « Dernière période » de votre profil.</p>
             </template>
 
             <template v-else-if="section.id === 'etoiles'">

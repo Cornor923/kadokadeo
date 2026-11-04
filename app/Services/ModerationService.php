@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\BanReason;
-use App\Events\DailyScoresChanged;
 use App\Events\GameScoresChanged;
 use App\Events\UserCountersChanged;
 use App\Events\UserRefresh;
@@ -170,7 +169,7 @@ class ModerationService
             $promotionCaches = $boards->map(fn ($run) => $this->promotionScoresKey($run));
             $boards->each(fn (Run $run) => Realtime::send(new GameScoresChanged($run->game_id, $run->period_id, null)));
             $user->runs()->whereNotNull('daily_game_id')->distinct()->pluck('daily_game_id')
-                ->each(fn (int $dailyGameId) => Realtime::send(new DailyScoresChanged($dailyGameId)));
+                ->each(fn (int $dailyGameId) => ScoreBoards::dailyChanged($dailyGameId));
 
             $deleted = $user->runs()->delete();
             $user->gamePeriodStars()->delete();

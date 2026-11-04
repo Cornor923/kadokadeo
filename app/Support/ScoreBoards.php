@@ -5,6 +5,8 @@ namespace App\Support;
 use App\Events\DailyScoresChanged;
 use App\Events\GameScoresChanged;
 use App\Models\Run;
+use App\Services\DailyRankingService;
+use Illuminate\Support\Facades\DB;
 
 // the leaderboards shown by the pages (the side of a game, the daily game) told they changed (App\Support\Realtime)
 class ScoreBoards
@@ -14,7 +16,14 @@ class ScoreBoards
     {
         Realtime::send(new GameScoresChanged($run->game_id, $run->period_id, $run->league_id, $worldBest));
         if ($daily && $run->daily_game_id) {
-            Realtime::send(new DailyScoresChanged($run->daily_game_id));
+            self::dailyChanged($run->daily_game_id);
         }
+    }
+
+    // (once committed: the moderation tells it before taking the runs out)
+    public static function dailyChanged(int $dailyGameId): void
+    {
+        DB::afterCommit(fn () => app(DailyRankingService::class)->forgetCurrentStandings());
+        Realtime::send(new DailyScoresChanged($dailyGameId));
     }
 }

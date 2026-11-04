@@ -11,9 +11,12 @@ export const useDailyGameStore = defineStore('dailyGame', () => {
   const game = ref(null)
   const scores = ref([])
   const position = ref(null)
+  // the ranking of the daily game over the period (asked by the page of the daily game only)
+  const standings = ref([])
 
   const { get, isLoading } = useApi()
   const { get: getScores, isLoading: isScoresLoading } = useApi()
+  const { get: getStandings, isLoading: isStandingsLoading } = useApi()
 
   // the game of the day (UTC) of today, not the one of yesterday still on a page open at midnight
   const isToday = (dg) => dg?.day?.substr(0, 10) === dayjs().utc().format('YYYY-MM-DD')
@@ -39,7 +42,8 @@ export const useDailyGameStore = defineStore('dailyGame', () => {
       if (tmp.date) {
         localStorage.removeItem('dailyGame')
       }
-      if (isToday(tmp)) {
+      // (without its controls: kept before the side panel of the daily page showed them)
+      if (isToday(tmp) && tmp.game?.controls) {
         dailyGame.value = tmp
         game.value = tmp.game
       }
@@ -62,6 +66,12 @@ export const useDailyGameStore = defineStore('dailyGame', () => {
     getScores('/daily/scores').then((response) => {
       scores.value = response.data.data
       position.value = response.data.position
+    })
+  }
+
+  const fetchStandings = () => {
+    getStandings('/daily/standings').then((response) => {
+      standings.value = response.data.data
     })
   }
 
@@ -91,7 +101,10 @@ export const useDailyGameStore = defineStore('dailyGame', () => {
     scores,
     position,
     isScoresLoading,
+    standings,
+    isStandingsLoading,
     fetchScores,
+    fetchStandings,
     fetchDailyGameIfNecessary,
   }
 })

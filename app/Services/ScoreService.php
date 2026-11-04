@@ -10,11 +10,15 @@ use App\Models\Run;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ScoreService
 {
+    // the columns read by RunResource (without the seed nor the replay: the daily scores are shown during the day)
+    private const DAILY_RUN_COLUMNS = ['id', 'user_id', 'game_id', 'daily_game_id', 'score', 'contract_score', 'contract_points', 'play_time_seconds', 'period_id', 'league_id', 'completed_at', 'views_count', 'comments_count', 'is_cheat'];
+
     public function __construct() {}
 
     public function getLeaderBoard(Game $game, ?int $periodId = null, ?int $leagueId = null): Builder
@@ -311,29 +315,40 @@ class ScoreService
         return Run::hydrate($r->toArray());
     }
 
-    public function getUserPositionOnDailyGame(DailyGame $game, int $userId): ?int
+    /**
+     * The runs of daily games with their rank_position in their game: the best run of each player, without the cheats nor
+     * the deleted runs. The same rule for the daily scores, the position of a player and the ranking of the period.
+     *
+     * @param  array<int, int>  $dailyGameIds
+     */
+    public function rankedDailyRuns(array $dailyGameIds): QueryBuilder
     {
         $bestRunsPerUser = Run::query()
-            ->select('runs.*')
-            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY score DESC, play_time_seconds ASC, completed_at ASC, id ASC) AS user_best_rank')
+            ->select(self::DAILY_RUN_COLUMNS)
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY daily_game_id, user_id ORDER BY score DESC, play_time_seconds ASC, completed_at ASC, id ASC) AS user_best_rank')
             ->whereNotNull('score')
             ->where('is_cheat', false)
-            ->where('daily_game_id', $game->id);
+            ->whereIn('daily_game_id', $dailyGameIds);
 
         $rankedBestRuns = DB::query()
             ->fromSub($bestRunsPerUser, 'best_runs')
             ->where('best_runs.user_best_rank', 1)
-            ->select([
-                'best_runs.user_id',
-                DB::raw('ROW_NUMBER() OVER (ORDER BY best_runs.score DESC, best_runs.play_time_seconds ASC, best_runs.completed_at ASC, best_runs.id ASC ) AS rank_position'),
-            ]);
+            ->select('best_runs.*')
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY best_runs.daily_game_id ORDER BY best_runs.score DESC, best_runs.play_time_seconds ASC, best_runs.completed_at ASC, best_runs.id ASC) AS rank_position');
 
-        $result = DB::query()
-            ->fromSub($rankedBestRuns, 'ranked')
-            ->where('user_id', $userId)
-            ->first();
+        return DB::query()->fromSub($rankedBestRuns, 'ranked');
+    }
 
-        return $result?->rank_position;
+    public function getDailyLeaderBoard(DailyGame $game, int $limit = 10): EloquentCollection
+    {
+        $runs = $this->rankedDailyRuns([$game->id])->orderBy('rank_position')->limit($limit)->get();
+
+        return Run::hydrate($runs->all())->load('user');
+    }
+
+    public function getUserPositionOnDailyGame(DailyGame $game, int $userId): ?int
+    {
+        return $this->rankedDailyRuns([$game->id])->where('user_id', $userId)->value('rank_position');
     }
 
     public function getLeagueScoresForPromotion(Game $game, int $periodId)

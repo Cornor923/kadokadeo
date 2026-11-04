@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ClanMemberStat;
+use App\Models\DailyRankingResult;
 use App\Models\LeaguePromotion;
 use App\Models\Period;
 use App\Models\PoidsPlumeResult;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * The summary of a finished period for a player (the tab « dernière période » of the profile): the Kado points it
- * brought at its close (the ranking of their clan, the promotions in the leagues, the feathers), the stars of the period
+ * brought at its close (the ranking of their clan, the promotions in the leagues, the feathers, the daily game), the stars of the period
  * (they bring no Kado points on KadoKadéo), and their ranking in each game.
  */
 class PeriodSummaryService
@@ -54,6 +55,10 @@ class PeriodSummaryService
             ->where('user_id', $user->id)
             ->where('period_id', $period->id)
             ->first();
+        $dailyRanking = DailyRankingResult::query()
+            ->where('user_id', $user->id)
+            ->where('period_id', $period->id)
+            ->first();
         $stars = UserStar::query()
             ->where('user_id', $user->id)
             ->where('period_id', $period->id)
@@ -62,6 +67,7 @@ class PeriodSummaryService
         $clanReward = (int) $clanStats->sum('reward') ?: null;
         $promotionsReward = (int) $promotions->sum('promotion_reward');
         $feathersReward = $feathers?->reward ?: null;
+        $dailyRankingReward = $dailyRanking?->reward ?: null;
 
         $rankings = EloquentCollection::make($this->scoreService->getUserBestRuns($user, $period->id))->load('game');
 
@@ -85,13 +91,14 @@ class PeriodSummaryService
             ])->values(),
             'promotions_reward' => $promotionsReward ?: null,
             'feathers' => $feathers ? ['count' => $feathers->feathers_count, 'reward' => $feathersReward] : null,
+            'daily_ranking' => $dailyRanking ? ['rank' => $dailyRanking->rank_position, 'points' => $dailyRanking->points, 'reward' => $dailyRankingReward] : null,
             'stars' => [
                 'green' => (int) ($stars->green_stars ?? 0),
                 'orange' => (int) ($stars->orange_stars ?? 0),
                 'red' => (int) ($stars->red_stars ?? 0),
                 'purple' => (int) ($stars->purple_stars ?? 0),
             ],
-            'total' => ($clanReward ?? 0) + $promotionsReward + ($feathersReward ?? 0),
+            'total' => ($clanReward ?? 0) + $promotionsReward + ($feathersReward ?? 0) + ($dailyRankingReward ?? 0),
             'rankings' => $rankings->values(),
         ];
     }

@@ -44,4 +44,9 @@ class Period extends Model
     {
         return $this->hasMany(PoidsPlumeResult::class);
     }
+
+    public function dailyRankingResults()
+    {
+        return $this->hasMany(DailyRankingResult::class);
+    }
 }

@@ -78,6 +78,9 @@ const thinTitles = '[&_th]:px-2 [&_th]:text-xs [&_th]:font-normal [&_th]:upperca
       <li v-if="summary.feathers?.reward">
         {{ isMe ? 'Vos' : 'Ses' }} plumes ({{ summary.feathers.count }}) {{ isMe ? 'vous ont' : 'lui ont' }} rapporté <Number :value="summary.feathers.reward" color="green" /> <KadoPoints class="inline size-4.25" />
       </li>
+      <li v-if="summary.daily_ranking?.reward">
+        Le jeu du jour ({{ summary.daily_ranking.rank }}{{ ordinal(summary.daily_ranking.rank) }}, {{ summary.daily_ranking.points }} {{ summary.daily_ranking.points > 1 ? 'points' : 'point' }} de classement) {{ words.you }} a rapporté <Number :value="summary.daily_ranking.reward" color="green" /> <KadoPoints class="inline size-4.25" />
+      </li>
       <li v-for="star in stars" :key="star.label">
         {{ star.count }} x <component :is="star.icon" class="inline size-4" :aria-label="star.label" />
       </li>

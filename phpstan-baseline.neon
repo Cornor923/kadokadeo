@@ -33,7 +33,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\DailyGame\:\:\$game\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Console/Commands/PrepareDailyGame.php
 
 		-

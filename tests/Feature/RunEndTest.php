@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\RunVerification;
 use App\Jobs\VerifyRunReplay;
+use App\Models\DailyGame;
 use App\Models\Game;
 use App\Models\GamePeriodStar;
 use App\Models\Period;
@@ -14,8 +15,10 @@ use App\Services\RunService;
 use App\Settings\AntiCheatSettings;
 use App\Settings\ReplaySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use Tests\Unit\ReplayHeaderTest;
@@ -48,6 +51,61 @@ class RunEndTest extends TestCase
 
         $this->assertSame(app(RunService::class)->getPublicKey(), $response->json('data.public_key'));
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+    }
+
+    private function dailyGame(Carbon $day): DailyGame
+    {
+        return DailyGame::query()->create([
+            'day' => $day->toDateString(),
+            'game_id' => Game::factory()->create()->id,
+            'seed' => 'seed',
+            'contract_score' => 100,
+            'contract_points' => 5,
+        ]);
+    }
+
+    private function finishDailyRun(DailyGame $dailyGame, User $user): TestResponse
+    {
+        $run = Run::factory()->for($dailyGame->game)->for($user)->create([
+            'score' => null,
+            'completed_at' => null,
+            'daily_game_id' => $dailyGame->id,
+        ]);
+        Sanctum::actingAs($user);
+
+        return $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 150,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => [],
+            'ac' => 0,
+        ]));
+    }
+
+    public function test_a_daily_run_finished_after_the_end_of_its_period_is_refused(): void
+    {
+        $this->travelTo(now()->next('Monday')->startOfDay()->addMinutes(4));
+        Period::factory()->create(['start_at' => now()->subDays(14), 'end_at' => now()->subDay()->endOfDay()]);
+        $dailyGame = $this->dailyGame(now()->subDay());
+        $user = User::factory()->create(['kado_points' => 0]);
+
+        $this->finishDailyRun($dailyGame, $user)->assertStatus(409);
+
+        $this->assertNull($dailyGame->runs()->first()->score);
+        $this->assertSame(0, $user->fresh()->kado_points);
+    }
+
+    // the ranking is read from the runs until the end of the period: yesterday's game may still end after midnight
+    public function test_a_daily_run_finished_the_next_day_of_the_same_period_counts(): void
+    {
+        $this->travelTo(now()->next('Monday')->startOfDay()->addDays(3)->addMinutes(4));
+        Period::factory()->create(['start_at' => now()->subDays(3)->startOfDay(), 'end_at' => now()->addDays(10)]);
+        $dailyGame = $this->dailyGame(now()->subDay());
+
+        $this->finishDailyRun($dailyGame, User::factory()->create())->assertOk();
+
+        $this->assertSame(150, $dailyGame->runs()->first()->score);
     }
 
     public function test_a_run_sent_twice_is_only_rewarded_once(): void

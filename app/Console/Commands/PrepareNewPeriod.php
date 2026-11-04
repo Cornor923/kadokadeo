@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Events\PeriodStarted;
 use App\Models\Period;
 use App\Services\ClanPeriodService;
+use App\Services\DailyRankingService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
 use App\Support\Realtime;
@@ -31,7 +32,7 @@ class PrepareNewPeriod extends Command
     /**
      * Execute the console command.
      */
-    public function handle(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService)
+    public function handle(LeagueService $leagueService, PoidsPlumeService $poidsPlumeService, ClanPeriodService $clanPeriodService, DailyRankingService $dailyRankingService)
     {
         $period = Period::orderBy('id', 'desc')->first();
 
@@ -67,15 +68,21 @@ class PrepareNewPeriod extends Command
         });
 
         // the rewards of the closed period, once the new one is current: they keep the transaction above short (the rows
-        // of the rewarded players stay locked until it ends), and a failure there does not take the new period back. Each
-        // pays a player once (PoidsPlumeResult / ClanMemberStat::user_point_id)
-        if ($period) {
-            $poidsPlumeService->closePeriod($period);
-            $clanPeriodService->closePeriod($period);
+        // of the rewarded players stay locked until it ends), and a failure there does not take the new period back, nor
+        // the other rewards: this command does not come back to a closed period. Each pays a player once if it is run by
+        // hand after a failure (PoidsPlumeResult / ClanMemberStat / DailyRankingResult)
+        $failed = false;
+        foreach ($period ? [$poidsPlumeService, $clanPeriodService, $dailyRankingService] : [] as $service) {
+            try {
+                $service->closePeriod($period);
+            } catch (\Throwable $e) {
+                report($e);
+                $failed = true;
+            }
         }
         // the pages open: the period, the leagues, the scores, the clans
         Realtime::send(new PeriodStarted());
 
-        return 0;
+        return $failed ? 1 : 0;
     }
 }

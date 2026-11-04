@@ -19,6 +19,9 @@ class SiteSettings extends Settings
     // kado points shared equally between the other players with at least 2 feathers
     public int $poids_plume_shared_pool;
 
+    // kado points of a point of the daily ranking, paid at the close of the period (App\Services\DailyRankingService)
+    public int $daily_ranking_kado_per_point;
+
     // the games of a player each day (users.kado_games, App\Console\Commands\ResetDailyGames). -1: unlimited
     public int $games_per_day;
 

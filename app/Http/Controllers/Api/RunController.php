@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Achievements\Events\GameRunCompleted;
 use App\Enums\RunVerification;
-use App\Events\DailyScoresChanged;
 use App\Events\UserCountersChanged;
+use App\Exceptions\DailyRunClosedException;
 use App\Exceptions\RunAlreadyCompletedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RunEndRequest;
@@ -25,6 +25,7 @@ use App\Policies\GamePolicy;
 use App\Policies\RunPolicy;
 use App\Services\AchievementService;
 use App\Services\ClanRunService;
+use App\Services\DailyRankingService;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\ReplayVerifier;
@@ -198,7 +199,7 @@ class RunController extends Controller implements HasMiddleware
         ]);
     }
 
-    public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService)
+    public function end(RunEndRequest $request, Run $run, RunService $runService, ScoreService $scoreService, ReplayVerifier $replayVerifier, AchievementService $achievementService, ClanRunService $clanRunService, DailyRankingService $dailyRankingService)
     {
         // only the player of the run finishes it
         abort_unless((int) $run->user_id === (int) $request->user()->id, 404);
@@ -206,6 +207,9 @@ class RunController extends Controller implements HasMiddleware
         // RunService::confirmRun, for two requests sent at once)
         if ($run->completed_at !== null) {
             throw new RunAlreadyCompletedException();
+        }
+        if ($run->dailyGame && $dailyRankingService->isClosed($run->dailyGame)) {
+            throw new DailyRunClosedException();
         }
 
         $user = $request->user();
@@ -287,7 +291,7 @@ class RunController extends Controller implements HasMiddleware
         }
         if (!$run->is_cheat && $run->daily_game_id
             && Run::query()->where('daily_game_id', $run->daily_game_id)->where('is_cheat', false)->where('score', '>', $run->score)->count() < 10) {
-            Realtime::send(new DailyScoresChanged($run->daily_game_id));
+            ScoreBoards::dailyChanged($run->daily_game_id);
         }
 
         return [

@@ -113,6 +113,17 @@ class ManageSiteSettings extends SettingsPage
                             ->required()
                             ->suffix('points kado'),
                     ]),
+                Section::make('Jeu du jour')
+                    ->description('Chaque jour, le top 10 du jeu du jour gagne des points de classement (10 pour le 1er, 1 pour le 10e). À la clôture de la période, ils sont convertis en points kado pour tous les joueurs qui en ont.')
+                    ->schema([
+                        TextInput::make('daily_ranking_kado_per_point')
+                            ->label('Points kado par point de classement')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->required()
+                            ->suffix('points kado'),
+                    ]),
             ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Resources\UserLightResource;
 use App\Models\Game;
 use App\Models\Period;
 use App\Models\User;
+use App\Services\DailyRankingService;
 use App\Services\GameService;
 use App\Services\LeagueService;
 use App\Services\PoidsPlumeService;
@@ -27,7 +28,7 @@ class GameScoreController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware('auth:sanctum', only: ['index', 'show', 'daily', 'dailyScores', 'siteRecords', 'userRecords', 'userPeriodRecords', 'competition', 'poidsPlumes']),
+            new Middleware('auth:sanctum', only: ['index', 'show', 'daily', 'dailyScores', 'dailyStandings', 'siteRecords', 'userRecords', 'userPeriodRecords', 'competition', 'poidsPlumes']),
         ];
     }
 
@@ -189,22 +190,18 @@ class GameScoreController extends Controller implements HasMiddleware
         $dailyGame = $gameService->getDailyGame();
         Gate::authorize('view', $dailyGame?->game);
 
-        // without the replays (the ones of today's daily game are shown the next day), nor their data: the columns read
-        // by RunResource only
-        $dailyGameRuns = $dailyGame?->runs()
-            ->select(['id', 'user_id', 'game_id', 'daily_game_id', 'score', 'contract_score', 'contract_points', 'play_time_seconds', 'period_id', 'league_id', 'completed_at', 'views_count', 'comments_count', 'is_cheat'])
-            ->whereNotNull('score')
-            ->where('is_cheat', false)
-            ->orderByDesc('score')
-            ->with('user')
-            ->limit(10)
-            ->get() ?? collect();
-
+        $dailyGameRuns = $scoreService->getDailyLeaderBoard($dailyGame);
         $myPosition = $scoreService->getUserPositionOnDailyGame($dailyGame, Auth::id());
 
         return RunResource::collection($dailyGameRuns)
             ->additional([
                 'position' => $myPosition,
             ]);
+    }
+
+    // the ranking of the daily game over the current period, today's game included (nothing during the close of a period)
+    public function dailyStandings(DailyRankingService $dailyRankingService)
+    {
+        return ['data' => $dailyRankingService->currentStandings()];
     }
 }
