@@ -328,6 +328,11 @@ class EndScene extends Container {
 		cont.addChild(textQual);
 		cont.addChild(textQualField);
 
+		// no result (replay watched, run not sent): the piou stays at the start
+		if (details.people_to_beat < 0) {
+			return cont;
+		}
+
 		var tweenPiouMove = registerTween(pixi.core.Pixi.tweenManager.createTween(piouCont));
 		var MOVE_TIME_PER_PX = 1500 / KadoKadeoManager.I(218);
 		var MOVE_VALUES = [235, 213, 191, 169, 148, 126, 104, 83, 60, 38];
