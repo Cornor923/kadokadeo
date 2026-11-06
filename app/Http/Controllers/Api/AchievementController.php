@@ -48,7 +48,7 @@ class AchievementController extends Controller implements HasMiddleware
         $achievements->each(function ($a) use ($usersCount) {
             $a->level_user_counts = json_decode(str_replace('{', '[', str_replace('}', ']', $a->level_user_counts)), true);
             $a->levels->each(function ($level, $k) use ($usersCount, $a) {
-                $level->obtained_percentage = round(($a->level_user_counts[$k] / $usersCount) * 100, 2);
+                $level->setAttribute('obtained_percentage', round(($a->level_user_counts[$k] / $usersCount) * 100, 2));
             });
         });
 

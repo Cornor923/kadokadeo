@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Achievements\Events\GameRunCompleted;
 use App\Enums\BanReason;
 use App\Events\GameScoresChanged;
 use App\Events\UserCountersChanged;
@@ -60,12 +61,15 @@ class ModerationService
     }
 
     /**
-     * A run deleted from the admin: out of the leaderboards, its contract points taken back and the stars of the
-     * player in its game and period computed again from the runs left. Soft-deleted, restoreRun gives them back.
+     * A run deleted from the admin: out of the leaderboards, its contract points and what it gave to the achievements
+     * taken back and the stars of the player in its game and period computed again from the runs left. Soft-deleted,
+     * restoreRun gives them back.
      */
     public function deleteRun(Run $run, bool $force = false): bool
     {
         DB::transaction(function () use ($run, $force) {
+            // (first: it reads the run, gone after a forced deletion)
+            app(AchievementService::class)->takeBackRun($run);
             $force ? $run->forceDelete() : $run->delete();
             $this->takeBackContractPoints($run);
             $this->recomputeStars($run);
@@ -94,6 +98,15 @@ class ModerationService
                 $this->giveContractPoints($run, -$takenBack, 'restored run');
             }
             $this->recomputeStars($run);
+            // (counted once: nothing happens for a run deleted by deleteScores, it was not taken back)
+            if (!$run->is_cheat) {
+                app(AchievementService::class)->handleGameRunCompleted(new GameRunCompleted(
+                    user: $run->user,
+                    game: $run->game,
+                    run: $run,
+                    stats: $run->score_details ?? [],
+                ));
+            }
         });
         $this->forgetPromotionScores($run);
         ScoreBoards::changed($run);

@@ -175,12 +175,6 @@ parameters:
 			path: app/Filament/Resources/Runs/RelationManagers/CommentsRelationManager.php
 
 		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Achievement model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Resources/Users/RelationManagers/AchievementProgressRelationManager.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -214,24 +208,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$level_user_counts\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Api/AchievementController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$levels\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AchievementController.php
-
-		-
-			message: '#^Relation ''game'' is not found in App\\Models\\Achievement model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/AchievementController.php
-
-		-
-			message: '#^Relation ''levels'' is not found in App\\Models\\Achievement model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Http/Controllers/Api/AchievementController.php
 
 		-
@@ -1493,24 +1469,6 @@ parameters:
 			identifier: generics.wrongParent
 			count: 1
 			path: app/Models/User.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$game\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/AchievementService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$levels\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Services/AchievementService.php
-
-		-
-			message: '#^Relation ''levels'' is not found in App\\Models\\Achievement model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/AchievementService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ClanBonus\:\:\$clan\.$#'

@@ -95,6 +95,10 @@ class ManageAntiCheatSettings extends SettingsPage
                         Toggle::make('verifier_enabled')
                             ->label('Vérifier les replays')
                             ->columnSpanFull(),
+                        Toggle::make('verifier_achievements')
+                            ->label('Vérifier aussi les parties qui débloquent un succès')
+                            ->helperText('Tout palier récompensé, quel que soit le score. Une partie dont le replay finit sur un autre score est marquée comme triche : ajoutez d\'abord les jeux aux replays non fiables ci-dessous.')
+                            ->columnSpanFull(),
                         $this->integer('verifier_timeout', 'Durée maximum d\'une vérification', min: 10)
                             ->suffix('secondes'),
                         Select::make('verifier_untrusted_games')

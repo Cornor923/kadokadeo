@@ -53,6 +53,14 @@ class SuspicionService
         $this->flag($run, RunFlagRule::REPLAY_UNVERIFIABLE, 2, ['error' => Str::limit($error, 500)]);
     }
 
+    // the replay of a run gives other stats than the game sent (App\Jobs\VerifyRunReplay): it counted with the ones of the
+    // replay, an admin looks at it
+    public function recordStatsMismatch(Run $run, array $sent, array $replayed): void
+    {
+        $keys = array_keys(array_filter($sent + $replayed, fn (string $key) => ($sent[$key] ?? null) != ($replayed[$key] ?? null), ARRAY_FILTER_USE_KEY));
+        $this->flag($run, RunFlagRule::STATS_MISMATCH, 2, ['keys' => $keys]);
+    }
+
     private function checkClientDetections(Run $run): void
     {
         $bits = AntiCheatBit::softBits((int) $run->anticheat_flags);

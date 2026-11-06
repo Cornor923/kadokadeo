@@ -25,6 +25,9 @@ enum RunFlagRule: string implements HasLabel
     // the verifier could not play the replay to its end (the game crashed, the replay never ends, timeout...): its score
     // is not proven (a forged replay can make the game crash), an admin decides (App\Jobs\VerifyRunReplay)
     case REPLAY_UNVERIFIABLE = 'replay_unverifiable';
+    // the replay gives the score of the run but other stats: forged, or played by another version of the game. The run
+    // counted for the achievements with the stats of its replay (App\Jobs\VerifyRunReplay)
+    case STATS_MISMATCH = 'stats_mismatch';
 
     public function getLabel(): string
     {
@@ -37,6 +40,7 @@ enum RunFlagRule: string implements HasLabel
             self::CLIENT_DETECTION => 'Détection du client',
             self::GAME_ANALYSIS => 'Analyse des coups',
             self::REPLAY_UNVERIFIABLE => 'Replay impossible à vérifier',
+            self::STATS_MISMATCH => 'Stats différentes du replay',
         };
     }
 
@@ -54,6 +58,7 @@ enum RunFlagRule: string implements HasLabel
             self::CLIENT_DETECTION => AntiCheatBit::describe((int) ($details['bits'] ?? 0)),
             self::GAME_ANALYSIS => implode(' ; ', $details['reasons'] ?? []) ?: 'Coups suspects',
             self::REPLAY_UNVERIFIABLE => sprintf('Erreur du vérificateur : %s', $details['error'] ?? '?'),
+            self::STATS_MISMATCH => sprintf('Recomptée avec les stats du replay. Stats différentes : %s', implode(', ', $details['keys'] ?? []) ?: '?'),
         };
     }
 }

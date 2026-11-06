@@ -59,6 +59,11 @@ class AntiCheatSettings extends Settings
     // headless Chrome to check their score (App\Jobs\VerifyRunReplay): needs Node 22+ and Chrome (config kado.replay_verifier)
     public bool $verifier_enabled;
 
+    // ... and the runs that unlocked a level with a reward, whatever their score, on the queue of the analyses. A replay
+    // that ends with another score marks its run as cheated: to turn on once the games whose replays diverge are in
+    // verifier_untrusted_games. The stats of any run verified that counted for the achievements are compared with its replay.
+    public bool $verifier_achievements;
+
     // seconds
     public int $verifier_timeout;
 

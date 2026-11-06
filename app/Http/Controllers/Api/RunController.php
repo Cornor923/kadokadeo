@@ -283,6 +283,10 @@ class RunController extends Controller implements HasMiddleware
                 report($e);
             }
         }
+        if ($replayVerifier->shouldVerifyAchievements($run, $achievementUpdates)) {
+            $run->update(['verification' => RunVerification::PENDING]);
+            VerifyRunReplay::dispatch($run->id)->onQueue(config('kado.replay_analysis.queue'));
+        }
 
         // a new best score of the player: the promotions of the leagues may change (cached otherwise)
         if (!$run->is_cheat && $run->score >= $previousBestScore) {

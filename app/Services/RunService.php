@@ -143,7 +143,7 @@ class RunService
 
     // a run found cheated after it was rewarded (App\Jobs\VerifyRunReplay): out of the leaderboards, its contract
     // points taken back (the sum of its points: called again, it takes nothing more), its stars and its effects on the
-    // clan undone. The progress of the achievements stays (a rule keeps its own state: it can't be replayed without it)
+    // clan and on its achievements undone
     public function flagAsCheat(Run $run): void
     {
         DB::transaction(function () use ($run) {
@@ -165,6 +165,11 @@ class RunService
         app(ModerationService::class)->recomputeStars($run);
         try {
             app(ClanRunService::class)->revertCheatedRun($run);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+        try {
+            app(AchievementService::class)->takeBackRun($run);
         } catch (\Throwable $e) {
             report($e);
         }

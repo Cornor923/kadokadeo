@@ -3,12 +3,15 @@
 namespace App\Jobs;
 
 use App\Enums\RunVerification;
+use App\Events\UserRefresh;
 use App\Models\ReplayVerification;
 use App\Models\Run;
+use App\Services\AchievementService;
 use App\Services\ReplayVerifier;
 use App\Services\RunService;
 use App\Services\SuspicionService;
 use App\Settings\AntiCheatSettings;
+use App\Support\Realtime;
 use App\Support\ReplayHeader;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -37,7 +40,7 @@ class VerifyRunReplay implements ShouldQueue
         $this->timeout = ReplayVerifier::timeout() + 60;
     }
 
-    public function handle(ReplayVerifier $verifier, RunService $runService, SuspicionService $suspicion): void
+    public function handle(ReplayVerifier $verifier, RunService $runService, SuspicionService $suspicion, AchievementService $achievements): void
     {
         $run = Run::with('game', 'gameBuild', 'user')->find($this->runId);
         if (!$run || $run->completed_at === null) {
@@ -54,7 +57,7 @@ class VerifyRunReplay implements ShouldQueue
         }
 
         $start = hrtime(true);
-        $result = $verifier->verify($run);
+        $result = $verifier->verify($run, ['stats' => true]);
         $durationMs = intdiv(hrtime(true) - $start, 1_000_000);
         if (!$result['ok']) {
             $this->finish($run, RunVerification::FAILED, ['error' => $result['error'], 'duration_ms' => $durationMs]);
@@ -90,6 +93,27 @@ class VerifyRunReplay implements ShouldQueue
         $this->finish($run, RunVerification::VERIFIED, $details);
         // the right score, but moves of a solver?
         $suspicion->recordAnalysis($run, $result['analysis'] ?? null);
+        // the right score, but other stats?
+        $this->checkStats($run, $result, $suspicion, $achievements);
+    }
+
+    // The achievements read the stats sent by the game, which the score does not prove. A replay played by another
+    // version of the game can give other stats (the versions of the games are off in production): the run counts with
+    // the ones of its replay, and an admin looks at it, nothing is sanctioned.
+    private function checkStats(Run $run, array $result, SuspicionService $suspicion, AchievementService $achievements): void
+    {
+        if (!array_key_exists('stats', $result) || app(AntiCheatSettings::class)->isUntrustedGame($run->game->game_key) || !$achievements->canCorrect($run)) {
+            return;
+        }
+        $sent = $run->score_details ?? [];
+        $replayed = $result['stats'] ?? [];
+        if ($achievements->givesTheSame($run, $replayed)) {
+            return;
+        }
+
+        $achievements->correctRunStats($run, $replayed);
+        $suspicion->recordStatsMismatch($run, $sent, $replayed);
+        Realtime::send(new UserRefresh($run->user_id));
     }
 
     private function finish(Run $run, RunVerification $verification, array $details = []): void

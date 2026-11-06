@@ -48,6 +48,18 @@ class ReplayVerifier
             || app(ClanRunService::class)->isClanRun($run);
     }
 
+    /**
+     * A run that unlocked a level with a reward: the score of the game says nothing of the stats that gave it.
+     *
+     * @param  array<int, array<string, mixed>>  $achievementUpdates  (AchievementService)
+     */
+    public function shouldVerifyAchievements(Run $run, array $achievementUpdates): bool
+    {
+        return $this->enabled() && !$run->is_cheat && $run->verification === null
+            && app(AntiCheatSettings::class)->verifier_achievements
+            && array_any($achievementUpdates, fn (array $update) => $update['rewarded_points'] > 0);
+    }
+
     // the game has an analyzer of the moves (resources/js/replay-verifier/analyzers/<key>.mjs), turned on
     public function hasAnalyzer(string $key): bool
     {

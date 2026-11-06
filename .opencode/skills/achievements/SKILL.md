@@ -155,6 +155,15 @@ Le passage de cette commande ne prouve pas que les nouvelles stats sont justes. 
 - Recalculer une nouvelle stat d'une autre facon que le compteur, par exemple en observant le plateau a chaque frame sur l'ancien build.
 - Tester au moins une vraie partie sur le site local jusqu'a la fin: stats recues par le serveur, progression des succes, `ac` a 0, `is_cheat` faux, et replay de cette partie.
 
+## Parties qui ne comptent plus
+
+Les parties comptees sont dans `achievement_events`. `AchievementService::takeBackRun` les rejoue avec et sans la partie retiree et ne reprend que la difference, paliers et recompenses compris: une rule doit donc pouvoir etre rejouee depuis zero, avec `evaluate` et ses seules stats (rien d'autre dans `$progress` que `current_value` et `state`).
+
+- `RunService::flagAsCheat` et `ModerationService::deleteRun` reprennent, `restoreRun` recompte. `deleteScores` (ban) garde, comme les points de contrat.
+- `VerifyRunReplay` compare ce que les rules tirent des stats envoyees et de celles du replay (pas les stats brutes: Tubulo envoie des temps reels que le replay ne redonne pas). Ecart: la partie est recomptee avec les stats du replay et va dans « Runs suspectes », sans sanction.
+- Une partie qui n'a pas compte (une rule a plante): `php artisan kado:achievements:catch-up --since=<date> --dry-run`. `--since` est obligatoire: les parties d'avant l'activation des succes paieraient leurs recompenses.
+- Reglage `verifier_achievements` (« Parametres > Anti-triche »): verifie aussi les parties qui debloquent un palier recompense. Eteint par defaut: une partie dont le replay finit sur un autre score est marquee comme triche, donc mettre d'abord les jeux dont les replays divergent dans `verifier_untrusted_games`.
+
 ## Points d'attention
 
 - Les noms de dossiers rules utilisent le casing PHP existant (`KSlash`, `F1Champion`, `Opalus2`, etc.).

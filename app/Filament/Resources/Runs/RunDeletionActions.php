@@ -18,21 +18,21 @@ class RunDeletionActions
     public static function delete(): DeleteAction
     {
         return DeleteAction::make()
-            ->modalDescription('La partie sort des classements (restaurable), ses points de contrat sont repris et les étoiles du joueur recalculées sans elle.')
+            ->modalDescription('La partie sort des classements (restaurable), ses points de contrat et ce qu\'elle a apporté aux succès sont repris et les étoiles du joueur recalculées sans elle.')
             ->using(fn (Run $record, ModerationService $moderation) => $moderation->deleteRun($record));
     }
 
     public static function forceDelete(): ForceDeleteAction
     {
         return ForceDeleteAction::make()
-            ->modalDescription('La partie est supprimée définitivement, ses points de contrat repris et les étoiles du joueur recalculées sans elle.')
+            ->modalDescription('La partie est supprimée définitivement, ses points de contrat et ce qu\'elle a apporté aux succès repris et les étoiles du joueur recalculées sans elle.')
             ->using(fn (Run $record, ModerationService $moderation) => $moderation->deleteRun($record, force: true));
     }
 
     public static function restore(): RestoreAction
     {
         return RestoreAction::make()
-            ->modalDescription('La partie revient dans les classements, avec ses étoiles et les points de contrat repris à sa suppression.')
+            ->modalDescription('La partie revient dans les classements, avec ses étoiles, ses succès et les points de contrat repris à sa suppression.')
             ->using(fn (Run $record, ModerationService $moderation) => $moderation->restoreRun($record));
     }
 
@@ -46,16 +46,16 @@ class RunDeletionActions
     {
         return [
             DeleteBulkAction::make()
-                ->modalDescription('Les parties sortent des classements (restaurables), leurs points de contrat sont repris et les étoiles des joueurs recalculées sans elles.')
+                ->modalDescription('Les parties sortent des classements (restaurables), leurs points de contrat et ce qu\'elles ont apporté aux succès sont repris et les étoiles des joueurs recalculées sans elles.')
                 ->using(fn (iterable $records, ModerationService $moderation) => collect($records)
                     ->reject(fn (Run $run) => $run->trashed())
                     ->each(fn (Run $run) => $moderation->deleteRun($run))),
             ForceDeleteBulkAction::make()
-                ->modalDescription('Les parties sont supprimées définitivement, leurs points de contrat repris et les étoiles des joueurs recalculées sans elles.')
+                ->modalDescription('Les parties sont supprimées définitivement, leurs points de contrat et ce qu\'elles ont apporté aux succès repris et les étoiles des joueurs recalculées sans elles.')
                 ->using(fn (iterable $records, ModerationService $moderation) => collect($records)
                     ->each(fn (Run $run) => $moderation->deleteRun($run, force: true))),
             RestoreBulkAction::make()
-                ->modalDescription('Les parties reviennent dans les classements, avec leurs étoiles et les points de contrat repris à leur suppression.')
+                ->modalDescription('Les parties reviennent dans les classements, avec leurs étoiles, leurs succès et les points de contrat repris à leur suppression.')
                 ->using(fn (iterable $records, ModerationService $moderation) => collect($records)
                     ->each(fn (Run $run) => $moderation->restoreRun($run))),
         ];

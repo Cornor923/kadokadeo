@@ -377,6 +377,65 @@ class RunEndTest extends TestCase
         $this->assertSame(RunVerification::PENDING, $run->verification);
     }
 
+    public function test_a_run_that_unlocks_a_rewarded_level_is_verified_whatever_its_score(): void
+    {
+        Queue::fake();
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true, 'verifier_achievements' => true]);
+        $game = Game::factory()->create(['name' => 'Bactery']);
+        $this->seed(AchievementsSeeder::class);
+        $user = User::factory()->create();
+        $period = Period::factory()->create();
+        Run::factory()->for($game)->for($user)->for($period)->create(['score' => 1000]);
+        $finish = function (array $stats) use ($game, $user, $period) {
+            $run = Run::factory()->for($game)->for($user)->for($period)->create(['score' => null, 'completed_at' => null, 'contract_score' => 0]);
+            Sanctum::actingAs($user);
+            $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+                'run_id' => $run->id,
+                'score' => 1,
+                'timestamp' => now()->timestamp,
+                'replay' => null,
+                'data' => $stats,
+                'ac' => 0,
+            ]))->assertOk();
+
+            return $run;
+        };
+
+        // (the levels of few_bacteria and colored_marbles, then nothing new with the same stats)
+        $unlocking = $finish(['k' => 90, 'm' => 5, 'w' => 5, 'b' => 0]);
+        Queue::assertPushed(VerifyRunReplay::class, fn ($job) => $job->runId === $unlocking->id);
+        $this->assertSame(RunVerification::PENDING, $unlocking->fresh()->verification);
+
+        $nothingNew = $finish(['k' => 90, 'm' => 5, 'w' => 5, 'b' => 0]);
+        Queue::assertNotPushed(VerifyRunReplay::class, fn ($job) => $job->runId === $nothingNew->id);
+    }
+
+    public function test_the_runs_that_unlock_a_level_are_not_verified_by_default(): void
+    {
+        Queue::fake();
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true]);
+        $game = Game::factory()->create(['name' => 'Bactery']);
+        $this->seed(AchievementsSeeder::class);
+        $user = User::factory()->create();
+        $period = Period::factory()->create();
+        Run::factory()->for($game)->for($user)->for($period)->create(['score' => 1000]);
+        $run = Run::factory()->for($game)->for($user)->for($period)->create(['score' => null, 'completed_at' => null, 'contract_score' => 0]);
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 1,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => ['k' => 85, 'm' => 5, 'w' => 5, 'b' => 5],
+            'ac' => 0,
+        ]))->assertOk();
+
+        Queue::assertNotPushed(VerifyRunReplay::class);
+    }
+
     public function test_a_replay_above_the_size_limit_is_refused(): void
     {
         $this->setSettings(ReplaySettings::class, ['max_length' => 100]);

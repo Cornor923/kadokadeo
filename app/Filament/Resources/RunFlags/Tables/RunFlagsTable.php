@@ -145,7 +145,7 @@ class RunFlagsTable
             ->visible(fn (RunFlag $record) => $record->status !== RunFlagStatus::CONFIRMED)
             ->requiresConfirmation()
             ->modalHeading('Confirmer la triche')
-            ->modalDescription('La partie est marquée comme triche : retirée des classements, ses kadopoints de contrat repris.')
+            ->modalDescription('La partie est marquée comme triche : retirée des classements, ses kadopoints de contrat et ce qu\'elle a apporté aux succès repris.')
             ->modalSubmitActionLabel('Confirmer')
             ->action(function (RunFlag $record, RunService $runService): void {
                 $runService->flagAsCheat($record->run);
