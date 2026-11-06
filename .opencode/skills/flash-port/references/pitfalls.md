@@ -80,7 +80,7 @@ bug looks impossible. The Flash / MTypes semantics are in [original.md](original
   it only from `consumeEvents()` leaves the live game without it: its replay diverges.
 - Statics survive from one game to the next in the same page (several games, replays): reset them.
 - Shared behaviour of KadoKadeo: replay speed and pause only apply while watching a replay; hiding the tab does
-  not pause a live game (opt-out `ALLOW_PAUSE`); keys typed in a text field of the page are ignored.
+  not pause a live game; keys typed in a text field of the page are ignored.
 
 ## Graphics pipeline
 

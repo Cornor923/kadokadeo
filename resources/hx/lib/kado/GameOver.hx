@@ -3,8 +3,9 @@ package kado;
 import pixi.core.graphics.Graphics;
 
 class GameOver extends Graphics {
-	var saving:Bool = false;
-	var timer:Float = 0;
+	public var saving(default, null):Bool = false;
+
+	var timer:Int = 0;
 	var done:() -> Void;
 
 	var prevAlpha:Float = 0.0;
@@ -24,7 +25,8 @@ class GameOver extends Graphics {
 		if (saving) {
 			return;
 		}
-		timer += mt.Timer.tmod;
+		// (a step of the manager, not mt.Timer.tmod: the games leave theirs there, 32 / 40 for a 40 fps original)
+		timer++;
 		var lim:Int = 80;
 		nextAlpha = timer / lim;
 		if (timer >= lim) {

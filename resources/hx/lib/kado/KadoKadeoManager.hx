@@ -77,13 +77,14 @@ class KadoKadeoManager extends Application {
 
 	// anti cheat: a game cannot be paused by hiding its tab (switching tab or app, the browser stops drawing it):
 	// back to the tab, the time spent hidden is played at once, without being drawn (like a replay seek; the
-	// inputs were released when the page lost the focus). Games where the time does not matter can keep the
-	// pause with `public static var ALLOW_PAUSE = true;` in their class.
+	// inputs were released when the page lost the focus). The fade of the game over is caught up too: counted in
+	// steps of the simulation, the frames of the replay stop at the game over.
 	static inline var CATCH_UP_MAX_MS = 20 * 60 * 1000;
 
 	var hiddenAtMs:Null<Float> = null;
-	var hiddenAtFrame:Int = 0;
+	var hiddenAtStep:Int = 0;
 	var catchUpTarget:Null<Int> = null;
+	var simulationSteps:Int = 0;
 	var seedHash:Int = 0;
 
 	// "Changer de partie" (changeRun): the new run is asked, the game goes on meanwhile (a game over waits for the answer:
@@ -256,6 +257,7 @@ class KadoKadeoManager extends Application {
 			return;
 		}
 		try {
+			simulationSteps++;
 			simulationTimeMs += dt;
 			mt.Timer.update(simulationTimeMs);
 			mt.Timer.deltaT = dt / 1000;
@@ -804,7 +806,8 @@ class KadoKadeoManager extends Application {
 			stage.addChildAt(seekRing, stage.getChildIndex(seekFreeze) + 1);
 		}
 		var span = Math.max(1, target - seekFrom);
-		var p = Math.max(0, Math.min(1, (replay.getCurrentFrame() - seekFrom) / span));
+		var current = seekTarget != null ? replay.getCurrentFrame() : simulationSteps;
+		var p = Math.max(0, Math.min(1, (current - seekFrom) / span));
 		var g = seekRing;
 		// (the middle of the game area)
 		var cx = screen.width / 2;
@@ -874,9 +877,8 @@ class KadoKadeoManager extends Application {
 	function canCatchUp():Bool {
 		return runFlow.state == Playing
 			&& game != null
-			&& gameOverScreen == null
-			&& !replay.isPlayingReplay()
-			&& Reflect.field(gameClass, "ALLOW_PAUSE") != true;
+			&& params.replayData == null
+			&& (gameOverScreen == null || !gameOverScreen.saving);
 	}
 
 	function onVisibilityChange(_):Void {
@@ -884,7 +886,7 @@ class KadoKadeoManager extends Application {
 		if (Browser.document.hidden) {
 			if (canCatchUp() && hiddenAtMs == null) {
 				hiddenAtMs = now;
-				hiddenAtFrame = replay.getCurrentFrame();
+				hiddenAtStep = simulationSteps;
 			}
 			return;
 		}
@@ -894,12 +896,12 @@ class KadoKadeoManager extends Application {
 		hiddenAtMs = null;
 		if (!canCatchUp())
 			return;
-		var target = hiddenAtFrame + Std.int(lost / FixedFramerate.STEP);
-		if (target <= replay.getCurrentFrame())
+		var target = hiddenAtStep + Std.int(lost / FixedFramerate.STEP);
+		if (target <= simulationSteps)
 			return;
 		if (catchUpTarget == null) {
 			freezeSeek();
-			seekFrom = replay.getCurrentFrame();
+			seekFrom = simulationSteps;
 		}
 		catchUpTarget = target;
 	}
@@ -909,7 +911,7 @@ class KadoKadeoManager extends Application {
 		if (gameRoot != null)
 			gameRoot.renderable = false;
 		while (catchUpTarget != null) {
-			if (!canCatchUp() || replay.getCurrentFrame() >= catchUpTarget) {
+			if (!canCatchUp() || simulationSteps >= catchUpTarget) {
 				endCatchUp();
 				return;
 			}
