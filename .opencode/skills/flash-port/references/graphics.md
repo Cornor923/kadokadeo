@@ -271,3 +271,8 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   (`cms`, 0 = none) instead of dropping it, applied at run time by a PIXI ColorMatrixFilter (`puzzlemanda/Clip.hx`
   `setCm`; Flash's offsets are 0..255, PIXI's 0..1). With `effects`, a blurred nested clip in "add" (`bl` + `bf`)
   gets the blend on its blur filter: Flash adds the filtered picture, not each sprite.
+- Blend modes inside a mask (NosuShi: the multiply and overlay layers of gfx.Plateau, each under a clipDepth mask, colour
+  the wood of the Bg under them): `swfrender` draws the masked items on an empty layer, so their blend sees nothing under
+  it. `SWF.mask_blend = True` draws them over what is already drawn and keeps the result where the mask covers (off: the
+  renders made before stay the same). Clips that never move (gfx.Bg and the tray over it) are composed into one picture
+  so that their blends see each other.
