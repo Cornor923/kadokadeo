@@ -18,18 +18,17 @@ class Kaskade2SameCellClicksRule extends Kaskade2Rule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $previousCell = null;
+        $longestSequence = 0;
         $sequence = 0;
+        $previousCell = null;
 
         foreach ($this->clicks($event) as $click) {
             $cell = [$click[0], $click[1]];
             $sequence = $cell === $previousCell ? $sequence + 1 : 1;
-            if ($sequence >= 3) {
-                return AchievementRuleResult::setProgress(1);
-            }
+            $longestSequence = max($longestSequence, $sequence);
             $previousCell = $cell;
         }
 
-        return AchievementRuleResult::unchanged($progress->current_value);
+        return AchievementRuleResult::setProgress(max($progress->current_value, $longestSequence));
     }
 }

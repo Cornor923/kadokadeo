@@ -18,8 +18,6 @@ class XianXiangPerfectColorsRule extends XianXiangRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $p = min(data_get($event->stats, 'p')) >= 2 ? 1 : $progress->current_value;
-
-        return AchievementRuleResult::setProgress($p);
+        return AchievementRuleResult::setProgress(max($progress->current_value, min(data_get($event->stats, 'p'))));
     }
 }

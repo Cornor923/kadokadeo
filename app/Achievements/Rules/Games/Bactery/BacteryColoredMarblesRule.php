@@ -18,6 +18,6 @@ class BacteryColoredMarblesRule extends BacteryRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        return AchievementRuleResult::setProgress(data_get($event->stats, 'k') >= 85 ? 1 : $progress->current_value);
+        return AchievementRuleResult::setProgress(max($progress->current_value, data_get($event->stats, 'k')));
     }
 }

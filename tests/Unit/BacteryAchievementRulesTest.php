@@ -75,12 +75,12 @@ class BacteryAchievementRulesTest extends TestCase
         $this->assertSame(0, $rule->evaluate($this->event(['b' => 5, 'k' => 1, 'm' => 44, 'w' => 50]), $this->progress())->progress);
     }
 
-    public function test_stones_needs_70_stones(): void
+    public function test_stones_keeps_the_best_number_of_stones(): void
     {
         $rule = new BacteryStonesRule();
 
-        $this->assertSame(1, $rule->evaluate($this->event(['w' => 70, 'k' => 10, 'm' => 20, 'b' => 0]), $this->progress())->progress);
-        $this->assertSame(0, $rule->evaluate($this->event(['w' => 69, 'k' => 11, 'm' => 20, 'b' => 0]), $this->progress())->progress);
+        $this->assertSame(59, $rule->evaluate($this->event(['w' => 59, 'k' => 21, 'm' => 20, 'b' => 0]), $this->progress())->progress);
+        $this->assertSame(59, $rule->evaluate($this->event(['w' => 57, 'k' => 23, 'm' => 20, 'b' => 0]), $this->progress(59))->progress);
     }
 
     public function test_tricolor_needs_as_many_of_the_three(): void
@@ -92,17 +92,17 @@ class BacteryAchievementRulesTest extends TestCase
         $this->assertSame(0, $rule->evaluate($this->event(['k' => 34, 'm' => 33, 'w' => 32, 'b' => 1]), $this->progress())->progress);
     }
 
-    public function test_colored_marbles_needs_85_of_them(): void
+    public function test_colored_marbles_keeps_the_best_number_of_them(): void
     {
         $rule = new BacteryColoredMarblesRule();
 
-        $this->assertSame(1, $rule->evaluate($this->event(['k' => 85, 'm' => 10, 'w' => 3]), $this->progress())->progress);
-        $this->assertSame(0, $rule->evaluate($this->event(['k' => 84, 'm' => 11, 'w' => 3]), $this->progress())->progress);
+        $this->assertSame(84, $rule->evaluate($this->event(['k' => 84, 'm' => 11, 'w' => 3]), $this->progress())->progress);
+        $this->assertSame(84, $rule->evaluate($this->event(['k' => 60, 'm' => 20, 'w' => 18]), $this->progress(84))->progress);
     }
 
     public function test_the_unique_achievements_stay_obtained(): void
     {
-        foreach ([new BacteryPalaceRule(), new BacteryStonesRule(), new BacteryTricolorRule(), new BacteryColoredMarblesRule()] as $rule) {
+        foreach ([new BacteryPalaceRule(), new BacteryTricolorRule()] as $rule) {
             $this->assertSame(1, $rule->evaluate($this->event(), $this->progress(1))->progress);
         }
     }

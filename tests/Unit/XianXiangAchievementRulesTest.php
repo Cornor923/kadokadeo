@@ -57,12 +57,13 @@ class XianXiangAchievementRulesTest extends TestCase
         $this->assertSame(0, $rule->evaluate($this->event($stats, 70), $this->progress())->progress);
     }
 
-    public function test_perfect_colors_needs_two_perfect_pairs_of_each_color(): void
+    public function test_perfect_colors_keeps_the_best_count_of_the_weakest_color(): void
     {
         $rule = new XianXiangPerfectColorsRule();
 
-        $this->assertSame(1, $rule->evaluate($this->event(['p' => [2, 2, 2, 6]]), $this->progress())->progress);
-        $this->assertSame(0, $rule->evaluate($this->event(['p' => [1, 3, 2, 6]]), $this->progress())->progress);
+        $this->assertSame(2, $rule->evaluate($this->event(['p' => [2, 2, 2, 6]]), $this->progress())->progress);
+        $this->assertSame(1, $rule->evaluate($this->event(['p' => [1, 3, 2, 6]]), $this->progress())->progress);
+        $this->assertSame(2, $rule->evaluate($this->event(['p' => [0, 3, 3, 6]]), $this->progress(2))->progress);
     }
 
     public function test_the_unique_achievements_stay_obtained(): void
@@ -71,7 +72,6 @@ class XianXiangAchievementRulesTest extends TestCase
 
         $this->assertSame(1, (new XianXiangNoOnePointPairRule())->evaluate($event, $this->progress(1))->progress);
         $this->assertSame(1, (new XianXiangMinScoreRule())->evaluate($event, $this->progress(1))->progress);
-        $this->assertSame(1, (new XianXiangPerfectColorsRule())->evaluate($event, $this->progress(1))->progress);
     }
 
     /**

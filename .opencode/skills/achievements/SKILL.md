@@ -76,6 +76,13 @@ $bads = data_get($event->stats, 'bads', []);
 - Retourner la valeur/progression attendue selon les patterns existants du projet.
 - Pour les achievements cumulatifs, suivre les exemples existants avec `AchievementProgressScope::LIFETIME` dans le seeder.
 - Pour les achievements en une partie, suivre aussi les exemples existants: le scope reste souvent `LIFETIME`, mais la rule retourne une progression issue d'une seule run.
+- Un nombre a atteindre en une partie (par exemple avoir 70 pierres) ne compte pas en oui/non: la progression suit la vraie valeur. Le `target` du seeder est le seuil (70, pas 1) et la rule garde le meilleur resultat: avec 59 pierres la progression passe a 59, et elle reste a 59 si la partie d'apres en donne 57.
+
+```php
+return AchievementRuleResult::setProgress(max($progress->current_value, data_get($event->stats, 'w')));
+```
+
+- Un seuil a ne pas depasser (10 bacteries ou moins) ne peut pas suivre sa valeur, puisque plus bas est mieux: il garde des paliers 1, 2, 3, comme `BacteryFewBacteriaRule`.
 
 5. Ajouter les achievements au seeder
 

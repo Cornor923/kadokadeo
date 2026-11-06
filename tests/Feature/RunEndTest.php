@@ -163,7 +163,7 @@ class RunEndTest extends TestCase
         $this->assertSame(4, $values['perfect_neighbours']);
         $this->assertSame(12, $values['perfect_pairs']);
         $this->assertSame(1, $values['no_one_point_pair']);
-        $this->assertSame(1, $values['perfect_colors']);
+        $this->assertSame(2, $values['perfect_colors']);
         $this->assertSame(0, $values['min_score']);
     }
 
@@ -189,9 +189,9 @@ class RunEndTest extends TestCase
         $this->assertSame(2, $values['few_bacteria']);
         $this->assertSame(5, $values['total_stars']);
         $this->assertSame(1, $values['high_scores']);
-        $this->assertSame(1, $values['colored_marbles']);
+        $this->assertSame(85, $values['colored_marbles']);
         $this->assertSame(0, $values['palace']);
-        $this->assertSame(0, $values['stones']);
+        $this->assertSame(3, $values['stones']);
         $this->assertSame(0, $values['tricolor']);
     }
 

@@ -20,10 +20,7 @@ class StarfangSameWeaponUpgradesRule extends StarfangRule
 
         $weaponUpgrades = array_filter(data_get($event->stats, 'b', []), fn ($bonus) => $bonus >= 0 && $bonus <= 4);
         $counts = array_count_values($weaponUpgrades);
-        if (count($counts) > 0 && max($counts) >= 5) {
-            return AchievementRuleResult::setProgress(1);
-        }
 
-        return AchievementRuleResult::unchanged($progress->current_value);
+        return AchievementRuleResult::setProgress(max([$progress->current_value, ...$counts]));
     }
 }

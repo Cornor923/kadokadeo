@@ -79,7 +79,7 @@ class AchievementsSeeder extends Seeder
         $pushBoxOnGhost->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Prends ça !', 'description' => 'Pousser une caisse sur un fantôme.']);
 
         $ghostBuster = $game->achievements()->updateOrCreate(['key' => 'ghost_buster'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $ghostBuster->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'Ghost buster', 'description' => 'Foncer dans 3 fantômes dans un même niveau puis le réussir.']);
+        $ghostBuster->levels()->updateOrCreate(['level' => 1], ['target' => 3, 'reward' => 2000, 'title' => 'Ghost buster', 'description' => 'Foncer dans 3 fantômes dans un même niveau puis le réussir.']);
     }
 
     private function createBacteryAchievements()
@@ -108,13 +108,13 @@ class AchievementsSeeder extends Seeder
         $palace->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 250, 'title' => 'La classe de palace', 'description' => 'Réussir une partie avec 5 étoiles restantes et aucune bille colorée.']);
 
         $stones = $game->achievements()->updateOrCreate(['key' => 'stones'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $stones->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Bâtisseur de fondations', 'description' => 'Obtenir 70 pierres en une partie.']);
+        $stones->levels()->updateOrCreate(['level' => 1], ['target' => 70, 'reward' => 1000, 'title' => 'Bâtisseur de fondations', 'description' => 'Obtenir 70 pierres en une partie.']);
 
         $tricolor = $game->achievements()->updateOrCreate(['key' => 'tricolor'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
         $tricolor->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Drapeau tricolore', 'description' => 'Finir avec autant de bactéries, pierres et billes colorées.']);
 
         $coloredMarbles = $game->achievements()->updateOrCreate(['key' => 'colored_marbles'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $coloredMarbles->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'F5 la prochaine fois...', 'description' => 'Finir avec au moins 85 boules colorées.']);
+        $coloredMarbles->levels()->updateOrCreate(['level' => 1], ['target' => 85, 'reward' => 2000, 'title' => 'F5 la prochaine fois...', 'description' => 'Finir avec au moins 85 boules colorées.']);
     }
 
     private function createChocoMoucheAchievements()
@@ -464,7 +464,7 @@ class AchievementsSeeder extends Seeder
         $allWeaponUpgrades->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Indécis', 'description' => 'Obtenir une amélioration d\'arme de chaque type dans une seule partie.']);
 
         $sameWeaponUpgrades = $game->achievements()->updateOrCreate(['key' => 'same_weapon_upgrades'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $sameWeaponUpgrades->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'Puissant', 'description' => 'Obtenir 5 améliorations d\'armes identiques dans une seule partie.']);
+        $sameWeaponUpgrades->levels()->updateOrCreate(['level' => 1], ['target' => 5, 'reward' => 2000, 'title' => 'Puissant', 'description' => 'Obtenir 5 améliorations d\'armes identiques dans une seule partie.']);
     }
 
     private function createKaskade2Achievements()
@@ -491,7 +491,7 @@ class AchievementsSeeder extends Seeder
         $sameColorClicks->levels()->updateOrCreate(['level' => 3], ['target' => 12, 'reward' => 1000, 'title' => 'C\'est un têtu', 'description' => 'Cliquer 12 fois de suite sur la même couleur.']);
 
         $sameCellClicks = $game->achievements()->updateOrCreate(['key' => 'same_cell_clicks'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $sameCellClicks->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 250, 'title' => 'Il existe d\'autres cases', 'description' => 'Cliquer trois fois de suite sur la même case.']);
+        $sameCellClicks->levels()->updateOrCreate(['level' => 1], ['target' => 3, 'reward' => 250, 'title' => 'Il existe d\'autres cases', 'description' => 'Cliquer trois fois de suite sur la même case.']);
 
         $rgb = $game->achievements()->updateOrCreate(['key' => 'rgb'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
         $rgb->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'RGB', 'description' => 'Atteindre un score de 160.000 en alternant toujours Rouge, Vert, Bleu, Rouge, Vert, Bleu...']);
@@ -777,7 +777,7 @@ class AchievementsSeeder extends Seeder
         $minScore->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Premier (en partant de la fin)', 'description' => 'Faire un score de 21.']);
 
         $perfectColors = $game->achievements()->updateOrCreate(['key' => 'perfect_colors'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-        $perfectColors->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'Il y en aura pour tout le monde', 'description' => 'Effectuer au moins 2 paires parfaites de chaque couleur en 1 seule partie.']);
+        $perfectColors->levels()->updateOrCreate(['level' => 1], ['target' => 2, 'reward' => 2000, 'title' => 'Il y en aura pour tout le monde', 'description' => 'Effectuer au moins 2 paires parfaites de chaque couleur en 1 seule partie.']);
     }
 
     private function createTiananManAchievements()
