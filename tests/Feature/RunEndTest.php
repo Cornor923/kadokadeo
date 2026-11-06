@@ -167,6 +167,34 @@ class RunEndTest extends TestCase
         $this->assertSame(0, $values['min_score']);
     }
 
+    public function test_the_stats_of_a_run_of_bactery_reach_its_achievements(): void
+    {
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $user = User::factory()->create(['kado_points' => 0]);
+        $game = Game::factory()->create(['name' => 'Bactery']);
+        $this->seed(AchievementsSeeder::class);
+        $run = Run::factory()->for($game)->for($user)->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 17450,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => ['k' => 85, 'm' => 7, 'n' => 12, 'w' => 3, 'b' => 5],
+            'ac' => 0,
+        ]))->assertOk();
+
+        $values = UserAchievementProgress::query()->with('achievement')->get()->pluck('current_value', 'achievement.key')->all();
+        $this->assertSame(2, $values['few_bacteria']);
+        $this->assertSame(5, $values['total_stars']);
+        $this->assertSame(1, $values['high_scores']);
+        $this->assertSame(1, $values['colored_marbles']);
+        $this->assertSame(0, $values['palace']);
+        $this->assertSame(0, $values['stones']);
+        $this->assertSame(0, $values['tricolor']);
+    }
+
     public function test_only_the_player_of_a_run_finishes_it(): void
     {
         $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);

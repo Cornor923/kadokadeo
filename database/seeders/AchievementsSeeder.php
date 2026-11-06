@@ -21,6 +21,7 @@ class AchievementsSeeder extends Seeder
         $this->games = Game::all();
 
         $this->createAtlanteineAchievements();
+        $this->createBacteryAchievements();
         $this->createChocoMoucheAchievements();
         $this->createF1ChampionAchievements();
         $this->createInterwheelAchievements();
@@ -79,6 +80,41 @@ class AchievementsSeeder extends Seeder
 
         $ghostBuster = $game->achievements()->updateOrCreate(['key' => 'ghost_buster'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
         $ghostBuster->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'Ghost buster', 'description' => 'Foncer dans 3 fantômes dans un même niveau puis le réussir.']);
+    }
+
+    private function createBacteryAchievements()
+    {
+        $game = $this->games->where('game_key', 'bactery')->first();
+        if (!$game) {
+            return;
+        }
+
+        $fewBacteria = $game->achievements()->updateOrCreate(['key' => 'few_bacteria'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $fewBacteria->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 100, 'title' => 'Antiseptique', 'description' => 'Avoir 10 bactéries ou moins sur son plateau à la fin de partie.']);
+        $fewBacteria->levels()->updateOrCreate(['level' => 2], ['target' => 2, 'reward' => 500, 'title' => 'Désinfectant', 'description' => 'Avoir 8 bactéries ou moins sur son plateau à la fin de partie.']);
+        $fewBacteria->levels()->updateOrCreate(['level' => 3], ['target' => 3, 'reward' => 1000, 'title' => 'Javel', 'description' => 'Avoir 6 bactéries ou moins sur son plateau à la fin de partie.']);
+
+        $totalStars = $game->achievements()->updateOrCreate(['key' => 'total_stars'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $totalStars->levels()->updateOrCreate(['level' => 1], ['target' => 10, 'reward' => 100, 'title' => 'Admirateur d\'astres', 'description' => 'Amasser un total de 10 étoiles.']);
+        $totalStars->levels()->updateOrCreate(['level' => 2], ['target' => 100, 'reward' => 500, 'title' => 'Collectionneur de constellations', 'description' => 'Amasser un total de 100 étoiles.']);
+        $totalStars->levels()->updateOrCreate(['level' => 3], ['target' => 1000, 'reward' => 1000, 'title' => 'Adorateur de galaxies', 'description' => 'Amasser un total de 1.000 étoiles.']);
+
+        $highScores = $game->achievements()->updateOrCreate(['key' => 'high_scores'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $highScores->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 100, 'title' => 'Les F5 ont enfin payé', 'description' => 'Faire un score d\'au moins 17.000 une fois.']);
+        $highScores->levels()->updateOrCreate(['level' => 2], ['target' => 5, 'reward' => 500, 'title' => 'Ça devient presque facile...', 'description' => 'Faire un score d\'au moins 17.000 5 fois.']);
+        $highScores->levels()->updateOrCreate(['level' => 3], ['target' => 10, 'reward' => 1000, 'title' => 'T\'as au moins pris le record du site ?', 'description' => 'Faire un score d\'au moins 17.000 10 fois.']);
+
+        $palace = $game->achievements()->updateOrCreate(['key' => 'palace'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $palace->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 250, 'title' => 'La classe de palace', 'description' => 'Réussir une partie avec 5 étoiles restantes et aucune bille colorée.']);
+
+        $stones = $game->achievements()->updateOrCreate(['key' => 'stones'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $stones->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Bâtisseur de fondations', 'description' => 'Obtenir 70 pierres en une partie.']);
+
+        $tricolor = $game->achievements()->updateOrCreate(['key' => 'tricolor'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $tricolor->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 1000, 'title' => 'Drapeau tricolore', 'description' => 'Finir avec autant de bactéries, pierres et billes colorées.']);
+
+        $coloredMarbles = $game->achievements()->updateOrCreate(['key' => 'colored_marbles'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $coloredMarbles->levels()->updateOrCreate(['level' => 1], ['target' => 1, 'reward' => 2000, 'title' => 'F5 la prochaine fois...', 'description' => 'Finir avec au moins 85 boules colorées.']);
     }
 
     private function createChocoMoucheAchievements()

@@ -48,15 +48,13 @@ class AchievementsSeederTest extends TestCase
         $game = Game::factory()->create(['name' => 'Xian-Xiang']);
         $this->seed(AchievementsSeeder::class);
         $level = $game->achievements()->where('key', 'total_tiles')->sole()->levels()->where('level', 2)->sole();
+        $seeded = $level->only('reward', 'description', 'title');
         $level->update(['reward' => 1, 'description' => 'Ancien texte.', 'title' => 'Ancien titre']);
         $game->achievements()->where('key', 'min_score')->delete();
 
         $this->seed(AchievementsSeeder::class);
 
-        $level->refresh();
-        $this->assertSame(500, $level->reward);
-        $this->assertSame('Détruire 5.000 tuiles.', $level->description);
-        $this->assertSame('Nettoyeur de plateau', $level->title);
+        $this->assertSame($seeded, $level->fresh()->only('reward', 'description', 'title'));
         $this->assertSame(1, $game->achievements()->where('key', 'min_score')->count());
     }
 
@@ -78,7 +76,8 @@ class AchievementsSeederTest extends TestCase
         $game = Game::factory()->create(['name' => 'Xian-Xiang']);
         $this->seed(AchievementsSeeder::class);
         $achievement = $game->achievements()->where('key', 'total_tiles')->sole();
-        $achievement->levels()->where('level', 1)->update(['reward' => 1]);
+        $reward = $achievement->levels()->where('level', 1)->sole()->reward;
+        $achievement->levels()->where('level', 1)->update(['reward' => $reward + 1]);
         Filament::setCurrentPanel(Filament::getPanel('admin'));
 
         Livewire::actingAs(User::factory()->create(['is_admin' => true]))
@@ -86,7 +85,7 @@ class AchievementsSeederTest extends TestCase
             ->call('syncAchievements')
             ->assertNotified('Succès mis à jour.');
 
-        $this->assertSame(100, $achievement->levels()->where('level', 1)->sole()->reward);
+        $this->assertSame($reward, $achievement->levels()->where('level', 1)->sole()->reward);
         $this->assertNotNull($achievement->fresh());
     }
 }

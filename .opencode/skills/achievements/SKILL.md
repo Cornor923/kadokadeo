@@ -1,6 +1,6 @@
 ---
 name: achievements
-description: Expliquer et implementer les achievements d'un jeu KadoKadeo a partir des stats envoyees par le jeu et d'une capture Excel.
+description: Expliquer et implementer les achievements d'un jeu KadoKadeo a partir des stats envoyees par le jeu et du Google Sheet du projet.
 ---
 
 Tu travailles sur un projet Laravel + Haxe KadoKadeo.
@@ -15,10 +15,20 @@ Les achievements seedes sont dans `database/seeders/AchievementsSeeder.php`.
 
 ## Entrees attendues
 
-Le travail se fait generalement en deux temps:
+La liste des succes est dans le Google Sheet du projet, lisible sans connexion et en lecture seule: https://docs.google.com/spreadsheets/d/1L0VNwws3ZDsALiZrvNQ13Gc1rjZleYc9tUAGoPc5Avc/edit
 
-1. L'utilisateur donne le jeu, les variables de stats envoyees en fin de partie, leur contenu et les validations attendues.
-2. L'utilisateur envoie une capture Excel listant les succes a creer: cle, titre, description, seuils, recompenses ou autres infos visibles.
+- Premier onglet: legende et etat de chaque jeu.
+- Un onglet par jeu, a son nom affiche: titres par niveau, description, seuils, recompenses, regles speciales.
+- Lire un onglet en CSV (le nom encode dans l'URL, par exemple `Xian-Xiang`):
+
+```sh
+curl -sSL "https://docs.google.com/spreadsheets/d/1L0VNwws3ZDsALiZrvNQ13Gc1rjZleYc9tUAGoPc5Avc/gviz/tq?tqx=out:csv&sheet=<Nom%20du%20jeu>"
+```
+
+- Colonne `Developpe ?`: `to review` et `new` sont des idees pas encore validees, a confirmer avant de les creer.
+- Les lignes `Etoile` et `Ligue Paradis` sont les succes communs, deja crees pour tous les jeux.
+
+L'utilisateur peut aussi donner directement le jeu, les variables de stats et les validations attendues.
 
 Si une information est ambigue, manquante ou contradictoire, demander confirmation avant d'implementer. Ne pas deviner une regle metier.
 
@@ -91,8 +101,8 @@ $achievement->levels()->updateOrCreate(['level' => 1], ['target' => 1000, 'rewar
 - Il ne supprime rien : un succès ou un palier retiré du seeder reste en base. Renommer une `key` crée un nouveau succès, la progression ne suit pas.
 - Deux paliers d'un même succès ne peuvent pas avoir le même `target` (contrainte unique), même le temps d'un échange.
 
-- Utiliser les titres, descriptions, targets et rewards fournis dans la capture Excel.
-- Si une valeur de la capture est illisible ou incertaine, demander confirmation.
+- Utiliser les titres, descriptions, targets et rewards du Sheet.
+- Si une valeur du Sheet est illisible ou incertaine, demander confirmation.
 
 ## Ajouter des stats a un jeu
 
