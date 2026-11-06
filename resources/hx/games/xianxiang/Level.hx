@@ -8,9 +8,15 @@ class Level {
 	public var tbl:Array<Array<Card>>;
 	public var combis:Array<Int>;
 
+	// the perfect pairs (all sent for the achievements, nothing reads them in the game): by color, and on neighbouring cells
+	public var perfectColors:Array<Int>;
+	public var perfectNeighbours:Int;
+
 	public function new(g) {
 		this.game = g;
 		combis = [0, 0, 0, 0];
+		perfectColors = [0, 0, 0, 0];
+		perfectNeighbours = 0;
 		initLevel();
 	}
 
@@ -24,6 +30,11 @@ class Level {
 			return false;
 
 		combis[matchs]++;
+		if (matchs == 3) {
+			perfectColors[c1.id.color]++;
+			if (Math.abs(c1.x - c2.x) + Math.abs(c1.y - c2.y) == 1)
+				perfectNeighbours++;
+		}
 
 		KadoKadeoManager.kkm.addScore(Const.POINTS_ENCODE[matchs]);
 		game.spawn(c1, matchs);

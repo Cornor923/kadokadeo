@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Relation ''gameBuild'' is not found in App\\Models\\Run model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/AnalyzeReplays.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\GameBuild\:\:\$game\.$#'
 			identifier: property.notFound
 			count: 1

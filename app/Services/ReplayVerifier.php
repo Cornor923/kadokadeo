@@ -79,16 +79,19 @@ class ReplayVerifier
     }
 
     /**
-     * @return array{ok: bool, score?: int, frames?: int, error?: string, analysis?: array}
+     * @param  array<string, mixed>  $input  what changes in the input of verify.mjs (stats, analysis...)
+     * @param  bool  $currentBundle  played by the bundle of today, not by the version it was recorded with (a game
+     *                               compared with itself: kado:replays:compare)
+     * @return array{ok: bool, score?: int, frames?: int, error?: string, analysis?: array, stats?: mixed}
      */
-    public function verify(Run $run): array
+    public function verify(Run $run, array $input = [], bool $currentBundle = false): array
     {
         // (the game would start a live game instead, and the verifier wait for its replay until its timeout)
         if (ReplayHeader::parse($run->replay) === null) {
             return ['ok' => false, 'error' => 'not a replay of the game'];
         }
         $game = $run->game;
-        $gamedata = $this->archive->gamedataFor($game, $run->gameBuild);
+        $gamedata = $currentBundle ? $game->gamedata : $this->archive->gamedataFor($game, $run->gameBuild);
         if ($gamedata === null) {
             return ['ok' => false, 'error' => 'no bundle for this game'];
         }
@@ -104,7 +107,7 @@ class ReplayVerifier
         File::ensureDirectoryExists($dir);
         try {
             file_put_contents("{$dir}/bundle.js", $bundle);
-            file_put_contents("{$dir}/input.json", json_encode([
+            file_put_contents("{$dir}/input.json", json_encode($input + [
                 'bundle' => "{$dir}/bundle.js",
                 'gameClass' => $game->pascal_name,
                 'gameName' => $key,

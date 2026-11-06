@@ -33,7 +33,7 @@ class ReplayVerificationTest extends TestCase
                 parent::__construct($archive);
             }
 
-            public function verify(Run $run): array
+            public function verify(Run $run, array $input = [], bool $currentBundle = false): array
             {
                 return $this->result;
             }

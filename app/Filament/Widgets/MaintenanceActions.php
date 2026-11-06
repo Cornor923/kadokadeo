@@ -56,6 +56,26 @@ class MaintenanceActions extends Widget
         }
     }
 
+    public function syncAchievements(): void
+    {
+        try {
+            Artisan::call('db:seed', ['--force' => true, '--class' => 'AchievementsSeeder']);
+
+            Notification::make()
+                ->title('Succès mis à jour.')
+                ->success()
+                ->send();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            Notification::make()
+                ->title('Impossible de mettre à jour les succès.')
+                ->body('Consultez les logs pour plus de détails, puis réessayez.')
+                ->danger()
+                ->send();
+        }
+    }
+
     public function deleteAchievements(): void
     {
         try {

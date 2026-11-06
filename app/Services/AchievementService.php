@@ -163,7 +163,8 @@ class AchievementService
             ->where('target', '<=', $progress->current_value)
             ->max('level') ?? 0;
 
-        $progress->completed_level = $completedLevel;
+        // a level reached stays reached (a target raised later, a progress going down): its reward was paid
+        $progress->completed_level = max($progress->completed_level, $completedLevel);
 
         if ($completedLevel > 0 && !$progress->completed_at) {
             $progress->completed_at = now();

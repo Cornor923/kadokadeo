@@ -61,4 +61,36 @@ class AchievementServiceTest extends TestCase
         $this->assertSame(200, $user->fresh()->kado_points);
         $this->assertSame([200], $user->userPoints()->where('reason', 'achievement')->pluck('delta')->all());
     }
+
+    // the target of a level is raised above the progress of a player who had it: not taken back, not paid a second time
+    public function test_a_level_reached_stays_reached_when_its_target_is_raised(): void
+    {
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $user = User::factory()->create(['kado_points' => 0]);
+        $game = Game::factory()->create();
+        $achievement = $game->achievements()->create(['key' => 'stars', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+        $level = $achievement->levels()->create(['level' => 1, 'target' => 1, 'reward' => 100]);
+        $finish = fn (int $score) => app(AchievementService::class)->handleGameRunCompleted(new GameRunCompleted(
+            $user,
+            $game,
+            Run::factory()->for($game)->for($user)->create(['score' => $score]),
+            [],
+        ));
+
+        $progress = UserAchievementProgress::create([
+            'user_id' => $user->id,
+            'achievement_id' => $achievement->id,
+            'game_id' => $game->id,
+            'scope_key' => 'lifetime',
+            'current_value' => 1,
+            'completed_level' => 1,
+        ]);
+        $level->update(['target' => 5]);
+        $game->stars = [100, 200, 300];
+        $game->save();
+
+        $finish(150);
+        $this->assertSame(1, $progress->fresh()->completed_level);
+        $this->assertSame(0, $user->fresh()->kado_points);
+    }
 }

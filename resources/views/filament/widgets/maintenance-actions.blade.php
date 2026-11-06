@@ -7,6 +7,9 @@
         <x-filament::button color="info" icon="heroicon-o-plus" wire:click="prepareNewPeriod" wire:loading.attr="disabled" wire:target="prepareNewPeriod">
             Préparer une nouvelle période
         </x-filament::button>
+        <x-filament::button color="info" icon="heroicon-o-arrow-path" wire:click="syncAchievements" wire:loading.attr="disabled" wire:target="syncAchievements">
+            Mettre à jour les succès
+        </x-filament::button>
         <x-filament::button color="danger" icon="heroicon-o-trash" wire:click="deleteAchievements" wire:loading.attr="disabled" wire:target="deleteAchievements"
             wire:confirm="Tous les succès seront supprimés puis recréés. Continuer ?">
             Supprimer et recréer les succès

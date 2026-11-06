@@ -36,7 +36,7 @@ class AnalyzeReplaysTest extends TestCase
                 return true;
             }
 
-            public function verify(Run $run): array
+            public function verify(Run $run, array $input = [], bool $currentBundle = false): array
             {
                 $this->verified[] = $run->id;
 

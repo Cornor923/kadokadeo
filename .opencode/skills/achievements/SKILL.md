@@ -83,12 +83,59 @@ if (!$game) {
 - Creer les achievements et leurs levels en suivant exactement le style existant:
 
 ```php
-$achievement = $game->achievements()->create(['game_id' => $game->id, 'key' => '<key>', 'category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-$achievement->levels()->create(['level' => 1, 'target' => 1000, 'reward' => 100, 'title' => '<titre>', 'description' => '<description avec 1.000 si besoin>']);
+$achievement = $game->achievements()->updateOrCreate(['key' => '<key>'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
+$achievement->levels()->updateOrCreate(['level' => 1], ['target' => 1000, 'reward' => 100, 'title' => '<titre>', 'description' => '<description avec 1.000 si besoin>']);
 ```
+
+- Le seeder se relance sur une base existante (bouton admin « Mettre à jour les succès », ou `php artisan db:seed --class=AchievementsSeeder --force`) : il ajoute ce qui manque et met à jour titres, descriptions, seuils et récompenses, sans toucher à la progression des joueurs. Il écrase donc ce qui a été modifié à la main dans l'admin : le seeder est la référence.
+- Il ne supprime rien : un succès ou un palier retiré du seeder reste en base. Renommer une `key` crée un nouveau succès, la progression ne suit pas.
+- Deux paliers d'un même succès ne peuvent pas avoir le même `target` (contrainte unique), même le temps d'un échange.
 
 - Utiliser les titres, descriptions, targets et rewards fournis dans la capture Excel.
 - Si une valeur de la capture est illisible ou incertaine, demander confirmation.
+
+## Ajouter des stats a un jeu
+
+Quand un succes demande une stat que le jeu n'envoie pas encore, il faut modifier le jeu sans changer son comportement: un replay doit donner exactement le meme resultat.
+
+- Regarder d'abord ce que le jeu envoie deja: l'argument de `KadoKadeoManager.kkm.gameOver(...)`, stocke dans `runs.score_details`. Il peut suffire.
+- Prendre la reference des replays **avant** de toucher au jeu (voir ci-dessous).
+- N'ajouter que des compteurs qui lisent l'etat du jeu: pas de `Seed.rand()` / `Seed.random()`, pas d'ecriture dans ce que la logique lit, aucun changement d'ordre des appels. Un champ de plus sur une classe reste sans effet sur les prototypes geles.
+- Ne pas renommer ce que lit un analyseur de coups (`resources/js/replay-verifier/analyzers/<game_key>.mjs`).
+- Envoyer un objet a cles courtes (`{c: ..., p: ..., n: ...}`). `validate` refuse l'ancien format: une partie lancee avec l'ancien bundle ne fait simplement pas progresser les succes.
+- Valider dans la rule principale les invariants certains du jeu (nombre de paires, sommes coherentes), en les confirmant sur les vraies parties.
+
+## Comparer les replays avant / apres
+
+`php artisan kado:replays:compare` rejoue les parties d'un jeu avec le bundle de `public/gamesdata`, comme le verificateur de replays du serveur (Node 22 + Chrome, dans `kadokadeo_app`). Il ne modifie pas la base.
+
+```sh
+# compiler un seul jeu: `make compile-games` utilise compile-dev.hxml, qui n'a pas tous les jeux
+docker exec -u dev kadokadeo_app haxe -L pixijs -L crypto -L jsImport -cp ./resources/hx/lib -cp ./resources/hx/games -js ./resources/js/games/<game>.js <game>.Game
+docker exec -u node -e GAME_BUILDS=off -w /www kadokadeo_front yarn games:bundle
+
+# 1. AVANT le changement: compiler le code actuel, puis enregistrer la reference
+docker exec kadokadeo_app php artisan kado:replays:compare <game_key> --baseline
+
+# 2. modifier le jeu, recompiler avec les deux commandes ci-dessus
+
+# 3. APRES: rejouer les memes parties et comparer
+docker exec kadokadeo_app php artisan kado:replays:compare <game_key>
+```
+
+- Options: `--limit=1000` (les parties les plus recentes, a l'etape 1), `--parallel=4`. Compter environ 3 s par replay et par processus pour un jeu court.
+- `--baseline` dit combien de replays redonnent le score et les stats de la base. Un ecart a ce stade existe deja: une partie differente de la base reste comparee a elle-meme (les replays d'avant la v5 peuvent diverger sur une autre machine: faire les deux etapes sur la meme machine).
+- Comparaison: un score, un nombre de frames ou une erreur differente fait echouer la commande (code de sortie 1, 20 parties montrees). Si des parties different, relancer sans rien changer pour distinguer un jeu qui ne rejoue pas de facon stable d'une vraie regression.
+- Des stats differentes sont signalees sans echec: c'est le but quand on ajoute des stats. Regarder l'exemple affiche.
+- « Le bundle est le meme »: le jeu n'a pas ete recompile, la comparaison ne prouve rien.
+- Les resultats sont dans `storage/app/replay-compare/<game_key>.json` (reference) et `<game_key>.compare.json` (apres), avec les stats de chaque partie.
+
+Le passage de cette commande ne prouve pas que les nouvelles stats sont justes. A faire en plus:
+
+- Passer les stats de `<game_key>.compare.json` dans les rules du jeu (par exemple avec `tinker`): `validate` doit accepter 100 % des parties, sinon le succes ne progressera jamais et rien ne le signalera.
+- Si une stat existait deja (`score_details`), la comparer a l'ancienne valeur.
+- Recalculer une nouvelle stat d'une autre facon que le compteur, par exemple en observant le plateau a chaque frame sur l'ancien build.
+- Tester au moins une vraie partie sur le site local jusqu'a la fin: stats recues par le serveur, progression des succes, `ac` a 0, `is_cheat` faux, et replay de cette partie.
 
 ## Points d'attention
 
@@ -109,3 +156,5 @@ php -l database/seeders/AchievementsSeeder.php
 ```
 
 Si `php` n'est pas disponible localement, indiquer que la verification syntaxique n'a pas pu etre lancee.
+
+Si le jeu a ete modifie, la section « Comparer les replays avant / apres » est obligatoire.

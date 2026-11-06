@@ -185,7 +185,7 @@ class Game implements kado.GameInterface {
 
 	function gameOver() {
 		finished = true;
-		KadoKadeoManager.kkm.gameOver(level.combis);
+		KadoKadeoManager.kkm.gameOver({c: level.combis, p: level.perfectColors, n: level.perfectNeighbours});
 	}
 
 	function mouseMove(?force:Bool = false) {

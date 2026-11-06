@@ -10,10 +10,13 @@ use App\Models\GamePeriodStar;
 use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
+use App\Models\UserAchievementProgress;
 use App\Services\AchievementService;
 use App\Services\RunService;
 use App\Settings\AntiCheatSettings;
 use App\Settings\ReplaySettings;
+use App\Settings\SiteSettings;
+use Database\Seeders\AchievementsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Exceptions;
@@ -134,6 +137,34 @@ class RunEndTest extends TestCase
 
         $this->assertSame(150, $run->fresh()->score);
         $this->assertSame(5, $user->fresh()->kado_points);
+    }
+
+    // what the game sends at its game over (xianxiang.Game.gameOver), read by the rules of its achievements
+    public function test_the_stats_of_a_run_of_xian_xiang_reach_its_achievements(): void
+    {
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $user = User::factory()->create(['kado_points' => 0]);
+        $game = Game::factory()->create(['name' => 'Xian-Xiang']);
+        $this->seed(AchievementsSeeder::class);
+        $run = Run::factory()->for($game)->for($user)->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 14700,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => ['c' => [0, 0, 9, 12], 'p' => [2, 2, 3, 5], 'n' => 4],
+            'ac' => 0,
+        ]))->assertOk();
+
+        $values = UserAchievementProgress::query()->with('achievement')->get()->pluck('current_value', 'achievement.key')->all();
+        $this->assertSame(42, $values['total_tiles']);
+        $this->assertSame(4, $values['perfect_neighbours']);
+        $this->assertSame(12, $values['perfect_pairs']);
+        $this->assertSame(1, $values['no_one_point_pair']);
+        $this->assertSame(1, $values['perfect_colors']);
+        $this->assertSame(0, $values['min_score']);
     }
 
     public function test_only_the_player_of_a_run_finishes_it(): void

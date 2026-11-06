@@ -5,8 +5,9 @@
 //            gameName: game_key, seed, replay, assetBase?: assets of an archived version,
 //            module?: the bundle is an ES module (resources/js/games/builds/bundle.mjs), not a classic script,
 //            analysis?: config of the analyzer of the game (analyzers/<gameName>.mjs, see analyzers/README.md), null: none,
-//            gameOverAtFrame?: tests only, the replays of the test harness (rc.mjs) end with a game over forced there }
-//   output (stdout, one JSON line): { ok: true, score, frames, analysis? } or { ok: false, error }
+//            gameOverAtFrame?: tests only, the replays of the test harness (rc.mjs) end with a game over forced there,
+//            stats?: also gives what the game sends to the server at its game over (kado:replays:compare) }
+//   output (stdout, one JSON line): { ok: true, score, frames, analysis?, stats? } or { ok: false, error }
 //            analysis: { analyzer, version, metrics, suspicious, reasons } or { analyzer, error } (never fails the run)
 //   env: BROWSER (Chrome / Chromium, see browser.mjs), KADO_VERIFIER_CACHE (cache of the downloaded browser,
 //        default storage/app/replay-verifier), KADO_VERIFIER_TIMEOUT (seconds: then it fails, its browser killed)
@@ -164,6 +165,13 @@ async function verify(input) {
         }
         return render.apply(this, arguments)
       }
+      if (${!!input.stats}) {
+        const gameOver = kk.gameOver
+        Object.defineProperty(kk, 'gameOver', { configurable: true, writable: true, value: function (params) {
+          if (window.__stats === undefined) window.__stats = params ?? null
+          return gameOver.call(this, params)
+        } })
+      }
       const ff = kk.ff, update = ff.update
       // the analyzer of the game: reads the game before each frame (read only), its errors only end the analysis
       window.__createAnalyzer = () => {
@@ -223,6 +231,8 @@ async function verify(input) {
     } while (!state.over)
     const score = await b.eval('kk.score.get()')
     const result = { ok: true, score, frames: state.frame }
+    // (read now: the live game sends them at the end of the fade too)
+    if (input.stats) result.stats = await b.eval('window.__stats ?? null')
     if (analyzer) {
       result.analysis = await b.eval(`(() => {
         const head = { analyzer: ${JSON.stringify(analyzer)}, version: window.__analyzerMeta ? window.__analyzerMeta.version : null }

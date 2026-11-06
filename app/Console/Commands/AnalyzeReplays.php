@@ -2,16 +2,18 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\SelectsRunsWithReplay;
 use App\Models\Game;
 use App\Models\Run;
 use App\Services\ReplayVerifier;
-use App\Support\ReplayHeader;
 use Illuminate\Console\Command;
 
 // ANTI CHEAT: the analyzer of a game (resources/js/replay-verifier/analyzers) on the replays of its past runs, to set
 // its thresholds (admin « Paramètres > Anti-triche ») before its results put runs in the queue of the suspicious runs
 class AnalyzeReplays extends Command
 {
+    use SelectsRunsWithReplay;
+
     /**
      * The name and signature of the console command.
      *
@@ -44,36 +46,9 @@ class AnalyzeReplays extends Command
             return self::FAILURE;
         }
 
-        // the latest runs with a replay the game can read (not the replays emptied by an export of the database,
-        // "936 bytes"...)
-        $limit = (int) $this->option('limit');
-        $runs = collect();
-        $skipped = 0;
-        Run::query()
-            ->where('game_id', $game->id)
-            ->whereNotNull('completed_at')
-            ->whereNotNull('replay')
+        $runs = $this->latestRunsWithReplay($game, (int) $this->option('limit'), fn ($q) => $q
             ->when($this->option('since'), fn ($q, $since) => $q->where('completed_at', '>=', $since))
-            ->when($this->option('user'), fn ($q, $user) => $q->where('user_id', $user))
-            ->with('user', 'game', 'gameBuild')
-            ->orderByDesc('completed_at')
-            ->orderByDesc('id')
-            ->chunk(200, function ($chunk) use ($limit, $runs, &$skipped) {
-                foreach ($chunk as $run) {
-                    if (ReplayHeader::parse($run->replay) === null) {
-                        $skipped++;
-
-                        continue;
-                    }
-                    $runs->push($run);
-                    if ($runs->count() >= $limit) {
-                        return false;
-                    }
-                }
-            });
-        if ($skipped > 0) {
-            $this->warn("{$skipped} partie(s) sans replay lisible ignorée(s).");
-        }
+            ->when($this->option('user'), fn ($q, $user) => $q->where('user_id', $user)));
         if ($runs->isEmpty()) {
             $this->info('Aucune partie avec un replay lisible.');
 
