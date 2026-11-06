@@ -21,6 +21,14 @@ typedef PC = mt.player.Clip;
 #end
 
 #if flash
+typedef ColTarget = flash.display.DisplayObject;
+typedef ColTransform = flash.geom.ColorTransform;
+#else
+// (JS: the display objects of arkadeo, the AS3 display list of the Arkadeo games on PixiJS)
+typedef ColTarget = arkadeo.DisplayObject;
+typedef ColTransform = arkadeo.ColorTransform;
+#end
+
 class Col {
 	public static var CHANNEL_LUM = [0.241, 0.691, 0.068];
 
@@ -54,38 +62,38 @@ class Col {
 		return (o.a << 24) | (o.r << 16) | (o.g << 8) | o.b;
 	}
 
-	static public function setPercentColor(mc:flash.display.DisplayObject, c:Float, col, ?inc:Float) {
+	static public function setPercentColor(mc:ColTarget, c:Float, col, ?inc:Float) {
 		if (inc == null)
 			inc = 0;
 		var color = colToObj(col);
 		var cp = 1 - c;
-		var ct = new flash.geom.ColorTransform(cp, cp, cp, 1, Std.int(c * color.r + inc), Std.int(c * color.g + inc), Std.int(c * color.b + inc), 0);
+		var ct = new ColTransform(cp, cp, cp, 1, Std.int(c * color.r + inc), Std.int(c * color.g + inc), Std.int(c * color.b + inc), 0);
 		mc.transform.colorTransform = ct;
 	}
 
-	static public function setColor(mc:flash.display.DisplayObject, col, dec = -255) {
+	static public function setColor(mc:ColTarget, col, dec = -255) {
 		var o = colToObj32(col);
-		var ct = new flash.geom.ColorTransform(1, 1, 1, 1, Std.int(o.r + dec), Std.int(o.g + dec), Std.int(o.b + dec), 0);
+		var ct = new ColTransform(1, 1, 1, 1, Std.int(o.r + dec), Std.int(o.g + dec), Std.int(o.b + dec), 0);
 		mc.transform.colorTransform = ct;
 	}
 
-	static public function overlay(mc:flash.display.DisplayObject, col, dec = -128) {
+	static public function overlay(mc:ColTarget, col, dec = -128) {
 		var o = colToObj32(col);
 		var a = 1;
 		var b = 2;
-		var ct = new flash.geom.ColorTransform(a, a, a, 1, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
+		var ct = new ColTransform(a, a, a, 1, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
 		mc.transform.colorTransform = ct;
 	}
 
-	static public function overlay2(mc:flash.display.DisplayObject, col, dec = -128) {
+	static public function overlay2(mc:ColTarget, col, dec = -128) {
 		var o = colToObj32(col);
 		var a = 2;
 		var b = 1;
-		var ct = new flash.geom.ColorTransform(a, a, a, a, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
+		var ct = new ColTransform(a, a, a, a, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
 		mc.transform.colorTransform = ct;
 	}
 
-	static public function overlay3(mc:flash.display.DisplayObject, col, ?dec:Null<Int>, luminosityEqualizer = true) {
+	static public function overlay3(mc:ColTarget, col, ?dec:Null<Int>, luminosityEqualizer = true) {
 		if (dec == null)
 			dec = -255;
 		var o = colToObj32(col);
@@ -95,7 +103,7 @@ class Col {
 		}
 		var a = 2;
 		var b = 1;
-		var ct = new flash.geom.ColorTransform(a, a, a, a, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
+		var ct = new ColTransform(a, a, a, a, Std.int((o.r + dec) * b), Std.int((o.g + dec) * b), Std.int((o.b + dec) * b), 0);
 		mc.transform.colorTransform = ct;
 	}
 
@@ -226,6 +234,7 @@ class Col {
 		return rgb2Hex(Std.int(r * 255), Std.int(g * 255), Std.int(b * 255));
 	}
 
+	#if flash
 	public static function getPal(cl:Class<Dynamic>, size = 8):Array<UInt> {
 		var mc:SP = Type.createInstance(cl, []);
 		var bmp = new BMD(Std.int(mc.width), Std.int(mc.height), false, 0xFFFF00);
@@ -237,6 +246,7 @@ class Col {
 		bmp.destroy();
 		return a;
 	}
+	#end
 }
 
 #if flash
@@ -339,7 +349,6 @@ class Filt {
 }
 #end // flash
 
-#end
 class Arr {
 	static public function shuffle<A>(a:Array<A>, ?rnd:mt.Rand) {
 		var f = Std.random;

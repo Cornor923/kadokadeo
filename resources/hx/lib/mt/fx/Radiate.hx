@@ -7,10 +7,10 @@ class Radiate extends Fx{//}
 	var speed:Float;
 	var timer:Int;
 	public var alpha:Bool;
-	public var root:flash.display.DisplayObject;
+	public var root:arkadeo.DisplayObject;
 
 
-	public function new(mc, sp=0.1, ?color, timer=-1 ) {
+	public function new(mc:arkadeo.DisplayObject, sp=0.1, ?color, timer=-1 ) {
 		this.color = color;
 		super();
 		root = mc;

@@ -21,6 +21,12 @@ class Sprite extends DisplayObjectContainer {
 		return gfx;
 	}
 
+	// a Sprite without children as a mask: its graphics (NosuShi: the plates shown through a rectangle drawn in a Sprite,
+	// the mask set before the drawing)
+	override function maskShape():pixi.core.display.DisplayObject {
+		return children.length == 0 ? graphics : node;
+	}
+
 	override public function contentRect():Rectangle {
 		return DisplayObjectContainer.unionGraphics(super.contentRect(), gfx);
 	}

@@ -604,6 +604,19 @@ class Renderer:
                 else:
                     blend_into(canvas, layer, cmd[3])
                 continue
+            if cmd[0] == 'mask' and getattr(self.swf, 'mask_blend', False):
+                # (opt-in, SWF.mask_blend = True) the masked items drawn over what is under them, so that their blend
+                # modes (multiply, overlay) see it like in Flash, then kept where the mask covers (NosuShi's gfx.Plateau);
+                # the same result as below for normal items
+                g = cmd[1]
+                mk = np.zeros_like(canvas)
+                self.draw(g['mask'], mk, O)
+                a = np.clip(mk[..., 3:4], 0, 1)
+                drawn = canvas.copy()
+                self.draw(g['items'], drawn, O)
+                canvas *= (1 - a)
+                canvas += drawn * a
+                continue
             if cmd[0] == 'mask':
                 g = cmd[1]
                 layer = np.zeros_like(canvas)

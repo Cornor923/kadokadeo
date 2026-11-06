@@ -2,7 +2,7 @@ package mt.fx;
 
 class Shake extends Fx{//}
 
-	var mc:flash.display.DisplayObject;
+	var mc:arkadeo.DisplayObject;
 	var friction:Float;
 	var bx:Float;
 	var by:Float;
@@ -14,7 +14,7 @@ class Shake extends Fx{//}
 
 	public var fitPix:Bool;
 
-	public function new(mc, dx, dy, frict=0.75, mod=2) {
+	public function new(mc:arkadeo.DisplayObject, dx:Float, dy:Float, frict=0.75, mod=2) {
 
 		super();
 		this.mod = mod;
