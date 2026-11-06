@@ -231,17 +231,6 @@ class RunController extends Controller implements HasMiddleware
 
         try {
             $run = $runService->confirmRun($run, $decoded);
-            $runService->rewardStars($run);
-            if (!$run->is_cheat) {
-                $achievementUpdates = $achievementService->handleGameRunCompleted(new GameRunCompleted(
-                    user: $user,
-                    game: $run->game,
-                    run: $run,
-                    stats: $run->score_details ?? [],
-                ));
-            } else {
-                $achievementUpdates = [];
-            }
         } catch (RunAlreadyCompletedException $e) {
             throw $e;
         } catch (\Throwable $e) {
@@ -250,8 +239,15 @@ class RunController extends Controller implements HasMiddleware
             throw new BadRequestException($e->getMessage());
         }
 
+        // from here the run is saved: a problem in what follows is reported and stops nothing else, above all not the
+        // verification of its replay (a run can't be sent again)
+        try {
+            $runService->rewardStars($run);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         // the score of an attack, a defense or a mission step of the clan of the player
-        // (the run is saved: a problem there must not lose it)
         try {
             $clanResult = $clanRunService->handleRunCompleted($run);
         } catch (\Throwable $e) {
@@ -271,6 +267,21 @@ class RunController extends Controller implements HasMiddleware
         // a run played with help (a script showing the moves...): in the queue of the suspicious runs of the admin
         if (!$run->is_cheat) {
             EvaluateRunSuspicion::dispatch($run->id);
+        }
+
+        // after the verification: its rules read the stats sent by the game, anything can be in them
+        $achievementUpdates = [];
+        if (!$run->is_cheat) {
+            try {
+                $achievementUpdates = $achievementService->handleGameRunCompleted(new GameRunCompleted(
+                    user: $user,
+                    game: $run->game,
+                    run: $run,
+                    stats: $run->score_details ?? [],
+                ));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         // a new best score of the player: the promotions of the leagues may change (cached otherwise)
