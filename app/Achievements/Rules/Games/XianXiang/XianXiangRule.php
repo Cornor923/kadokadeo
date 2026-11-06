@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\XianXiang;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class XianXiangRule implements AchievementRule
@@ -37,29 +38,14 @@ abstract class XianXiangRule implements AchievementRule
         // the perfect pairs on neighbouring cells
         $neighbours = data_get($event->stats, 'n');
 
-        if (!$this->isCountList($pairs) || array_sum($pairs) !== self::PAIRS) {
+        if (!Stats::isCounts($pairs, 4) || array_sum($pairs) !== self::PAIRS) {
             return false;
         }
 
-        if (!$this->isCountList($colors) || array_sum($colors) !== $pairs[3]) {
+        if (!Stats::isCounts($colors, 4) || array_sum($colors) !== $pairs[3]) {
             return false;
         }
 
-        return is_int($neighbours) && $neighbours >= 0 && $neighbours <= $pairs[3];
-    }
-
-    private function isCountList(mixed $counts): bool
-    {
-        if (!is_array($counts) || array_keys($counts) !== [0, 1, 2, 3]) {
-            return false;
-        }
-
-        foreach ($counts as $count) {
-            if (!is_int($count) || $count < 0) {
-                return false;
-            }
-        }
-
-        return true;
+        return Stats::isCount($neighbours) && $neighbours <= $pairs[3];
     }
 }

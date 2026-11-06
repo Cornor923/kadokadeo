@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\TiananMan;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class TiananManRule implements AchievementRule
@@ -33,52 +34,21 @@ abstract class TiananManRule implements AchievementRule
         $followersLost = data_get($event->stats, 'fl', []);
         $lastFollowerScore = data_get($event->stats, 'lfsc', 0);
 
-        if (!is_array($followersCollected) || !is_array($vehiclesDestroyed) || !is_array($fevers) || !is_array($followersLost) || !is_numeric($lastFollowerScore)) {
+        if (!Stats::isCounts($vehiclesDestroyed, 5) || !Stats::isCounts($fevers) || !Stats::isCounts($followersLost) || !Stats::isCount($lastFollowerScore)) {
             return false;
         }
 
-        if (count($vehiclesDestroyed) !== 5 || count($followersLost) > 180 || count($followersLost) <= 0) {
+        if (count($followersLost) > 180 || count($followersLost) <= 0) {
             return false;
         }
 
-        foreach ($vehiclesDestroyed as $vehicleDestroyed) {
-            if (!is_numeric($vehicleDestroyed)) {
-                return false;
-            }
-        }
-
-        foreach ($fevers as $feverFrame) {
-            if (!is_numeric($feverFrame)) {
-                return false;
-            }
-        }
-
-        foreach ($followersLost as $followerLostFrame) {
-            if (!is_numeric($followerLostFrame)) {
-                return false;
-            }
+        if (!Stats::isList($followersCollected, item: fn (mixed $follower): bool => Stats::isList($follower, 3, is_int(...)) && in_array($follower[2], [0, 1], true))) {
+            return false;
         }
 
         $feverStreaks = 0;
         $wasInFever = false;
-
-        foreach ($followersCollected as $followerCollected) {
-            if (!is_array($followerCollected) || count($followerCollected) !== 3) {
-                return false;
-            }
-
-            [$score, $multiplier, $collectedDuringFeverValue] = array_values($followerCollected);
-
-            if (!is_numeric($score) || !is_numeric($multiplier) || !is_numeric($collectedDuringFeverValue)) {
-                return false;
-            }
-
-            $collectedDuringFever = (int) $collectedDuringFeverValue;
-
-            if (!in_array($collectedDuringFever, [0, 1], true) || (float) $collectedDuringFeverValue !== (float) $collectedDuringFever) {
-                return false;
-            }
-
+        foreach ($followersCollected as [, , $collectedDuringFever]) {
             if ($collectedDuringFever === 1 && !$wasInFever) {
                 $feverStreaks++;
             }

@@ -12,6 +12,7 @@ use App\Models\Period;
 use App\Models\Run;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
+use App\Services\AchievementService;
 use App\Services\RunService;
 use App\Settings\AntiCheatSettings;
 use App\Settings\ReplaySettings;
@@ -478,17 +479,14 @@ class RunEndTest extends TestCase
         Queue::assertPushed(VerifyRunReplay::class, fn ($job) => $job->runId === $run->id);
     }
 
-    // stats that pass the first checks of KSlashRule::validate, then make it fail: a run saved with a score that nobody
-    // verifies if that stops the end of the run
-    public function test_stats_that_make_a_rule_fail_do_not_stop_the_verification_of_the_run(): void
+    // a run saved with a score that nobody verifies if that stops the end of the run
+    public function test_an_error_of_the_achievements_does_not_stop_the_verification_of_the_run(): void
     {
         Exceptions::fake();
         Queue::fake();
-        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
         $this->setSettings(AntiCheatSettings::class, ['verifier_enabled' => true]);
-        $game = Game::factory()->create(['name' => 'K-Slash']);
-        $this->seed(AchievementsSeeder::class);
-        $run = Run::factory()->for($game)->create(['score' => 0, 'completed_at' => null]);
+        $this->mock(AchievementService::class)->shouldReceive('handleGameRunCompleted')->andThrow(new \RuntimeException('boom'));
+        $run = Run::factory()->create(['score' => 0, 'completed_at' => null]);
         Sanctum::actingAs($run->user);
 
         $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
@@ -496,15 +494,13 @@ class RunEndTest extends TestCase
             'score' => 999999,
             'timestamp' => now()->timestamp,
             'replay' => null,
-            'data' => ['bads' => [1, 1, 1, 1, 1], 'k' => [1, 1, 1, 1, 1], 'sk' => [0, 0, 0, 0, 0], 'opt' => array_fill(0, 10, 0), 'maxb' => []],
+            'data' => [],
             'ac' => 0,
         ]))->assertOk()->assertJsonPath('data.achievement_updates', []);
 
-        Exceptions::assertReported(\TypeError::class);
+        Exceptions::assertReported(fn (\RuntimeException $e) => $e->getMessage() === 'boom');
         Queue::assertPushed(VerifyRunReplay::class, fn ($job) => $job->runId === $run->id);
         Queue::assertPushed(EvaluateRunSuspicion::class, fn ($job) => $job->runId === $run->id);
         $this->assertSame(RunVerification::PENDING, $run->fresh()->verification);
-        // (all the achievements of a run or none)
-        $this->assertSame(0, UserAchievementProgress::query()->count());
     }
 }

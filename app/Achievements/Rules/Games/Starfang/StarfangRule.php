@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\Starfang;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class StarfangRule implements AchievementRule
@@ -31,35 +32,7 @@ abstract class StarfangRule implements AchievementRule
         $killsByBonus = data_get($event->stats, 'kb', []);
         $levels = data_get($event->stats, 'l', []);
 
-        if (!is_array($bonuses) || !is_array($killsByBonus) || count($killsByBonus) !== 11 || !is_array($levels)) {
-            return false;
-        }
-
-        foreach ($bonuses as $bonus) {
-            if (!is_int($bonus)) {
-                return false;
-            }
-        }
-
-        foreach ($killsByBonus as $killCount) {
-            if (!is_int($killCount) || $killCount < 0) {
-                return false;
-            }
-        }
-
-        foreach ($levels as $levelStats) {
-            if (!is_array($levelStats) || count($levelStats) !== 7) {
-                return false;
-            }
-
-            foreach ($levelStats as $stat) {
-                if (!is_int($stat) || $stat < 0) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return Stats::isList($bonuses, item: is_int(...)) && Stats::isCounts($killsByBonus, 11) && Stats::isRows($levels, 7);
     }
 
     protected function completedLevels(array $levels): array

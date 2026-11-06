@@ -65,6 +65,7 @@ $bads = data_get($event->stats, 'bads', []);
 ```
 
 - Valider uniquement ce qui a ete specifie par l'utilisateur: types, bornes, valeurs autorisees, structure de tableaux, compteurs non negatifs, etc.
+- Valider avec `App\Achievements\Stats` (`isCount`, `isCounts`, `isRows`, `isList`), pas avec `is_array` / `count`: un joueur peut envoyer n'importe quoi, et un objet de la bonne taille passe `count()` puis fait planter `$stats[0]`. `is_numeric` laisse passer des chaines et des flottants: les jeux envoient des entiers.
 - Refuser les stats invalides ou inattendues quand elles concernent les variables utilisees par les achievements.
 - Ne pas ajouter de validation speculative basee sur le score, la duree ou des mecanismes internes non demandes.
 
@@ -164,6 +165,12 @@ Le passage de cette commande ne prouve pas que les nouvelles stats sont justes. 
 - Ne pas modifier les achievements communs (`stars`, `paradise_league`) sauf demande explicite.
 
 ## Verification
+
+Un nouveau jeu avec des succes ajoute une vraie partie dans `tests/Fixtures/achievement-stats.json`: `AchievementRulesRobustnessTest` echoue sans elle, puis casse ces stats de toutes les facons pour verifier qu'aucune rule ne plante.
+
+```sh
+docker exec -w /www kadokadeo_app php -d memory_limit=2G vendor/bin/phpunit --no-coverage --filter AchievementRulesRobustnessTest
+```
 
 La verification minimale attendue est de controler que les fichiers PHP modifies sont syntaxiquement valides:
 

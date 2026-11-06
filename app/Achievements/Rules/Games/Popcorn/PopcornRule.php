@@ -5,6 +5,7 @@ namespace App\Achievements\Rules\Games\Popcorn;
 use App\Achievements\AchievementRule;
 use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class PopcornRule implements AchievementRule
@@ -32,32 +33,17 @@ abstract class PopcornRule implements AchievementRule
         $topReached = data_get($event->stats, 'tr', 0);
         $bossHitFrames = data_get($event->stats, 'bhf', []);
 
-        if (!is_array($events) || !is_int($topReached) || $topReached < 0 || !is_array($bossHitFrames)) {
+        if (!Stats::isCount($topReached) || !Stats::isCounts($bossHitFrames)) {
             return false;
         }
 
-        $bossHits = 0;
-        foreach ($events as $eventType) {
-            if (!is_int($eventType) || $eventType < 0 || $eventType > 3) {
-                return false;
-            }
-
-            if ($eventType === 2 && ++$bossHits > 7) {
-                return false;
-            }
-        }
-
-        if (count($bossHitFrames) !== $bossHits) {
+        if (!Stats::isList($events, item: fn (mixed $type): bool => Stats::isCount($type) && $type <= 3)) {
             return false;
         }
 
-        foreach ($bossHitFrames as $frame) {
-            if (!is_int($frame) || $frame < 0) {
-                return false;
-            }
-        }
+        $bossHits = count(array_keys($events, 2, true));
 
-        return true;
+        return $bossHits <= 7 && count($bossHitFrames) === $bossHits;
     }
 
     protected function events(GameRunCompleted $event): array

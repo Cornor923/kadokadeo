@@ -17,11 +17,11 @@ class AchievementRuleResult
 
     public static function setProgress(int $progress, ?array $state = null): self
     {
-        return new self(true, max(0, $progress), $state);
+        return new self(true, min(Stats::MAX, max(0, $progress)), $state);
     }
 
     public static function increment(int $currentValue, int $amount = 1, ?array $state = null): self
     {
-        return self::setProgress($currentValue + $amount, $state);
+        return self::setProgress($currentValue + min($amount, Stats::MAX), $state);
     }
 }

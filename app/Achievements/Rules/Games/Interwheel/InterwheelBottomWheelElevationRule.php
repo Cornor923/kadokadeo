@@ -19,7 +19,7 @@ class InterwheelBottomWheelElevationRule extends InterwheelRule
         }
 
         $height = data_get($event->stats, 'hm', 0);
-        if ($this->landedOnBottomWheel(data_get($event->stats, 'ws')) && $height > $progress->current_value) {
+        if ($this->landedOnBottomWheel(data_get($event->stats, 'ws', [])) && $height > $progress->current_value) {
             return AchievementRuleResult::setProgress($height);
         }
 

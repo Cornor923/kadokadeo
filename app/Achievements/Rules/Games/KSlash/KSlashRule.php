@@ -5,6 +5,7 @@ namespace App\Achievements\Rules\Games\KSlash;
 use App\Achievements\AchievementRule;
 use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class KSlashRule implements AchievementRule
@@ -39,11 +40,17 @@ abstract class KSlashRule implements AchievementRule
         $maxs = data_get($event->stats, 'maxs', 0);
         $maxb = data_get($event->stats, 'maxb', 0);
 
-        if (!is_array($bads) || count($bads) !== 5 || !is_array($kills) || count($kills) !== 5 || !is_array($softKills) || count($softKills) !== 5) {
+        if (!Stats::isCounts($bads, 5) || !Stats::isCounts($kills, 5) || !Stats::isCounts($softKills, 5) || !Stats::isList($opts, 10, is_int(...))) {
             return false;
         }
 
-        if (!isset($opts[7]) || $respawn > $opts[7]) {
+        foreach ([$respawn, $supak, $firstStarScore, $maxs, $maxb] as $count) {
+            if (!Stats::isCount($count)) {
+                return false;
+            }
+        }
+
+        if ($respawn > $opts[7]) {
             return false;
         }
 
@@ -52,13 +59,7 @@ abstract class KSlashRule implements AchievementRule
         }
 
         foreach ($bads as $i => $bad) {
-            if (!is_int($bad) || $bad < 0) {
-                return false;
-            }
-            if (!is_int($kills[$i]) || $kills[$i] > $bad) {
-                return false;
-            }
-            if (!is_int($softKills[$i]) || $softKills[$i] > $bad) {
+            if ($kills[$i] > $bad || $softKills[$i] > $bad) {
                 return false;
             }
         }
@@ -67,15 +68,11 @@ abstract class KSlashRule implements AchievementRule
             return false;
         }
 
-        if ($firstStarScore < 0 || $firstStarScore > $event->run->score) {
+        if ($firstStarScore > $event->run->score) {
             return false;
         }
 
-        if ($maxs < 0 || $maxs > 200) {
-            return false;
-        }
-
-        return is_array($opts) && count($opts) === 10 && is_int($dif);
+        return $maxs <= 200 && is_int($dif);
     }
 
     protected function bestProgress(int $currentValue, int $value): AchievementRuleResult

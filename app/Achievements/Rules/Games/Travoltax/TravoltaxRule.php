@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\Travoltax;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class TravoltaxRule implements AchievementRule
@@ -34,20 +35,11 @@ abstract class TravoltaxRule implements AchievementRule
         $survivalFrames = data_get($event->stats, '_t');
         $clearCount = data_get($event->stats, '_cc');
 
-        if (!is_array($bonuses) || count($bonuses) !== 3 || !is_array($opts) || !is_array($linesDestroyed)) {
-            return false;
-        }
-
-        if (!is_array($contracts) || !is_int($survivalFrames) || $survivalFrames < 0 || !is_int($clearCount) || $clearCount < 0) {
-            return false;
-        }
-
-        foreach ($contracts as $contract) {
-            if (!is_int($contract) || $contract < 0 || $contract > 17) {
-                return false;
-            }
-        }
-
-        return true;
+        return is_array($bonuses) && count($bonuses) === 3
+            && is_array($opts)
+            && Stats::isCounts($linesDestroyed)
+            && Stats::isList($contracts, item: fn (mixed $contract): bool => Stats::isCount($contract) && $contract <= 17)
+            && Stats::isCount($survivalFrames)
+            && Stats::isCount($clearCount);
     }
 }

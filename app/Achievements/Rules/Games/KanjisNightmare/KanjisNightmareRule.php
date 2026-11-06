@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\KanjisNightmare;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class KanjisNightmareRule implements AchievementRule
@@ -60,6 +61,6 @@ abstract class KanjisNightmareRule implements AchievementRule
         $dif = data_get($event->stats, 'dif', 0);
         $gu = data_get($event->stats, 'gu', 0);
 
-        return is_array($opts) && is_array($bads) && is_int($dif) && is_int($gu) && $gu >= 0 && count($opts) === 26 && count($bads) === 3;
+        return Stats::isList($opts, 26, is_int(...)) && Stats::isCounts($bads, 3) && is_int($dif) && Stats::isCount($gu);
     }
 }

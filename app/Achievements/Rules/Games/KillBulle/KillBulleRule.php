@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\KillBulle;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class KillBulleRule implements AchievementRule
@@ -32,44 +33,20 @@ abstract class KillBulleRule implements AchievementRule
         $poppedSizes = data_get($event->stats, 'p', []);
         $bonusPops = data_get($event->stats, 'bp', []);
 
-        if (!is_int($pops) || $pops < 0 || !is_array($bonuses) || count($bonuses) !== 4 || !is_array($poppedSizes) || count($poppedSizes) !== $pops || !is_array($bonusPops) || count($bonusPops) !== 4) {
+        if (!Stats::isCount($pops) || !Stats::isCounts($bonuses, 4) || !Stats::isList($bonusPops, 4, fn (mixed $popsByPickup): bool => Stats::isCounts($popsByPickup))) {
             return false;
         }
 
-        foreach ($bonuses as $bonus) {
-            if (!is_int($bonus) || $bonus < 0) {
+        if (!Stats::isList($poppedSizes, $pops, fn (mixed $size): bool => in_array($size, [12, 25, 50, 100, 150], true))) {
+            return false;
+        }
+
+        for ($bonusId = 0; $bonusId < 3; $bonusId++) {
+            if (count($bonusPops[$bonusId]) !== $bonuses[$bonusId]) {
                 return false;
             }
         }
 
-        foreach ($poppedSizes as $size) {
-            if (!in_array($size, [12, 25, 50, 100, 150], true)) {
-                return false;
-            }
-        }
-
-        for ($bonusId = 0; $bonusId < 4; $bonusId++) {
-            $popsByPickup = $bonusPops[$bonusId] ?? null;
-
-            if (!is_array($popsByPickup)) {
-                return false;
-            }
-
-            if ($bonusId < 3 && count($popsByPickup) !== $bonuses[$bonusId]) {
-                return false;
-            }
-
-            if ($bonusId === 3 && count($popsByPickup) !== 0) {
-                return false;
-            }
-
-            foreach ($popsByPickup as $bonusPop) {
-                if (!is_int($bonusPop) || $bonusPop < 0) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return count($bonusPops[3]) === 0;
     }
 }

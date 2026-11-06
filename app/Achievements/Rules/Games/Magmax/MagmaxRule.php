@@ -5,6 +5,7 @@ namespace App\Achievements\Rules\Games\Magmax;
 use App\Achievements\AchievementRule;
 use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class MagmaxRule implements AchievementRule
@@ -38,11 +39,11 @@ abstract class MagmaxRule implements AchievementRule
         $seq = data_get($event->stats, 'seq');
         $dual = data_get($event->stats, 'dual');
 
-        if (!$this->isCounterList($generated, 3) || !$this->isCounterList($kills, 3) || !$this->isCounterList($combos, 4) || !$this->isCounterList($bonuses, 6)) {
+        if (!Stats::isCounts($generated, 3) || !Stats::isCounts($kills, 3) || !Stats::isCounts($combos, 4) || !Stats::isCounts($bonuses, 6)) {
             return false;
         }
 
-        if (!is_int($seq) || $seq < 0 || !is_int($dual) || $dual < 0) {
+        if (!Stats::isCount($seq) || !Stats::isCount($dual)) {
             return false;
         }
 
@@ -71,20 +72,5 @@ abstract class MagmaxRule implements AchievementRule
         }
 
         return AchievementRuleResult::setProgress($value);
-    }
-
-    private function isCounterList(mixed $value, int $size): bool
-    {
-        if (!is_array($value) || !array_is_list($value) || count($value) !== $size) {
-            return false;
-        }
-
-        foreach ($value as $count) {
-            if (!is_int($count) || $count < 0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

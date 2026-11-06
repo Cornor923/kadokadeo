@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\Interwheel;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class InterwheelRule implements AchievementRule
@@ -35,35 +36,20 @@ abstract class InterwheelRule implements AchievementRule
         $maxFallHeight = data_get($event->stats, 'mfh', 0);
         $waterScore = data_get($event->stats, 'was', 0);
 
-        return is_numeric($height)
-            && is_numeric($jumps)
-            && is_numeric($dives)
-            && is_array($pastilles)
-            && is_array($wheelStats)
-            && is_numeric($maxFallHeight)
-            && is_numeric($waterScore)
-            && $height >= 0
-            && $jumps >= 0
-            && $dives >= 0
-            && $maxFallHeight >= 0
-            && $waterScore >= 0
+        return Stats::isCount($height)
+            && Stats::isCount($jumps)
+            && Stats::isCount($dives)
+            && Stats::isCounts($pastilles)
+            && Stats::isCount($maxFallHeight)
+            && Stats::isCount($waterScore)
             && $this->validateWheelStats($wheelStats);
     }
 
-    protected function validateWheelStats(array $wheelStats): bool
+    protected function validateWheelStats(mixed $wheelStats): bool
     {
-        foreach ($wheelStats as $wheel) {
-            if (!is_array($wheel) || count($wheel) !== 2) {
-                return false;
-            }
-
-            [$wheelId, $mines] = array_values($wheel);
-            if (!is_int($wheelId) || !is_int($mines) || $wheelId < -1 || $wheelId > 98 || $mines < 0) {
-                return false;
-            }
-        }
-
-        return true;
+        return Stats::isList($wheelStats, item: fn (mixed $wheel): bool => Stats::isList($wheel, 2, is_int(...))
+            && $wheel[0] >= -1 && $wheel[0] <= 98
+            && Stats::isCount($wheel[1]));
     }
 
     protected function dodgedMines(array $wheelStats): int

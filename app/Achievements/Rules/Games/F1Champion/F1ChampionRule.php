@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\F1Champion;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class F1ChampionRule implements AchievementRule
@@ -34,18 +35,11 @@ abstract class F1ChampionRule implements AchievementRule
         $speedOver230Frames = data_get($event->stats, 'so');
         $life = data_get($event->stats, 'l');
 
-        return is_int($km)
-            && $km >= 0
-            && is_array($bonuses)
-            && count($bonuses) === 5
-            && collect($bonuses)->every(fn ($bonus) => is_int($bonus) && $bonus >= 0)
-            && is_int($outs)
-            && $outs >= 0
-            && is_int($maxKmWithoutOut)
-            && $maxKmWithoutOut >= 0
-            && is_int($speedOver230Frames)
-            && $speedOver230Frames >= 0
-            && is_array($life)
-            && collect($life)->every(fn ($percentage) => is_int($percentage) && $percentage >= 0 && $percentage <= 100);
+        return Stats::isCount($km)
+            && Stats::isCounts($bonuses, 5)
+            && Stats::isCount($outs)
+            && Stats::isCount($maxKmWithoutOut)
+            && Stats::isCount($speedOver230Frames)
+            && Stats::isList($life, item: fn (mixed $percentage): bool => Stats::isCount($percentage) && $percentage <= 100);
     }
 }

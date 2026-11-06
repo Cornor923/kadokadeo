@@ -5,6 +5,7 @@ namespace App\Achievements\Rules\Games\Tubulo;
 use App\Achievements\AchievementRule;
 use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class TubuloRule implements AchievementRule
@@ -33,7 +34,7 @@ abstract class TubuloRule implements AchievementRule
         $levelColors = data_get($event->stats, '_l', []);
         $levelChronos = data_get($event->stats, '_cl', []);
 
-        if (!is_array($completedLevels) || !is_array($resets) || !is_array($levelColors) || !is_array($levelChronos)) {
+        if (!Stats::isList($completedLevels) || !Stats::isCounts($resets) || !Stats::isRows($levelColors, 3) || !Stats::isCounts($levelChronos)) {
             return false;
         }
 
@@ -42,29 +43,19 @@ abstract class TubuloRule implements AchievementRule
         }
 
         foreach ($resets as $level) {
-            if (!is_int($level) || $level < 0 || $level > count($completedLevels) + 1) {
+            if ($level > count($completedLevels) + 1) {
                 return false;
             }
         }
 
         foreach ($levelColors as $colors) {
-            if (!is_array($colors) || count($colors) !== 3) {
-                return false;
-            }
-
-            foreach ($colors as $count) {
-                if (!is_int($count) || $count < 0) {
-                    return false;
-                }
-            }
-
             if (array_sum($colors) !== 49) {
                 return false;
             }
         }
 
         foreach ($levelChronos as $chrono) {
-            if (!is_int($chrono) || $chrono < 0 || $chrono > 3000) {
+            if ($chrono > 3000) {
                 return false;
             }
         }

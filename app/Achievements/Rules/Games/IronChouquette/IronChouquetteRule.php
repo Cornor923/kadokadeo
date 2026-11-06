@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class IronChouquetteRule implements AchievementRule
@@ -28,40 +29,18 @@ abstract class IronChouquetteRule implements AchievementRule
     public function validate(GameRunCompleted $event): bool
     {
         $bonuses = data_get($event->stats, 'b', []);
-        if (!is_array($bonuses)) {
-            return false;
-        }
-        if (!array_all($bonuses, fn ($b) => is_array($b) && count($b) === 2 && is_int($b[0]) && is_int($b[1]) && $b[0] >= 0 && $b[1] >= 0)) {
-            return false;
-        }
         $kills = data_get($event->stats, 'k', []);
-        if (!is_array($kills)) {
-            return false;
-        }
-        if (!array_all($kills, fn ($k) => is_array($k) && count($k) === 2 && is_int($k[0]) && is_int($k[1]) && $k[0] >= 0 && $k[1] >= 0)) {
-            return false;
-        }
         $specialKills = data_get($event->stats, 'spk', []);
-        if (!is_array($specialKills) || count($specialKills) !== 6 || !array_all($specialKills, fn ($k) => is_int($k) && $k >= 0)) {
-            return false;
-        }
         $sacrificeKills = data_get($event->stats, 'sak', []);
-        if (!is_array($sacrificeKills) || count($sacrificeKills) !== 6) {
-            return false;
-        }
-        if (!array_all($sacrificeKills, fn ($sacrifices) => is_array($sacrifices) && array_all($sacrifices, fn ($sacrifice) => is_array($sacrifice) && count($sacrifice) === 2 && is_int($sacrifice[0]) && is_int($sacrifice[1]) && $sacrifice[0] >= 0 && $sacrifice[1] >= 0))) {
-            return false;
-        }
         $maxEnemyShotCount = data_get($event->stats, 'mesc');
-        if (!is_int($maxEnemyShotCount) || $maxEnemyShotCount < 0) {
-            return false;
-        }
         $waves = data_get($event->stats, 'w', []);
-        if (!is_array($waves) || !array_all($waves, fn ($wave) => is_int($wave) && $wave >= 0)) {
-            return false;
-        }
 
-        return true;
+        return Stats::isRows($bonuses, 2)
+            && Stats::isRows($kills, 2)
+            && Stats::isCounts($specialKills, 6)
+            && Stats::isList($sacrificeKills, 6, fn (mixed $sacrifices): bool => Stats::isRows($sacrifices, 2))
+            && Stats::isCount($maxEnemyShotCount)
+            && Stats::isCounts($waves);
     }
 
     public function iterateThroughBonuses(GameRunCompleted $event, callable $callback): void

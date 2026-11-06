@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\Kanji;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class KanjiRule implements AchievementRule
@@ -42,35 +43,21 @@ abstract class KanjiRule implements AchievementRule
         $firstKillScore = data_get($event->stats, 'fksc', -1);
         $flyStreak = data_get($event->stats, 'fs', 0);
 
-        if (!is_array($bonuses) || count($bonuses) !== 3 || !is_array($mobs) || count($mobs) !== 3) {
+        if (!Stats::isCounts($bonuses, 3) || !Stats::isCounts($mobs, 3)) {
             return false;
         }
 
-        if (!is_int($kills) || $kills > $mobs[0]) {
+        foreach ([$bonusCount, $kills, $killStreak, $wallJumps, $bonusStreak, $bearAvoided, $bearAvoidedShort, $lastKillCount, $flyStreak] as $count) {
+            if (!Stats::isCount($count)) {
+                return false;
+            }
+        }
+
+        if ($kills > $mobs[0] || $killStreak > $mobs[0] || $lastKillCount > $mobs[0]) {
             return false;
         }
 
-        if (!is_int($killStreak) || $killStreak > $mobs[0]) {
-            return false;
-        }
-
-        if (!is_int($wallJumps)) {
-            return false;
-        }
-
-        if (!is_int($bonusStreak)) {
-            return false;
-        }
-
-        if (!is_int($bearAvoided) || $bearAvoided > $mobs[2]) {
-            return false;
-        }
-
-        if (!is_int($bearAvoidedShort) || $bearAvoidedShort > $mobs[2]) {
-            return false;
-        }
-
-        if (!is_int($lastKillCount) || $lastKillCount > $mobs[0]) {
+        if ($bearAvoided > $mobs[2] || $bearAvoidedShort > $mobs[2]) {
             return false;
         }
 
@@ -78,10 +65,10 @@ abstract class KanjiRule implements AchievementRule
             return false;
         }
 
-        if (!is_int($flyStreak) || ($flyStreak / 32) > $event->run->play_time_seconds) {
+        if (($flyStreak / 32) > $event->run->play_time_seconds) {
             return false;
         }
 
-        return is_int($level) && is_int($tmod) && is_int($bonusCount) && array_sum($bonuses) === $bonusCount;
+        return is_int($level) && is_int($tmod) && array_sum($bonuses) === $bonusCount;
     }
 }

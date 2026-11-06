@@ -18,7 +18,7 @@ class Opalus2SameColorDestroyedBubblesRule extends Opalus2Rule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $max = max(array_map(fn (array $turn): int => $turn[1], $this->turns($event)));
+        $max = max(array_map(fn (array $turn): int => $turn[1], $this->turns($event)) ?: [0]);
 
         return AchievementRuleResult::setProgress(max($progress->current_value, $max));
     }

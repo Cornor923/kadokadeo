@@ -4,6 +4,7 @@ namespace App\Achievements\Rules\Games\Kaskade2;
 
 use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\Stats;
 use App\Enums\AchievementCategory;
 
 abstract class Kaskade2Rule implements AchievementRule
@@ -31,34 +32,9 @@ abstract class Kaskade2Rule implements AchievementRule
         $time = data_get($event->stats, 't', []);
         $clicks = data_get($event->stats, 'd', []);
 
-        $valid = is_array($pops) && count($pops) === 20
+        return Stats::isList($pops, 20, fn (mixed $pop): bool => Stats::isCount($pop) && $pop <= 64)
             && is_array($time) && count($time) === 20
-            && is_array($clicks) && count($clicks) === 20;
-
-        if (!$valid) {
-            return false;
-        }
-
-        foreach ($pops as $pop) {
-            if (!is_numeric($pop) || $pop < 0 || $pop > 64) {
-                return false;
-            }
-        }
-
-        foreach ($clicks as $click) {
-            if (!is_array($click) || count($click) !== 3) {
-                return false;
-            }
-
-            [$x, $y, $color] = array_values($click);
-            if (!is_int($x) || $x < 0 || $x > 7
-                || !is_int($y) || $y < 0 || $y > 7
-                || !is_int($color) || $color < 0 || $color > 2) {
-                return false;
-            }
-        }
-
-        return true;
+            && Stats::isList($clicks, 20, fn (mixed $click): bool => Stats::isCounts($click, 3) && $click[0] <= 7 && $click[1] <= 7 && $click[2] <= 2);
     }
 
     protected function clicks(GameRunCompleted $event): array
