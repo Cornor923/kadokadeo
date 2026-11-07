@@ -13,6 +13,9 @@ import pixi.core.textures.Texture;
 //  m / m0: [x, y, scaleX, scaleY, rotation (deg), skewX, skewY] of each frame / of all the frames
 //  al / al0: alpha, tn / tns: multiplied colour, ad / ads: added colour (white silhouette `a`W drawn additively)
 //  nm: instance name, mk: layer masking this one
+//  bl / fl (nested clips, clipexport `effects`): the blend mode of the placement ("add"...), given to everything the
+//  nested clip draws, and its filters: [blurX, blurY, strength, 0xRRGGBB, alpha, passes] a glow, + [distance, angle
+//  (degrees)] a drop shadow
 typedef LayerDef = {
 	k:Int,
 	a:String,
@@ -27,7 +30,9 @@ typedef LayerDef = {
 	?ad:Int,
 	?ads:Array<Int>,
 	?nm:String,
-	?mk:Int
+	?mk:Int,
+	?bl:String,
+	?fl:Array<Array<Float>>
 };
 
 // n: frames, r: resolution of the textures (1 = 2 px per Flash pixel), start / still: frozen on a frame
@@ -82,6 +87,10 @@ class Clip extends ASprite {
 	var addIn:Int;
 	var simpleFrames:Array<Texture>;
 	var simpleAdd:PixiSprite;
+	// PIXI blend of everything the clip draws (the blend mode of its placement, `bl`), -1: none
+	var leafBlend:Int = -1;
+	// display objects of the code put in the clip (attach)
+	var attached:Array<DisplayObject> = null;
 
 	public static function getDef(name:String):ClipDef {
 		var d = defs.get(name);
@@ -381,9 +390,17 @@ class Clip extends ASprite {
 		var L = def.layers[i];
 		var o:ASprite;
 		if (L.k == 2) {
-			o = new Clip(L.a, 0, mulColor(tintIn, layerTint(L, frame)), addColor(addIn, mulColor(tintIn, layerAdd(L, frame))));
+			var c = new Clip(L.a, 0, mulColor(tintIn, layerTint(L, frame)), addColor(addIn, mulColor(tintIn, layerAdd(L, frame))));
+			var b = L.bl != null ? BlendMode.toPixi(L.bl) : leafBlend;
+			if (b >= 0)
+				c.setLeafBlend(b);
+			if (L.fl != null)
+				c.filters = [for (f in L.fl) layerFilter(f)];
+			o = c;
 		} else {
 			o = new ClipLayer(L.a);
+			if (leafBlend >= 0)
+				o.blendMode = cast leafBlend;
 		}
 		if (L.nm != null)
 			o._name = L.nm;
@@ -402,6 +419,35 @@ class Clip extends ASprite {
 			o.mask = objs[L.mk];
 		}
 		return o;
+	}
+
+	// the blend mode of the placement of a nested clip: on every picture it draws, and on the clips nested in it (a PIXI
+	// container has no blend of its own)
+	public function setLeafBlend(b:Int) {
+		leafBlend = b;
+		if (def.simple) {
+			blendMode = cast b;
+			return;
+		}
+		for (o in objs) {
+			var c = Std.downcast(o, Clip);
+			if (c != null)
+				c.setLeafBlend(b);
+			else if (o != null)
+				o.blendMode = cast b;
+		}
+	}
+
+	// a filter of a nested clip (`fl`): a glow, or a drop shadow (Flash: its offset in the stage, the clip may turn)
+	static function layerFilter(f:Array<Float>):Dynamic {
+		var dx = 0.0;
+		var dy = 0.0;
+		if (f.length > 6) {
+			var a = f[7] * Math.PI / 180;
+			dx = f[6] * Math.cos(a);
+			dy = f[6] * Math.sin(a);
+		}
+		return new FlashGlow(f[0], f[1], f[2], Std.int(f[3]), f[4], false, dx, dy);
 	}
 
 	function removeLayer(i:Int) {
@@ -458,6 +504,9 @@ class Clip extends ASprite {
 			return;
 		tintIn = mul;
 		addIn = add;
+		if (attached != null)
+			for (o in attached)
+				colourAttached(o);
 		if (def.simple) {
 			applySimpleColour();
 			return;
@@ -465,6 +514,22 @@ class Clip extends ASprite {
 		for (i in 0...objs.length)
 			if (objs[i] != null)
 				place(i, objs[i], frame);
+	}
+
+	// A display object of the code put in the clip, above its pictures (Trigo: the number of the combo meter, the dynamic
+	// text field of the boxes _current / _next of its timeline): it moves with the clip (its own x / y stay 0) and takes
+	// the colour the timeline gives the clip
+	public function attach(o:DisplayObject) {
+		if (attached == null)
+			attached = [];
+		attached.push(o);
+		addChild(o.node);
+		colourAttached(o);
+	}
+
+	function colourAttached(o:DisplayObject) {
+		o.colorTransform = new ColorTransform(((tintIn >> 16) & 0xFF) / 255, ((tintIn >> 8) & 0xFF) / 255, (tintIn & 0xFF) / 255, 1,
+			(addIn >> 16) & 0xFF, (addIn >> 8) & 0xFF, addIn & 0xFF, 0);
 	}
 
 	function applySimpleColour() {

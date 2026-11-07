@@ -241,3 +241,9 @@ rockfaller.Game
 --next
 -js ./resources/js/games/fafi360.js
 fafi360.Game
+--next
+-js ./resources/js/games/nosushi.js
+nosushi.Game
+--next
+-js ./resources/js/games/trigo.js
+trigo.Game

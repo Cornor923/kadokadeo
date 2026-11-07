@@ -271,3 +271,22 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   (`cms`, 0 = none) instead of dropping it, applied at run time by a PIXI ColorMatrixFilter (`puzzlemanda/Clip.hx`
   `setCm`; Flash's offsets are 0..255, PIXI's 0..1). With `effects`, a blurred nested clip in "add" (`bl` + `bf`)
   gets the blend on its blur filter: Flash adds the filtered picture, not each sprite.
+- Blend modes inside a mask (NosuShi: the multiply and overlay layers of gfx.Plateau, each under a clipDepth mask, colour
+  the wood of the Bg under them): `swfrender` draws the masked items on an empty layer, so their blend sees nothing under
+  it. `SWF.mask_blend = True` draws them over what is already drawn and keeps the result where the mask covers (off: the
+  renders made before stay the same). Clips that never move (gfx.Bg and the tray over it) are composed into one picture
+  so that their blends see each other.
+- Texts inside a timeline (Trigo: the "x" and "combo" of gfx_fla.comboTXT_20, a DefineText and DefineEditTexts in an
+  embedded font, with three drop shadows): `swfrender` draws no text. The asset script renders them with `swffont`
+  (DefineText records, or the html text of a DefineEditText laid out like Flash: 2 px gutter, first baseline at
+  2 + ascent) and gives the pictures to the SWF as shapes (`G.shapes[cid]` bounds + `G._shape_cache[cid]` picture at zoom
+  Z): the clip export composes them with their filters like any shape (a FLAT layer: `strategy_for`, a CUT picture would
+  drop them). A dynamic field of a nested clip (the number of the combo) is an `arkadeo.TextField` the game puts in the
+  nested clip (`Clip.attach`: it moves and takes the colour of the timeline).
+- A picture in the blend mode OVERLAY over a whole game (Trigo: gfx.Render, the paper above every plane): PIXI cannot read
+  what is under a sprite; `arkadeo.OverlayFilter` draws it as a filter of the game (the Flash formula on what the game
+  drew), exact where `OverlayBlend` only fits a dark background.
+- Nested clips with a blend mode or a drop shadow driven by the code (Trigo: the `_blink` / `_hili` of a block in "add",
+  the hand of the clock turned by the code with its drop shadow): `Exporter.effects` (+ `shadows` for the drop shadows),
+  applied by `arkadeo.Clip` (`bl`, `fl`); a nested clip the code colours (`mt.fx.Radiate` on the `_col` of the clock)
+  needs its white silhouettes: `Exporter.white_for`.

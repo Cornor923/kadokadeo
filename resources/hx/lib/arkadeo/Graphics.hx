@@ -20,6 +20,12 @@ class Graphics extends pixi.core.graphics.Graphics {
 		return super.drawEllipse(x + width * 0.5, y + height * 0.5, width * 0.5, height * 0.5);
 	}
 
+	// Flash lineStyle(thickness, color, alpha) with its round caps and joints (the lineStyle of PIXI ends its lines square
+	// and joins them with miters)
+	public function flashLineStyle(thickness:Float, color:Int = 0, alpha:Float = 1):pixi.core.graphics.Graphics {
+		return (this : Dynamic).lineStyle({width: thickness, color: color, alpha: alpha, cap: "round", join: "round"});
+	}
+
 	// Flash curveTo: PIXI quadraticCurveTo
 	public function curveTo(cx:Float, cy:Float, ax:Float, ay:Float):pixi.core.graphics.Graphics {
 		return quadraticCurveTo(cx, cy, ax, ay);

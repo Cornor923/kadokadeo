@@ -7,10 +7,11 @@ class Radiate extends Fx{//}
 	var speed:Float;
 	var timer:Int;
 	public var alpha:Bool;
-	public var root:flash.display.DisplayObject;
+	// (JS: a display object of arkadeo or a clip nested in a timeline, see mt.bumdum9.Lib.ColTarget)
+	public var root:ColTarget;
 
 
-	public function new(mc, sp=0.1, ?color, timer=-1 ) {
+	public function new(mc:ColTarget, sp=0.1, ?color, timer=-1 ) {
 		this.color = color;
 		super();
 		root = mc;

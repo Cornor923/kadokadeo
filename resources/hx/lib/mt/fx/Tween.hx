@@ -7,7 +7,7 @@ import mt.bumdum9.Lib;
 class Tween extends Fx {
 
 	var sin: { dx:Float, dy:Float };
-	var root:flash.display.DisplayObject;
+	var root:arkadeo.DisplayObject;
 	public var speed:Float;
 	public var fitPix:Bool;						/* fit to pixels */
 	public var tw: mt.bumdum9.Tween;
@@ -23,7 +23,7 @@ class Tween extends Fx {
 	 * @param	?sy			start Y
 	 * @param	?pManager
 	 */
-	public function new(mc, ex, ey, sp=0.1, ?sx, ?sy, ?pManager) {
+	public function new(mc:arkadeo.DisplayObject, ex:Float, ey:Float, sp=0.1, ?sx, ?sy, ?pManager) {
 		super(pManager);
 		root = mc;
 		speed = sp;

@@ -28,7 +28,7 @@ class Sleep extends Fx {//}
 		}
 	}
 
-	public function hide(mc:MC,play=false) {
+	public function hide(mc:arkadeo.MovieClip,play=false) {
 		mc.visible = false;
 		if ( play ) mc.stop();
 		onWakeUp = function() {

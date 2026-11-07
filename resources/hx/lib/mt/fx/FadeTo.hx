@@ -5,7 +5,8 @@ import mt.bumdum9.Lib;
 class FadeTo extends mt.fx.Fx{//}
 
 
-	var root:flash.display.DisplayObject;
+	// (JS: a display object of arkadeo, see mt.bumdum9.Lib.ColTarget)
+	var root:ColTarget;
 	var inc:Int;
 	var color:Int;
 	var spc:Float;
@@ -17,7 +18,7 @@ class FadeTo extends mt.fx.Fx{//}
 	 * @param	inc = 0				???
 	 * @param	color = 0x808080	Color to fade to
 	 */
-	public function new(mc, spc=0.1, inc = 0, color = 0x808080) {
+	public function new(mc:ColTarget, spc=0.1, inc = 0, color = 0x808080) {
 		root = mc;
 		this.inc = inc;
 		this.color = color;

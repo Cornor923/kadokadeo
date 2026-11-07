@@ -3,14 +3,14 @@ import mt.bumdum9.Lib;
 
 class Grow extends Fx{//}
 
-	var root:flash.display.DisplayObject;
+	var root:arkadeo.DisplayObject;
 	public var spc:Float;
 	var type : Int ;
 	var delta : Float ;
 	var from : Float ;
 
 	//spc is the step of alpha per frame
-	public function new(mc, spc=0.1, to = 1.0, mode = 0) {
+	public function new(mc:arkadeo.DisplayObject, spc=0.1, to = 1.0, mode = 0) {
 		super();
 		root = mc ;
 		this.spc = spc;

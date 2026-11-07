@@ -1,7 +1,7 @@
 package mt.fx;
 import mt.bumdum9.Lib;
 
-class Part<T:flash.display.Sprite> extends mt.fx.Fx {
+class Part<T:arkadeo.DisplayObject> extends mt.fx.Fx {
 
 	public var fitPix:Bool;			// fit to pixels
 	public var x:Float;
@@ -170,7 +170,7 @@ class Part<T:flash.display.Sprite> extends mt.fx.Fx {
 		var me = this;
 		var f = function() { me.root.visible = true; };
 		if( autoplay ) {
-			var mc:MC = cast root;
+			var mc:arkadeo.MovieClip = cast root;
 			mc.stop();
 			f = function() { me.root.visible = true; mc.play(); };
 		}
