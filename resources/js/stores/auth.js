@@ -4,6 +4,8 @@ import { computed, reactive, ref } from 'vue'
 import { client } from '@/composables/useApi'
 import { onRealtimeReconnect, refetchSoon, useChannel, userChannel } from '@/composables/useRealtime'
 
+const AFTER_LOGIN_KEY = 'kado.after-login'
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const achievementProgress = ref([])
@@ -109,6 +111,26 @@ export const useAuthStore = defineStore('auth', () => {
     setUser(res.data.user)
   }
 
+  // the page to open after the login (meta.keepThroughLogin: what another app shares is not lost), kept by the tab, which
+  // leaves the site for Eternaltwin meanwhile; private browsing: the home page
+  const rememberAfterLogin = (path) => {
+    try {
+      sessionStorage.setItem(AFTER_LOGIN_KEY, path)
+    } catch {
+      // the home page
+    }
+  }
+
+  const takeAfterLogin = () => {
+    try {
+      const path = sessionStorage.getItem(AFTER_LOGIN_KEY)
+      sessionStorage.removeItem(AFTER_LOGIN_KEY)
+      return path
+    } catch {
+      return null
+    }
+  }
+
   // (the player is forgotten even when the server could not be reached)
   const logout = async() => {
     try {
@@ -138,6 +160,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     fetchUser,
     login,
+    rememberAfterLogin,
+    takeAfterLogin,
     logout,
     setUser,
     stars,

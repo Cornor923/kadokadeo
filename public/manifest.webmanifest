@@ -1,0 +1,45 @@
+{
+  "id": "/",
+  "name": "KadoKadéo",
+  "short_name": "KadoKadéo",
+  "description": "Les jeux de KadoKado : le jeu du jour, les classements et les clans.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#111317",
+  "background_color": "#dffaff",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "/screenshots/wide-games.webp", "sizes": "1280x779", "type": "image/webp", "form_factor": "wide", "label": "Plus de 70 jeux à débloquer" },
+    { "src": "/screenshots/wide-replay.webp", "sizes": "1280x779", "type": "image/webp", "form_factor": "wide", "label": "Les replays de chaque partie" },
+    { "src": "/screenshots/wide-profile.webp", "sizes": "1280x779", "type": "image/webp", "form_factor": "wide", "label": "Votre profil et vos étoiles" },
+    { "src": "/screenshots/wide-help.webp", "sizes": "1280x779", "type": "image/webp", "form_factor": "wide", "label": "Le guide du site" },
+    { "src": "/screenshots/narrow-games.webp", "sizes": "800x1512", "type": "image/webp", "form_factor": "narrow", "label": "Plus de 70 jeux à débloquer" },
+    { "src": "/screenshots/narrow-replay.webp", "sizes": "800x1512", "type": "image/webp", "form_factor": "narrow", "label": "Les replays de chaque partie" },
+    { "src": "/screenshots/narrow-records.webp", "sizes": "856x1400", "type": "image/webp", "form_factor": "narrow", "label": "Les records du site" },
+    { "src": "/screenshots/narrow-profile.webp", "sizes": "800x1512", "type": "image/webp", "form_factor": "narrow", "label": "Votre profil et vos étoiles" },
+    { "src": "/screenshots/narrow-help.webp", "sizes": "800x1512", "type": "image/webp", "form_factor": "narrow", "label": "Le guide du site" }
+  ],
+  "share_target": {
+    "action": "/messages/new",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  },
+  "shortcuts": [
+    { "name": "Jeu du jour", "url": "/daily", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Tous les jeux", "url": "/games", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Messages", "url": "/messages", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Profil", "url": "/profile", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Forum", "url": "/forum", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Compétition", "url": "/competition", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] }
+  ]
+}

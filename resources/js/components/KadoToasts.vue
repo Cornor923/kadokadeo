@@ -14,9 +14,9 @@ const open = (toast) => {
   <div class="pointer-events-none fixed inset-x-4 top-4 z-50 sm:left-auto sm:right-6 sm:w-80 md:top-[150px]" aria-live="polite">
     <TransitionGroup tag="div"
                      class="flex flex-col gap-2"
-                     enter-active-class="transition duration-300 ease-out"
+                     enter-active-class="transition duration-300 ease-out motion-reduce:transition-none"
                      enter-from-class="translate-x-full opacity-0"
-                     leave-active-class="transition duration-200 ease-in"
+                     leave-active-class="transition duration-200 ease-in motion-reduce:transition-none"
                      leave-to-class="translate-x-full opacity-0">
       <div v-for="toast in toastStore.toasts"
            :key="toast.id"

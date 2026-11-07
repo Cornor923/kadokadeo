@@ -7,6 +7,8 @@
 const emit = defineEmits(['menu'])
 const authStore = useAuthStore()
 const messagesStore = useMessagesStore()
+const router = useRouter()
+const { needsBackButton } = usePwa()
 
 // (the names and the descriptions of DinoRPG, core/src/models/games/eternaltwinGames.mts and its locale fr.json)
 const GAMES = [
@@ -47,7 +49,14 @@ onUnmounted(() => clearInterval(clock))
 </script>
 
 <template>
-  <div class="sticky top-0 z-40 flex h-etwin-bar shrink-0 items-center justify-between gap-2 bg-etwin-bar px-2 py-1 text-etwin-text shadow-sm">
+  <div class="sticky top-0 z-40 flex h-etwin-bar shrink-0 items-center justify-between gap-2 bg-etwin-bar px-2 pt-[calc(0.25rem+env(safe-area-inset-top))] pb-1 text-etwin-text shadow-sm select-none">
+    <button v-if="needsBackButton"
+            type="button"
+            class="shrink-0 cursor-pointer px-1 text-xl leading-none text-etwin-blue"
+            aria-label="Retour"
+            @click="router.back()">
+      &lsaquo;
+    </button>
     <nav class="flex h-8 min-w-0 items-center gap-2 max-md:gap-1" aria-label="Les jeux d'Eternaltwin">
       <!-- on a phone: the 4 first ones -->
       <a v-for="(game, index) in games"

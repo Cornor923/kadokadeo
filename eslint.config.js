@@ -30,6 +30,7 @@ export default defineConfig([
       },
       globals: {
         ...globals.browser,
+        ...globals.serviceworker,
         PIXI: 'readonly',
         ...autoImportGlobals.globals,
       },

@@ -34,11 +34,11 @@ const viewer = computed(() => result.value?.viewer ?? {})
 const meta = computed(() => result.value?.meta ?? null)
 
 const draft = ref('')
-const toReply = () => document.getElementById('reply')?.scrollIntoView({ behavior: 'smooth' })
+const toReply = () => document.getElementById('reply')?.scrollIntoView({ behavior: scrollBehavior() })
 const reply = () =>
   actions.reply(clanId.value, topicId.value, draft.value).then(({ data }) => {
     draft.value = ''
-    const shown = () => nextTick(() => document.getElementById(`message-${data.id}`)?.scrollIntoView({ behavior: 'smooth' }))
+    const shown = () => nextTick(() => document.getElementById(`message-${data.id}`)?.scrollIntoView({ behavior: scrollBehavior() }))
     if (data.page === meta.value?.current_page) {
       load().then(shown)
     } else {

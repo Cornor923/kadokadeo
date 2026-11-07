@@ -110,7 +110,7 @@ const gamePacks = computed(() => (rules.value.game_packs ?? []).map((pack) => `$
 
     <!-- one section at a time: they slide in the box -->
     <div class="h-[400px] overflow-hidden">
-      <div class="transition-transform duration-[600ms] ease-in-out" :style="{ transform: `translateY(-${current * 400}px)` }">
+      <div class="transition-transform duration-[600ms] ease-in-out motion-reduce:transition-none" :style="{ transform: `translateY(-${current * 400}px)` }">
         <section v-for="(section, index) in sections"
                  :id="`help_${section.id}`"
                  :key="section.id"

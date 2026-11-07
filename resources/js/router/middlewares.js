@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useClanStore } from '@/stores/clan'
 
 // the pages of a logged in player: the server says who is logged in (the session cookie, that no script reads)
-registerMiddleware('auth', ({ next }) => {
+registerMiddleware('auth', ({ to, next }) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
@@ -12,6 +12,9 @@ registerMiddleware('auth', ({ next }) => {
       next()
     }).catch((e) => {
       if (e.response?.status === 401 || e.response?.data?.banned) {
+        if (to.meta.keepThroughLogin) {
+          authStore.rememberAfterLogin(to.fullPath)
+        }
         return next('/login')
       }
       next()

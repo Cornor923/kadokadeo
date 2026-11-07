@@ -8,6 +8,7 @@ import { createApp } from 'vue'
 import VueLazyload from 'vue-lazyload'
 
 import App from './App.vue'
+import { registerPwa } from './composables/usePwa'
 import router from './router'
 
 import('./pixi-tween')
@@ -25,5 +26,7 @@ app.use(VueLazyload, {
   // the default is ['scroll', 'wheel', 'mousewheel', 'resize', 'animationend', 'transitionend']
   listenEvents: ['scroll', 'mouseup', 'resize', 'pointerup'],
 })
+
+registerPwa(router)
 
 app.mount('#app')

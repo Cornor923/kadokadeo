@@ -8,8 +8,15 @@ const run = ref(null)
 
 fetchRun(runId).then((data) => {
   run.value = data.data
+  document.title = `Replay de ${data.data.user?.display_name} sur ${data.data.game.name} - KadoKadéo`
   goToLinkedComment()
 })
+
+const linkCopied = ref(false)
+const share = async() => {
+  const shared = await shareLink({ title: document.title, url: `${location.origin}/runs/${runId}` })
+  linkCopied.value = shared === 'copied'
+}
 
 // the replay is played by the version of the game it was recorded with (run.gamedata)
 const replayGame = computed(() => run.value && { ...run.value.game, gamedata: run.value.gamedata ?? run.value.game.gamedata })
@@ -65,7 +72,7 @@ const goToLinkedComment = () => {
   }
   highlightId.value = id
   linkedFrame = comment.frame
-  nextTick(() => document.getElementById(`comment-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+  nextTick(() => document.getElementById(`comment-${id}`)?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }))
   setTimeout(() => {
     highlightId.value = null
   }, 5000)
@@ -113,7 +120,7 @@ useReplayComments({
 
 const seek = (frame) => {
   clock.seek(frame)
-  gameBox.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  gameBox.value?.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' })
 }
 
 // VIEW: counted once the replay was really played long enough (not paused, the tab visible), once by page
@@ -160,6 +167,9 @@ watch(clock.frame, (frame, previous) => {
     <KadoSectionTitle>Date: {{ dayjs(run.completed_at).format('DD/MM/YYYY HH:mm') }}</KadoSectionTitle>
     <KadoSectionTitle>Temps: {{ formatTime(run.play_time_seconds) }}</KadoSectionTitle>
     <KadoSectionTitle>Vues: {{ run.views_count }} · Commentaires: {{ run.comments_count }}</KadoSectionTitle>
+    <p class="mt-2 text-center">
+      <FormButton @click="share">{{ linkCopied ? 'Lien copié' : 'Partager ce replay' }}</FormButton>
+    </p>
 
     <div ref="gameBox" class="max-w-full w-fit max-h-full h-fit m-auto overflow-y-auto pt-5">
       <div class="flex flex-col">

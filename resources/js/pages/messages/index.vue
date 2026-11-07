@@ -1,5 +1,6 @@
 <script setup>
 import { useChannel, userChannel } from '@/composables/useRealtime'
+import { messageDraft } from '@/messages/draft'
 
 // the private messages: received, sent, the form to write one, and the notifications of the player
 const route = useRoute()
@@ -21,13 +22,16 @@ useChannel(() => userChannel(authStore.user?.id), {
   'message.sent': () => box.value === 'sent' && reload(),
 }, { resync: reload })
 
-// writing: the recipient and the subject can come from a profile or an answer
-const to = ref(route.query.to ?? '')
-const subject = ref(route.query.subject ?? '')
-const body = ref('')
+// writing: the form can be filled by its URL
+const draft = messageDraft(route.query)
+const to = ref(draft.to ?? '')
+const subject = ref(draft.subject ?? '')
+const body = ref(draft.body ?? '')
 watch(() => route.query, (query) => {
-  to.value = query.to ?? to.value
-  subject.value = query.subject ?? subject.value
+  const next = messageDraft(query)
+  to.value = next.to ?? to.value
+  subject.value = next.subject ?? subject.value
+  body.value = next.body ?? body.value
 })
 const send = () =>
   sendMessage({ to: to.value, subject: subject.value, body: body.value }).then(() => {

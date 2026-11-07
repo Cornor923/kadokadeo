@@ -1,5 +1,10 @@
 <script setup>
 const clanStore = useClanStore()
+const { canInstall, install } = usePwa()
+const installHelp = ref(false)
+const installApp = async() => {
+  installHelp.value = !await install()
+}
 const otherGames = [
   { name: 'Eternalfest', url: 'https://eternalfest.net' },
   { name: 'eMush', url: 'https://emush.eternaltwin.org' },
@@ -21,7 +26,7 @@ const menu = [
   { label: 'Discord', href: 'https://discord.gg/cqasFsD', icon: 'bg-[url(/gfx/menuIconForum.gif)] bg-[position:0_1px]' },
   { label: 'Aide', to: { name: 'help' }, icon: 'bg-[url(/gfx/menuIconHelp.gif)] bg-[position:-3px_0]' },
 ]
-const menuLinkClasses = 'my-px block w-full bg-no-repeat pl-6.25 hover:pl-6.75 hover:no-underline'
+const menuLinkClasses = 'my-px block select-none w-full bg-no-repeat pl-6.25 hover:pl-6.75 hover:no-underline'
 </script>
 
 <template>
@@ -39,6 +44,13 @@ const menuLinkClasses = 'my-px block w-full bg-no-repeat pl-6.25 hover:pl-6.75 h
                       :to="item.to"
                       :title="item.label"
                       :class="[menuLinkClasses, item.icon]">{{ item.label }}</RouterLink>
+        </li>
+        <li v-if="canInstall">
+          <button type="button"
+                  class="cursor-pointer bg-[url(/gfx/iconGameStars.png)] bg-size-[18px_auto] text-left text-kado-orange-500"
+                  :class="menuLinkClasses"
+                  @click="installApp">Installer l'appli</button>
+          <p v-if="installHelp" class="my-1 text-[0.7em]">Bouton Partager de votre navigateur, puis « Sur l'écran d'accueil ».</p>
         </li>
       </ul>
     </KadoSideBox>

@@ -12,6 +12,7 @@ const layouts = {
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const messagesStore = useMessagesStore()
 
 // banned while browsing: back to the login page, which shows the reason
 watch(() => authStore.banMessage, (message) => {
@@ -24,6 +25,11 @@ watch(() => authStore.banMessage, (message) => {
 watch(() => authStore.user?.theme, (theme) => {
   document.documentElement.dataset.theme = theme ?? 'base'
 }, { immediate: true })
+
+// the unread count on the icon of the installed site (0 removes it); refused by some systems without their permission
+watch(() => messagesStore.total, (total) => {
+  navigator.setAppBadge?.(total)?.catch(() => {})
+})
 
 const layout = computed(() => {
   return layouts[route.meta?.layout || 'DefaultLayout']

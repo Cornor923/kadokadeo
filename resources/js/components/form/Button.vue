@@ -23,7 +23,7 @@ const sizes = {
   md: 'px-2 py-px bg-repeat-x',
   lg: 'h-8 min-w-20 pr-2.5 pl-[15px] text-base [background-position:left,0_0] [background-repeat:no-repeat,repeat-x]',
 }
-const classes = computed(() => [variants[props.variant][props.size], sizes[props.size]])
+const classes = computed(() => ['select-none', variants[props.variant][props.size], sizes[props.size]])
 </script>
 
 <template>

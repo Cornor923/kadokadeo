@@ -6,7 +6,7 @@ const item = 'min-w-0 bg-size-[100%_100%] bg-no-repeat hover:bg-[url(/gfx/menuHo
 </script>
 
 <template>
-  <nav>
+  <nav class="select-none [-webkit-touch-callout:none]">
     <ul class="flex justify-around">
       <li :class="item">
         <RouterLink :to="{ name: 'games.index' }">

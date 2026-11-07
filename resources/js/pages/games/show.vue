@@ -12,6 +12,7 @@ const personalBestForPeriod = ref(null)
 
 fetchGame(gameId).then((data) => {
   game.value = data.data
+  document.title = `${data.data.name} - KadoKadéo`
   scores.value = data.leaderboard
   personalBest.value = data.personalBest
   personalBestForPeriod.value = data.personalBestForPeriod

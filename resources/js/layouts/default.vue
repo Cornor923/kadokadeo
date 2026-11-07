@@ -14,7 +14,7 @@ const sidebarOpen = ref(false)
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh">
+  <div class="flex flex-col h-dvh pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
     <!-- the bar of the games of Eternaltwin; its menu opens the drawer of the page -->
     <NavTopBar @menu="sidebarOpen = true" />
     <header id="topPage" class="mx-auto w-full max-w-5xl h-[100px] flex relative justify-center z-10">
@@ -55,7 +55,7 @@ const sidebarOpen = ref(false)
     <KadoAchievementNotifications v-if="achievementsEnabled && authStore.isAuthenticated" />
     <KadoToasts v-if="authStore.isAuthenticated" />
 
-    <div v-if="authStore.isAuthenticated" class="border-t-2 border-kado-blue-50 bg-[url(/gfx/bgHeader.png)] bg-top bg-repeat-x">
+    <div v-if="authStore.isAuthenticated" class="border-t-2 border-kado-blue-50 bg-[url(/gfx/bgHeader.png)] bg-top bg-repeat-x pb-[env(safe-area-inset-bottom)]">
       <Navbar class="md:hidden">
         <li class="min-w-0">
           <button type="button"

@@ -46,3 +46,6 @@ export function updateAtMidnight() {
 //   return decompressed
 //   // return JSON.parse(decompressed)
 // }
+
+// a scroll asked by a script: at once for the players who asked their system to reduce the animations
+export const scrollBehavior = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth')
