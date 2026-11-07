@@ -94,8 +94,10 @@ class Car extends Tracker {
 		}
 
 		if (flGrass) {
-			if (flPlayer)
+			if (flPlayer) {
 				Cs.game.flPerfect = false;
+				Cs.game.flOffTrack = true;
+			}
 			speed *= Math.pow(grassFrict, Timer.tmod);
 		}
 		updateFlash();
@@ -280,6 +282,7 @@ class Car extends Tracker {
 		if (Cs.game.step != Play)
 			return;
 
+		Cs.game.stats._pa[pid - 1]++;
 		// PANEL
 		var sc = Cs.SCORE_OVERTAKE[pid - 1];
 		Cs.game.addScore(sc);
@@ -373,6 +376,7 @@ class Car extends Tracker {
 
 	//
 	function explode() {
+		Cs.game.stats._x = 1;
 		Cs.game.initGameOver(20);
 
 		//

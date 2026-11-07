@@ -168,6 +168,41 @@ class RunEndTest extends TestCase
         $this->assertSame(0, $values['min_score']);
     }
 
+    // what the game sends at its game over (minirace.Game.gameOver), read by the rules of its achievements
+    public function test_the_stats_of_a_run_of_mini_race_reach_its_achievements(): void
+    {
+        $this->setSettings(SiteSettings::class, ['achievements_enabled' => true]);
+        $user = User::factory()->create(['kado_points' => 0]);
+        $game = Game::factory()->create(['name' => 'Mini-Race']);
+        $this->seed(AchievementsSeeder::class);
+        $run = Run::factory()->for($game)->for($user)->create(['score' => 0, 'completed_at' => null]);
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/runs/{$run->id}/finish", $this->encryptRun([
+            'run_id' => $run->id,
+            'score' => 61000,
+            'timestamp' => now()->timestamp,
+            'replay' => null,
+            'data' => [
+                '_ot' => [[8, 975, 1], [9, 600, 2], [11, 0], [24, 120]],
+                '_lp' => [[0, 1], [0, 0], [1, 0], [0, 0]],
+                '_pa' => [3, 2, 2],
+                '_x' => 1,
+            ],
+            'ac' => 0,
+        ]))->assertOk();
+
+        $values = UserAchievementProgress::query()->with('achievement')->get()->pluck('current_value', 'achievement.key')->all();
+        $this->assertSame(2, $values['fast_lap']);
+        $this->assertSame(3, $values['clean_laps']);
+        $this->assertSame(2, $values['pink_overtakes']);
+        $this->assertSame(1, $values['exploded']);
+        $this->assertSame(1, $values['slow_lap']);
+        $this->assertSame(1, $values['perfect_first_lap']);
+        // Pilotage économique and maîtrisé, Auto-tamponneuse, Hors délai, Coup d'essai
+        $this->assertSame(100 + 500 + 250 + 1000 + 2000, $user->fresh()->kado_points);
+    }
+
     // what the game sends at its game over (pioutch.Game.gameOver), read by the rules of its achievements
     public function test_the_stats_of_a_run_of_pioutch_reach_its_achievements(): void
     {

@@ -37,6 +37,8 @@ class Game implements kado.GameInterface {
 	public static inline var SC = 2;
 
 	public var flPerfect:Bool;
+	// the player's car went on the grass during this lap (the achievements, flPerfect counts the shocks too)
+	public var flOffTrack:Bool;
 
 	var blink:Null<Float>;
 
@@ -72,7 +74,9 @@ class Game implements kado.GameInterface {
 	public var dm:DepthManager;
 	public var root:ASprite;
 
-	var stats:{_ot:Array<Array<Int>>};
+	// _ot: the time of each lap (seconds, thousandths, bonus); for the achievements: _lp: each lap [off track, perfect],
+	// _pa: the cars overtaken by pid (1 green, 2 blue, 3 pink), _x: 1 when the player's car exploded
+	public var stats:{_ot:Array<Array<Int>>, _lp:Array<Array<Int>>, _pa:Array<Int>, _x:Int};
 
 	// Bmp of the map (paint of the track and of the tyres): a render texture at 4 px per map unit
 	var paintRT:RenderTexture;
@@ -123,7 +127,7 @@ class Game implements kado.GameInterface {
 		Cs.init(this);
 
 		lap = 0;
-		stats = {_ot: []};
+		stats = {_ot: [], _lp: [], _pa: [0, 0, 0], _x: 0};
 		// (undefined in the original: NaN until the first lap, the chrono shows nothing and does not count)
 		chronoTimer = Math.NaN;
 		flPress = false;
@@ -314,10 +318,13 @@ class Game implements kado.GameInterface {
 	public function incLap() {
 		Cs.setPercentColor(root, 0, 0xFF0000);
 
-		if (lap > 0)
+		if (lap > 0) {
 			addTime(chronoTimer);
+			stats._lp.push([flOffTrack ? 1 : 0, flPerfect ? 1 : 0]);
+		}
 		lap++;
 		flPerfect = true;
+		flOffTrack = false;
 		chronoTimer = 0;
 
 		var fl = flagList.pop();

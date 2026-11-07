@@ -104,7 +104,7 @@ return $this->best($progress, data_get($event->stats, 'w'));
 - Il ne supprime rien : un succès ou un palier retiré du seeder reste en base. Renommer une `key` crée un nouveau succès, la progression ne suit pas.
 - Deux paliers d'un même succès ne peuvent pas avoir le même `target` (contrainte unique), même le temps d'un échange.
 
-- Utiliser les titres, descriptions, targets et rewards du Sheet.
+- Utiliser les titres, descriptions, targets et rewards du Sheet, en corrigeant le français: orthographe, accents, espace avant `!` `?` `:` `;` et avant les unites (`500 m`), guillemets « ». Garder les jeux de mots, l'argot voulu et les titres en anglais tels quels.
 - Si une valeur du Sheet est illisible ou incertaine, demander confirmation.
 
 ## Ajouter des stats a un jeu

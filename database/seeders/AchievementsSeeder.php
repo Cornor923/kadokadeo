@@ -19,8 +19,8 @@ class AchievementsSeeder extends Seeder
     private const ACHIEVEMENTS = [
         'atlanteine' => [
             'ghosts_killed' => [
-                [1, 100, 'Bouh!', 'Tuer 1 fantôme.'],
-                [50, 500, 'Masacre ectoplasmique', 'Tuer 50 fantômes.'],
+                [1, 100, 'Bouh !', 'Tuer 1 fantôme.'],
+                [50, 500, 'Massacre ectoplasmique', 'Tuer 50 fantômes.'],
                 [200, 1000, 'Chasseur sans tête', 'Tuer 200 fantômes.'],
             ],
             'boxes_moved' => [
@@ -50,9 +50,9 @@ class AchievementsSeeder extends Seeder
         ],
         'bactery' => [
             'few_bacteria' => [
-                [1, 100, 'Antiseptique', 'Avoir 10 bactéries ou moins sur son plateau à la fin de partie.'],
-                [2, 500, 'Désinfectant', 'Avoir 8 bactéries ou moins sur son plateau à la fin de partie.'],
-                [3, 1000, 'Javel', 'Avoir 6 bactéries ou moins sur son plateau à la fin de partie.'],
+                [1, 100, 'Antiseptique', 'Avoir 10 bactéries ou moins sur son plateau à la fin de la partie.'],
+                [2, 500, 'Désinfectant', 'Avoir 8 bactéries ou moins sur son plateau à la fin de la partie.'],
+                [3, 1000, 'Javel', 'Avoir 6 bactéries ou moins sur son plateau à la fin de la partie.'],
             ],
             'total_stars' => [
                 [10, 100, 'Admirateur d\'astres', 'Amasser un total de 10 étoiles.'],
@@ -80,7 +80,7 @@ class AchievementsSeeder extends Seeder
         'chocomouche' => [
             'discovered_fives' => [
                 [5, 100, 'Terrain miné', 'Découvrir 5 cases avec le chiffre 5.'],
-                [25, 500, 'Infestion de mouches', 'Découvrir 25 cases avec le chiffre 5.'],
+                [25, 500, 'Infestation de mouches', 'Découvrir 25 cases avec le chiffre 5.'],
                 [50, 1000, 'Pentagramme drosophilien', 'Découvrir 50 cases avec le chiffre 5.'],
             ],
             'total_discovered_cells' => [
@@ -91,7 +91,7 @@ class AchievementsSeeder extends Seeder
             'level_reached' => [
                 [5, 100, 'Pourquoi des mouches dans du chocolat ?', 'Atteindre le niveau 5.'],
                 [7, 500, 'Vous avez dit des mouches ?', 'Atteindre le niveau 7.'],
-                [9, 1000, 'Où ça des mouches ?', 'Atteindre le niveau 9.'],
+                [9, 1000, 'Où ça, des mouches ?', 'Atteindre le niveau 9.'],
             ],
             'level_score' => [
                 [45000, 100, 'Démineur amateur', 'Marquer 45.000 points sur un niveau.'],
@@ -99,7 +99,7 @@ class AchievementsSeeder extends Seeder
                 [55000, 1000, 'Démineur professionnel', 'Marquer 55.000 points sur un niveau.'],
             ],
             'five_levels_without_life_loss' => [
-                [5, 250, 'Oh yeah!', 'Finir 5 niveaux de suite sans perdre de vie.'],
+                [5, 250, 'Oh yeah !', 'Finir 5 niveaux de suite sans perdre de vie.'],
             ],
             'six_adjacent_flies' => [
                 [1, 250, 'Chanceux', 'Découvrir une case avec 6 mouches à proximité.'],
@@ -108,7 +108,7 @@ class AchievementsSeeder extends Seeder
                 [1, 1000, 'Malchanceux', 'Perdre 3 vies sur les 3 premières cases découvertes d\'une grille.'],
             ],
             'seven_clicks_level' => [
-                [1, 1000, 'Vite fait bien fait', 'Terminer un niveau avec maximum 7 cases cliquées.'],
+                [1, 1000, 'Vite fait bien fait', 'Terminer un niveau avec au maximum 7 cases cliquées.'],
             ],
             'fast_level_one' => [
                 [1, 2000, 'J\'AI FAIM !', 'Terminer le niveau 1 en moins de 15 secondes.'],
@@ -121,7 +121,7 @@ class AchievementsSeeder extends Seeder
                 [10000, 1000, 'Visite technique', 'Parcourir un total cumulé de 10.000 km.'],
             ],
             'ride_on_oil' => [
-                [5, 100, 'J\'ai glissé chef', 'Rouler sur 5 flaques d\'huile en une partie.'],
+                [5, 100, 'J\'ai glissé, chef', 'Rouler sur 5 flaques d\'huile en une partie.'],
                 [8, 500, 'Sport de glisse', 'Rouler sur 8 flaques d\'huile en une partie.'],
                 [15, 1000, 'Passion pour le drift', 'Rouler sur 15 flaques d\'huile en une partie.'],
             ],
@@ -155,7 +155,7 @@ class AchievementsSeeder extends Seeder
                 [25000, 1000, 'Infatigable', 'Effectuer un total cumulé de 25.000 sauts.'],
             ],
             'total_dives' => [
-                [5, 100, 'Baptème de plongée', 'Plonger un total cumulé de 5 fois dans l\'eau.'],
+                [5, 100, 'Baptême de plongée', 'Plonger un total cumulé de 5 fois dans l\'eau.'],
                 [100, 500, 'N\'oublie pas les bouteilles', 'Plonger un total cumulé de 100 fois dans l\'eau.'],
                 [500, 1000, 'Sous-marin', 'Plonger un total cumulé de 500 fois dans l\'eau.'],
             ],
@@ -172,7 +172,7 @@ class AchievementsSeeder extends Seeder
             'total_dodged_enemies' => [
                 [100, 100, 'Amis ?', 'Esquiver un total cumulé de 100 mines.'],
                 [1000, 500, 'Ennemis...', 'Esquiver un total cumulé de 1.000 mines.'],
-                [5000, 1000, 'Innofensifs !', 'Esquiver un total cumulé de 5.000 mines.'],
+                [5000, 1000, 'Inoffensifs !', 'Esquiver un total cumulé de 5.000 mines.'],
             ],
             'water_score' => [
                 [1000, 250, 'Tout propre !', 'Passer dans l\'eau puis récupérer au moins 1.000 points.'],
@@ -218,12 +218,12 @@ class AchievementsSeeder extends Seeder
             'surgromphs_killed' => [
                 [1, 100, 'Un Surgromph de moins', 'Détruire 1 Surgromph en une seule partie.'],
                 [3, 500, 'Surgromph killer', 'Détruire 3 Surgromphs en une seule partie.'],
-                [5, 1000, 'Les Surgromphs s\'écartent de mon chemin!', 'Détruire 5 Surgromphs en une seule partie.'],
+                [5, 1000, 'Les Surgromphs s\'écartent de mon chemin !', 'Détruire 5 Surgromphs en une seule partie.'],
             ],
             'cutty_closed_killed' => [
                 [1, 100, 'Cutty vite parti', 'Détruire 1 Cutty avant qu\'il ne s\'ouvre en une seule partie.'],
                 [3, 500, 'Cutty cutter', 'Détruire 3 Cuttys avant qu\'ils ne s\'ouvrent en une seule partie.'],
-                [10, 1000, 'Un Cutty? Kézako?', 'Détruire 10 Cuttys avant qu\'ils ne s\'ouvrent en une seule partie.'],
+                [10, 1000, 'Un Cutty ? Kézako ?', 'Détruire 10 Cuttys avant qu\'ils ne s\'ouvrent en une seule partie.'],
             ],
             'pink_bonus_kills' => [
                 [20, 1000, 'C\'est pas si mal finalement', 'Détruire 20 ennemis avec le bonus rose dans une seule partie.'],
@@ -235,12 +235,12 @@ class AchievementsSeeder extends Seeder
                 [1, 2000, 'Ça existe ??', 'Passer la vague des lapinvincibles.'],
             ],
             'max_enemy_shots' => [
-                [100, 2000, 'J\'y vois plus rien!', 'Avoir au moins 100 projectiles ennemis à l\'écran.'],
+                [100, 2000, 'J\'y vois plus rien !', 'Avoir au moins 100 projectiles ennemis à l\'écran.'],
             ],
         ],
         'kanji' => [
             'gather_bonus' => [
-                [1000, 100, 'Ceuilleur', 'Récupérer un total cumulé de 1.000 bonus.'],
+                [1000, 100, 'Cueilleur', 'Récupérer un total cumulé de 1.000 bonus.'],
                 [5000, 500, 'Glaneur', 'Récupérer un total cumulé de 5.000 bonus.'],
                 [15000, 1000, 'Collectionneur', 'Récupérer un total cumulé de 15.000 bonus.'],
             ],
@@ -252,17 +252,17 @@ class AchievementsSeeder extends Seeder
             'wall_jumps' => [
                 [50, 100, 'Boing', 'Rebondir un total cumulé de 50 fois sur les murs.'],
                 [250, 500, 'Solides ces murs !', 'Rebondir un total cumulé de 250 fois sur les murs.'],
-                [750, 1000, 'Platrier de père en fils', 'Rebondir un total cumulé de 750 fois sur les murs.'],
+                [750, 1000, 'Plâtrier de père en fils', 'Rebondir un total cumulé de 750 fois sur les murs.'],
             ],
             'avoid_boars' => [
-                [10, 100, 'Ça sent le cochon non ?', 'Éviter un total cumulé de 10 marcassins.'],
+                [10, 100, 'Ça sent le cochon, non ?', 'Éviter un total cumulé de 10 marcassins.'],
                 [100, 500, 'On n\'a pas gardé les cochons ensemble', 'Éviter un total cumulé de 100 marcassins.'],
                 [1000, 1000, 'Maître de la harde', 'Éviter un total cumulé de 1.000 marcassins.'],
             ],
             'avoid_boars_short' => [
                 [1, 100, 'Pas folle la guêpe', 'Esquiver 1 marcassin avec des mini-sauts en une partie.'],
-                [4, 500, 'Allez salto !', 'Esquiver 4 marcassins avec des mini-sauts en une partie.'],
-                [8, 1000, 'Ninja 8ème dan', 'Esquiver 8 marcassins avec des mini-sauts en une partie.'],
+                [4, 500, 'Allez, salto !', 'Esquiver 4 marcassins avec des mini-sauts en une partie.'],
+                [8, 1000, 'Ninja 8e dan', 'Esquiver 8 marcassins avec des mini-sauts en une partie.'],
             ],
             'kill_streak' => [
                 [5, 100, 'Floor is lava', 'Rebondir sur 5 cigognes sans toucher le sol.'],
@@ -271,14 +271,14 @@ class AchievementsSeeder extends Seeder
             ],
             'no_stork_kill_score' => [
                 [15000, 100, 'Amoureux de la faune', 'Atteindre 15.000 points sans tuer de cigognes.'],
-                [25000, 500, 'peace and love', 'Atteindre 25.000 points sans tuer de cigognes.'],
+                [25000, 500, 'Peace and love', 'Atteindre 25.000 points sans tuer de cigognes.'],
                 [35000, 1000, 'Vegan', 'Atteindre 35.000 points sans tuer de cigognes.'],
             ],
             'bonus_streak' => [
                 [5, 250, 'Regarde comme je saute bien', 'Récupérer 5 bonus en un saut sans rebondir sur des cigognes.'],
             ],
             'last_kill_count' => [
-                [15, 1000, 'Allez on arrête de spawn là', 'Tuer la dernière cigogne en vie 15 fois dans la même partie.'],
+                [15, 1000, 'Allez, on arrête de spawn là', 'Tuer la dernière cigogne en vie 15 fois dans la même partie.'],
             ],
             'fly_streak' => [
                 [25, 2000, 'I believe I can fly', 'Rester 25 secondes en l\'air.'],
@@ -296,8 +296,8 @@ class AchievementsSeeder extends Seeder
                 [150, 1000, 'Tortueur', 'Tuer 150 tortues en une seule partie.'],
             ],
             'get_hooks' => [
-                [4, 100, 'Bonus hepta-cool !', 'Obtenir 7 grapins permanents en une seule partie.'],
-                [5, 500, 'Méthode octo-turbo', 'Obtenir 8 grapins permanents en une seule partie.'],
+                [4, 100, 'Bonus hepta-cool !', 'Obtenir 7 grappins permanents en une seule partie.'],
+                [5, 500, 'Méthode octo-turbo', 'Obtenir 8 grappins permanents en une seule partie.'],
             ],
             'repair_broken_armor' => [
                 [1, 250, 'Lessive terminée !', 'Réparer une armure cassée.'],
@@ -309,9 +309,9 @@ class AchievementsSeeder extends Seeder
                 [5, 2000, 'Équipement militaire', 'Obtenir tous les bonus permanents en même temps.'],
             ],
             'total_graphins_used' => [
-                [500, 100, 'Niveau ouistiti', 'Utiliser le grapin 500 fois.'],
-                [10000, 500, 'Niveau gibbon', 'Utiliser le grapin 10.000 fois.'],
-                [25000, 1000, 'Niveau orang-outan', 'Utiliser le grapin 25.000 fois.'],
+                [500, 100, 'Niveau ouistiti', 'Utiliser le grappin 500 fois.'],
+                [10000, 500, 'Niveau gibbon', 'Utiliser le grappin 10.000 fois.'],
+                [25000, 1000, 'Niveau orang-outan', 'Utiliser le grappin 25.000 fois.'],
             ],
         ],
         'kaskade2' => [
@@ -345,12 +345,12 @@ class AchievementsSeeder extends Seeder
             'total_bubbles_popped' => [
                 [1500, 100, 'Fragmenteur', 'Éclater 1.500 bulles.'],
                 [20000, 500, 'Légende du Pop', 'Éclater 20.000 bulles.'],
-                [100000, 1000, 'Maitre de la division', 'Éclater 100.000 bulles.'],
+                [100000, 1000, 'Maître de la division', 'Éclater 100.000 bulles.'],
             ],
             'total_ying_yangs' => [
-                [20, 100, 'Calme', 'Récupérer 20 bonus ying-yang.'],
-                [100, 500, 'Tranquille', 'Récupérer 100 bonus ying-yang.'],
-                [500, 1000, 'Zen', 'Récupérer 500 bonus ying-yang.'],
+                [20, 100, 'Calme', 'Récupérer 20 bonus yin-yang.'],
+                [100, 500, 'Tranquille', 'Récupérer 100 bonus yin-yang.'],
+                [500, 1000, 'Zen', 'Récupérer 500 bonus yin-yang.'],
             ],
             'total_time_bonuses' => [
                 [20, 100, 'Fan de sieste', 'Utiliser 20 bonus horloge.'],
@@ -358,7 +358,7 @@ class AchievementsSeeder extends Seeder
                 [500, 1000, 'Seigneur du temps', 'Utiliser 500 bonus horloge.'],
             ],
             'big_bubbles' => [
-                [1, 100, 'Eclateur de baudruche', 'Éclater 1 grosse bulle en une seule partie.'],
+                [1, 100, 'Éclateur de baudruche', 'Éclater 1 grosse bulle en une seule partie.'],
                 [3, 500, 'Dézingueur de montgolfières', 'Éclater 3 grosses bulles en une seule partie.'],
                 [5, 1000, 'Massacreur de zeppelins', 'Éclater 5 grosses bulles en une seule partie.'],
             ],
@@ -383,13 +383,13 @@ class AchievementsSeeder extends Seeder
             ],
             'soft_kill_turtles' => [
                 [50, 100, 'Ça va pas la tête ?!', 'Tuer un total cumulé de 50 Tortues en leur sautant dessus.'],
-                [250, 500, 'Assomeur de tortues', 'Tuer un total cumulé de 250 Tortues en leur sautant dessus.'],
+                [250, 500, 'Assommeur de tortues', 'Tuer un total cumulé de 250 Tortues en leur sautant dessus.'],
                 [750, 1000, 'Plombier moustachu', 'Tuer un total cumulé de 750 Tortues en leur sautant dessus.'],
             ],
             'soft_kill_bats' => [
-                [5, 100, 'Bat-paf', 'Tuer un total cumulé de 5 Chauve-souris en leur sautant dessus.'],
-                [20, 500, 'Bat-crêpe', 'Tuer un total cumulé de 20 Chauve-souris en leur sautant dessus.'],
-                [50, 1000, 'Batman n\'a qu\'à bien se tenir', 'Tuer un total cumulé de 50 Chauve-souris en leur sautant dessus.'],
+                [5, 100, 'Bat-paf', 'Tuer un total cumulé de 5 Chauves-souris en leur sautant dessus.'],
+                [20, 500, 'Bat-crêpe', 'Tuer un total cumulé de 20 Chauves-souris en leur sautant dessus.'],
+                [50, 1000, 'Batman n\'a qu\'à bien se tenir', 'Tuer un total cumulé de 50 Chauves-souris en leur sautant dessus.'],
             ],
             'soft_kill_tankers' => [
                 [5, 100, 'Pied de nez', 'Tuer un total cumulé de 5 Tankers en leur sautant dessus.'],
@@ -445,6 +445,32 @@ class AchievementsSeeder extends Seeder
                 [1, 2000, 'Tri séquentiel', 'Tuer dans l\'ordre goutte, fleur et tourelle dans un même combo.'],
             ],
         ],
+        'minirace' => [
+            'fast_lap' => [
+                [1, 100, 'Pilotage économique', 'Faire un tour en moins de 10 secondes.'],
+                [2, 500, 'Pilotage maîtrisé', 'Faire un tour en moins de 9 secondes.'],
+                [3, 1000, 'Nitro activé', 'Faire un tour en moins de 8 secondes.'],
+            ],
+            'clean_laps' => [
+                [10, 100, 'Droit dans ses bottes', 'Faire 10 tours sans faire de hors-piste.'],
+                [100, 500, 'Side is lava', 'Faire 100 tours sans faire de hors-piste.'],
+                [300, 1000, 'Docteur Maboul', 'Faire 300 tours sans faire de hors-piste.'],
+            ],
+            'pink_overtakes' => [
+                [10, 100, 'Barbie, tu te traînes !', 'Dépasser 10 fois la voiture rose.'],
+                [100, 500, 'Dans le rétroviseur', 'Dépasser 100 fois la voiture rose.'],
+                [500, 1000, 'Chasseur de fuchsia', 'Dépasser 500 fois la voiture rose.'],
+            ],
+            'exploded' => [
+                [1, 250, 'Auto-tamponneuse', 'Faire exploser sa voiture.'],
+            ],
+            'slow_lap' => [
+                [1, 1000, 'Hors délai', 'Réussir un tour en plus de 24 secondes.'],
+            ],
+            'perfect_first_lap' => [
+                [1, 2000, 'Coup d\'essai, coup de maître', 'Faire un tour n°1 parfait.'],
+            ],
+        ],
         'opalus2' => [
             'mini_score' => [
                 [1, 2000, 'Minimaliste', 'Faire un score de 6.750.'],
@@ -455,9 +481,9 @@ class AchievementsSeeder extends Seeder
                 [10000, 1000, 'Avalanche', 'Faire tomber un total cumulé de 10.000 billes.'],
             ],
             'destroyed_bubbles' => [
-                [1000, 100, 'Eclateur de billes', 'Détruire un total cumulé de 1.000 billes.'],
+                [1000, 100, 'Éclateur de billes', 'Détruire un total cumulé de 1.000 billes.'],
                 [10000, 500, 'Destructeur de balles', 'Détruire un total cumulé de 10.000 billes.'],
-                [25000, 1000, 'Anihilateur d\'exosphères', 'Détruire un total cumulé de 25.000 billes.'],
+                [25000, 1000, 'Annihilateur d\'exosphères', 'Détruire un total cumulé de 25.000 billes.'],
             ],
             'same_color_destroyed_bubbles' => [
                 [15, 100, 'Éclatement', 'Détruire 15 billes d\'une couleur en un seul coup.'],
@@ -487,19 +513,19 @@ class AchievementsSeeder extends Seeder
                 [25000, 1000, 'Bulle doseur', 'Récupérer un total cumulé de 25.000 bulles.'],
             ],
             'total_elevation' => [
-                [500, 100, 'Tropopiou', 'Grimper un total cumulé de 500m.'],
-                [3000, 500, 'Stratopiou', 'Grimper un total cumulé de 3.000m.'],
-                [10000, 1000, 'Exopiou', 'Grimper un total cumulé de 10.000m.'],
+                [500, 100, 'Tropopiou', 'Grimper un total cumulé de 500 m.'],
+                [3000, 500, 'Stratopiou', 'Grimper un total cumulé de 3.000 m.'],
+                [10000, 1000, 'Exopiou', 'Grimper un total cumulé de 10.000 m.'],
             ],
             'elevation' => [
-                [30, 100, 'Combo ascendant', 'Atteindre 30m en une partie.'],
-                [50, 500, 'Sky Piouker', 'Atteindre 50m en une partie.'],
-                [70, 1000, 'Piou Infinity', 'Atteindre 70m en une partie.'],
+                [30, 100, 'Combo ascendant', 'Atteindre 30 m en une partie.'],
+                [50, 500, 'Sky Piouker', 'Atteindre 50 m en une partie.'],
+                [70, 1000, 'Piou Infinity', 'Atteindre 70 m en une partie.'],
             ],
             'no_bubble' => [
-                [15, 100, 'Pas d\'bul', 'Atteindre 15m sans récolter de points.'],
-                [30, 500, 'L\'esquiveur', 'Atteindre 30m sans récolter de points.'],
-                [40, 1000, 'L\'invisible', 'Atteindre 40m sans récolter de points.'],
+                [15, 100, 'Pas d\'bul', 'Atteindre 15 m sans récolter de points.'],
+                [30, 500, 'L\'esquiveur', 'Atteindre 30 m sans récolter de points.'],
+                [40, 1000, 'L\'invisible', 'Atteindre 40 m sans récolter de points.'],
             ],
             'falling_bubbles' => [
                 [30, 250, 'Réceptionneur', 'Récupérer 30 bonus avant qu\'ils ne touchent le sol dans une partie.'],
@@ -531,7 +557,7 @@ class AchievementsSeeder extends Seeder
                 [1, 250, 'Colis fragile', 'Faire tomber un violet.'],
             ],
             'clean_score' => [
-                [20000, 1000, 'Maître du référentiel bondissant', 'Faire 20.000 sans perdre une vie et sans fury.'],
+                [20000, 1000, 'Maître du référentiel bondissant', 'Faire 20.000 points sans perdre de vie et sans fury.'],
             ],
             'fury_stock' => [
                 [5, 2000, 'Folie fury-euse', 'Avoir 5 fury en réserve en même temps.'],
@@ -554,15 +580,15 @@ class AchievementsSeeder extends Seeder
                 [75, 1000, 'Pioukepi', 'Tuer Pokepi 75 fois.'],
             ],
             'buble_destroyed_in_a_row' => [
-                [30, 100, 'Gourmet', 'Manger 30 grains à suivre sans toucher le sol.'],
-                [50, 500, 'Gourmand', 'Manger 50 grains à suivre sans toucher le sol.'],
-                [70, 1000, 'Glouton', 'Manger 70 grains à suivre sans toucher le sol.'],
+                [30, 100, 'Gourmet', 'Manger 30 grains d\'affilée sans toucher le sol.'],
+                [50, 500, 'Gourmand', 'Manger 50 grains d\'affilée sans toucher le sol.'],
+                [70, 1000, 'Glouton', 'Manger 70 grains d\'affilée sans toucher le sol.'],
             ],
             'combo_500_pts' => [
                 [500, 250, 'Sniper', 'Atteindre un combo de 500 points.'],
             ],
             'three_times_outbounds' => [
-                [3, 1000, 'T\'es sûr qu\'il y a rien là haut ?', 'Passer tout en haut du monde 3 fois dans une même partie.'],
+                [3, 1000, 'T\'es sûr qu\'il y a rien là-haut ?', 'Passer tout en haut du monde 3 fois dans une même partie.'],
             ],
             'fastkill_pokepi' => [
                 [1, 2000, 'Ça, c\'est fait.', 'Tuer Pokepi en moins de 1 minute.'],
@@ -579,7 +605,7 @@ class AchievementsSeeder extends Seeder
             ],
             'total_purple_asteroids_destroyed' => [
                 [10, 100, 'Apprenti du mauve', 'Détruire 10 astéroïdes violets.'],
-                [75, 500, 'Expert de l\'ultra violet', 'Détruire 75 astéroïdes violets.'],
+                [75, 500, 'Expert de l\'ultraviolet', 'Détruire 75 astéroïdes violets.'],
                 [250, 1000, 'Maître de l\'octarine', 'Détruire 250 astéroïdes violets.'],
             ],
             'no_main_weapon_levels' => [
@@ -588,7 +614,7 @@ class AchievementsSeeder extends Seeder
                 [5, 1000, 'Sans les mains', 'Terminer 5 niveaux sans tirer avec l\'arme principale dans une seule partie.'],
             ],
             'fast_level' => [
-                [1, 100, 'Rapide l\'ami', 'Finir un niveau en moins de 35 secondes après le niveau 6.'],
+                [1, 100, 'Rapide, l\'ami', 'Finir un niveau en moins de 35 secondes après le niveau 6.'],
                 [2, 500, 'Vitesse supersonique', 'Finir un niveau en moins de 25 secondes après le niveau 6.'],
                 [3, 1000, 'Célérité supraluminique', 'Finir un niveau en moins de 15 secondes après le niveau 6.'],
             ],
@@ -635,7 +661,7 @@ class AchievementsSeeder extends Seeder
             'followers_collected' => [
                 [500, 100, 'Viendez les zamis', 'Récupérer 500 manifestants.'],
                 [5000, 500, 'On est fâchés tout rouge', 'Récupérer 5.000 manifestants.'],
-                [20000, 1000, 'Plus on est de fous moins il y a de riz', 'Récupérer 20.000 manifestants.'],
+                [20000, 1000, 'Plus on est de fous, moins il y a de riz', 'Récupérer 20.000 manifestants.'],
             ],
             'vehicles_destroyed' => [
                 [50, 100, 'Accident de la route', 'Détruire 50 véhicules.'],
@@ -669,7 +695,7 @@ class AchievementsSeeder extends Seeder
                 [100000, 1000, 'Vert l\'infini et l\'eau verdâtre', 'Colorer 100.000 tubes en vert.'],
             ],
             'reach_level' => [
-                [8, 100, 'Octo-huitre', 'Atteindre le niveau 8.'],
+                [8, 100, 'Octo-huître', 'Atteindre le niveau 8.'],
                 [10, 500, 'Déca-bulot', 'Atteindre le niveau 10.'],
                 [12, 1000, 'Dodéca-moule', 'Atteindre le niveau 12.'],
             ],
@@ -690,14 +716,14 @@ class AchievementsSeeder extends Seeder
                 [25000, 1000, 'Ligne 25.000', 'Détruire un total cumulé de 25.000 lignes.'],
             ],
             'use_calm' => [
-                [1, 100, 'Souffle un coup', 'Utiliser 1 bonus "calme".'],
-                [20, 500, 'Calme raplapla', 'Utiliser un total cumulé de 20 bonus "calme".'],
-                [40, 1000, 'Zénitude attitude', 'Utiliser un total cumulé de 40 bonus "calme".'],
+                [1, 100, 'Souffle un coup', 'Utiliser 1 bonus « calme ».'],
+                [20, 500, 'Calme raplapla', 'Utiliser un total cumulé de 20 bonus « calme ».'],
+                [40, 1000, 'Zénitude attitude', 'Utiliser un total cumulé de 40 bonus « calme ».'],
             ],
             'use_psycho' => [
-                [1, 100, 'Upside down', 'Utiliser 1 bonus "psycho" en une seule partie.'],
-                [3, 500, 'Fou furieux', 'Utiliser 3 bonus "psycho" en une seule partie.'],
-                [5, 1000, 'The Joker', 'Utiliser 5 bonus "psycho" en une seule partie.'],
+                [1, 100, 'Upside down', 'Utiliser 1 bonus « psycho » en une seule partie.'],
+                [3, 500, 'Fou furieux', 'Utiliser 3 bonus « psycho » en une seule partie.'],
+                [5, 1000, 'The Joker', 'Utiliser 5 bonus « psycho » en une seule partie.'],
             ],
             'destroy_ten_lines' => [
                 [10, 2000, 'Décimation linéaire', 'Détruire 10 lignes d\'un coup.'],
@@ -726,7 +752,7 @@ class AchievementsSeeder extends Seeder
             'perfect_pairs' => [
                 [10, 100, 'Déca-jonction', 'Rassembler 10 paires parfaites en une seule partie.'],
                 [12, 500, 'Dodéca-appairage', 'Rassembler 12 paires parfaites en une seule partie.'],
-                [14, 1000, 'Tetrakaideca-paires', 'Rassembler 14 paires parfaites en une seule partie.'],
+                [14, 1000, 'Tétrakaidéca-paires', 'Rassembler 14 paires parfaites en une seule partie.'],
             ],
             'no_one_point_pair' => [
                 [1, 250, 'Oh, un chiffre rond', 'Finir une partie sans paire à 1 point.'],
@@ -735,14 +761,14 @@ class AchievementsSeeder extends Seeder
                 [1, 1000, 'Premier (en partant de la fin)', 'Faire un score de 21.'],
             ],
             'perfect_colors' => [
-                [2, 2000, 'Il y en aura pour tout le monde', 'Effectuer au moins 2 paires parfaites de chaque couleur en 1 seule partie.'],
+                [2, 2000, 'Il y en aura pour tout le monde', 'Effectuer au moins 2 paires parfaites de chaque couleur en une seule partie.'],
             ],
         ],
         'zipzap' => [
             'total_pops' => [
-                [1000, 100, 'Eclate ballons', 'Eclater un total cumulé de 1.000 ballons.'],
-                [7500, 500, 'Anti-hélium', 'Eclater un total cumulé de 7.500 ballons.'],
-                [25000, 1000, 'Terreur des baudruches', 'Eclater un total cumulé de 25.000 ballons.'],
+                [1000, 100, 'Éclate-ballons', 'Éclater un total cumulé de 1.000 ballons.'],
+                [7500, 500, 'Anti-hélium', 'Éclater un total cumulé de 7.500 ballons.'],
+                [25000, 1000, 'Terreur des baudruches', 'Éclater un total cumulé de 25.000 ballons.'],
             ],
             'mini_score' => [
                 [100, 1000, '10.000 tout rond !', 'Finir une partie avec 0 combos.'],
