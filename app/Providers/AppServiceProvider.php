@@ -37,13 +37,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->tag($this->achievementRules(), 'achievement.rules');
-
         $this->app->bind(RunService::class, fn () => new RunService(config('kado.security')));
         $this->app->bind(GameService::class, fn () => new GameService());
         $this->app->bind(ScoreService::class, fn () => new ScoreService());
         $this->app->bind(PeriodService::class, fn () => new PeriodService());
-        $this->app->bind(AchievementService::class, fn ($app) => new AchievementService($app->tagged('achievement.rules')));
+        $this->app->bind(AchievementService::class, fn ($app) => new AchievementService(
+            // (when a run ends: most requests read no rule)
+            fn () => array_map(fn (string $rule) => $app->make($rule), $this->achievementRules()),
+        ));
         $this->app->bind(LeagueService::class, fn ($app) => new LeagueService($app->make(ScoreService::class), $app->make(AchievementService::class)));
         $this->app->bind(PoidsPlumeService::class, fn ($app) => new PoidsPlumeService(
             $app->make(LeagueService::class),

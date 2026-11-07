@@ -122,6 +122,7 @@ Quand un succes demande une stat que le jeu n'envoie pas encore, il faut modifie
 - Ne pas renommer ce que lit un analyseur de coups (`resources/js/replay-verifier/analyzers/<game_key>.mjs`).
 - Envoyer un objet a cles courtes (`{c: ..., p: ..., n: ...}`). `validate` refuse l'ancien format: une partie lancee avec l'ancien bundle ne fait simplement pas progresser les succes.
 - Valider dans la rule principale les invariants certains du jeu (nombre de paires, sommes coherentes), en les confirmant sur les vraies parties.
+- Une stat « la premiere fois que » s'initialise a `-1` et se teste contre `-1`: `0` est une vraie valeur (un score de 0, le niveau 0). `no_bubble` et `no_shuriken_score` ont eu ce bug, et la rule traite `-1` comme « jamais ».
 
 ## Comparer les replays avant / apres
 

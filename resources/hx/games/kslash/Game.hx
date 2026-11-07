@@ -196,7 +196,7 @@ class Game implements kado.GameInterface {
 			sk: [0, 0, 0, 0, 0],
 			respawn: 0,
 			supak: 0,
-			fssc: 0,
+			fssc: -1,
 			maxs: 0,
 			maxb: 0,
 		};

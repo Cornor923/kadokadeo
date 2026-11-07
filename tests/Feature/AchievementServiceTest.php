@@ -19,7 +19,7 @@ class AchievementServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    // another run of the player saved its progress after it was read: the progress is read again under its lock,
+    // another run of the player saved its progress before this one got the lock: the progress is read under the lock,
     // the next level reached once and paid once (not the level of the other run a second time)
     public function test_the_progress_is_computed_from_the_locked_row(): void
     {
@@ -43,9 +43,9 @@ class AchievementServiceTest extends TestCase
             'state' => [],
         ]);
 
-        // the other run commits right after the first read
+        // the other run commits while this one reads what it needs
         $concurrent = false;
-        UserAchievementProgress::retrieved(function () use (&$concurrent, $progress) {
+        Achievement::retrieved(function () use (&$concurrent, $progress) {
             if (!$concurrent) {
                 $concurrent = true;
                 UserAchievementProgress::query()->whereKey($progress->id)->toBase()->update(['current_value' => 1, 'completed_level' => 1]);

@@ -51,6 +51,12 @@ abstract class AtlanteineRule implements AchievementRule
         return data_get($event->stats, 's', []);
     }
 
+    // the last level was not finished: a game ends when the time runs out in a level
+    protected function finishedLevels(GameRunCompleted $event): array
+    {
+        return array_slice($this->levels($event), 0, -1);
+    }
+
     protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
     {
         if ($value <= $currentValue) {

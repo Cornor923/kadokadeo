@@ -285,7 +285,7 @@ class Level {
 				mc._y = b.mc._y + KadoKadeoManager.I(16);
 				KadoKadeoManager.kkm.addScore(Cs.BONUS_POINTS[b.type]);
 				game.data.b[b.type]++;
-				if (game.data.fbl == null) {
+				if (game.data.fbl == -1) {
 					game.data.fbl = level;
 				}
 				if (b.falling) {

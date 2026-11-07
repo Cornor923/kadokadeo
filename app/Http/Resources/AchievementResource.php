@@ -16,11 +16,8 @@ class AchievementResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'game' => $this->whenLoaded('game', fn () => GameResource::make($this->game)),
-            'category' => $this->category,
-            'progress_scope' => $this->progress_scope,
+            'game' => $this->whenLoaded('game', fn () => $this->game->only('id', 'name')),
             'levels' => $this->whenLoaded('levels', fn () => AchievementLevelResource::collection($this->levels)),
-            'level_user_counts' => $this->when(isset($this->level_user_counts), fn () => $this->level_user_counts),
         ];
     }
 }

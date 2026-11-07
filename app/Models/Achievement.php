@@ -34,7 +34,8 @@ class Achievement extends Model
      */
     public function levels(): HasMany
     {
-        return $this->hasMany(AchievementLevel::class)->orderBy('level');
+        // (chaperone: the icon of a level reads its achievement and its game)
+        return $this->hasMany(AchievementLevel::class)->orderBy('level')->chaperone();
     }
 
     public function progress()

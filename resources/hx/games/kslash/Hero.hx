@@ -388,7 +388,7 @@ class Hero extends Ent {
 	}
 
 	function throwStar(trg:Monster) {
-		if (Cs.game.stats.fssc == 0) {
+		if (Cs.game.stats.fssc == -1) {
 			Cs.game.stats.fssc = KadoKadeoManager.kkm.score;
 		}
 		incStar(-1);

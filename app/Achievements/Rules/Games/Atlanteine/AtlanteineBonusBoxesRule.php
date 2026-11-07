@@ -19,7 +19,7 @@ class AtlanteineBonusBoxesRule extends AtlanteineRule
         }
 
         $max = 0;
-        foreach ($this->levels($event) as $level) {
+        foreach ($this->finishedLevels($event) as $level) {
             if ($level[7] == 0) {
                 $max = max($max, $level[0] * 200);
             }

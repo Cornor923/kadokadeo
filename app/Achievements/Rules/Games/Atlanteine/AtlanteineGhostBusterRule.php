@@ -18,7 +18,7 @@ class AtlanteineGhostBusterRule extends AtlanteineRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $ghosts = array_map(fn (array $level): int => $level[3], $this->levels($event));
+        $ghosts = array_map(fn (array $level): int => $level[3], $this->finishedLevels($event));
 
         return $this->bestProgress($progress->current_value, max($ghosts ?: [0]));
     }

@@ -109,6 +109,11 @@ function getProgressPercent(record) {
   return Math.min(100, Math.round((record.current_score / record.score) * 100))
 }
 
+// the levels reached by the player of the page, by achievement
+const achievementLevels = computed(() => Object.fromEntries(
+  (profile.value?.achievements ?? []).map((progress) => [progress.achievement_id, progress.completed_level]),
+))
+
 const gameAchievements = computed(() => {
   return achievementStore.achievements?.reduce((acc, achievement) => {
     if (!acc[achievement.game.name]) {
@@ -277,7 +282,7 @@ const gameAchievements = computed(() => {
                            v-for="level of ac.levels"
                            :key="level.id"
                            :title="`${level.title}\n${level.description}`"
-                           :class="{'grayscale-90': ac.level_user_counts[level.level - 1] === 0 }"
+                           :class="{'grayscale-90': (achievementLevels[ac.id] ?? 0) < level.level }"
                       >
                         <img :data-src="`/gfx/achievements/bg${ac.levels.length === 3 ? level.level - 1 : ''}.png`" class="size-10 justify-self-center"/>
                         <img

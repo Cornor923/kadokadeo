@@ -17,16 +17,29 @@ use App\Models\Run;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
 use App\Settings\SiteSettings;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
 
 class AchievementService
 {
+    /** @var ?list<AchievementRule> */
+    private ?array $rules = null;
+
     /**
-     * @param  iterable<AchievementRule>  $rules
+     * @param  Closure(): list<AchievementRule>  $resolveRules
      */
-    public function __construct(private readonly iterable $rules) {}
+    public function __construct(private readonly Closure $resolveRules) {}
+
+    /**
+     * @return list<AchievementRule>
+     */
+    public function rules(): array
+    {
+        return $this->rules ??= ($this->resolveRules)();
+    }
 
     public function handleGameRunCompleted(GameRunCompleted $event): array
     {
@@ -49,19 +62,12 @@ class AchievementService
                 return [];
             }
 
+            $rules = $this->rulesWithAchievements($event);
+            $progresses = $this->lockedProgresses($event, array_column($rules, 'achievement'));
             $updates = [];
 
-            foreach ($this->rules as $rule) {
-                if (!$rule->supports($event)) {
-                    continue;
-                }
-
-                $achievement = $this->findAchievement($rule, $event->game());
-                if (!$achievement) {
-                    continue;
-                }
-
-                $progress = $this->findOrCreateProgress($event->user(), $achievement, $event->periodId());
+            foreach ($rules as ['rule' => $rule, 'achievement' => $achievement]) {
+                $progress = $progresses->get($achievement->id);
                 if (!$progress) {
                     continue;
                 }
@@ -78,7 +84,6 @@ class AchievementService
                 if ($result->state !== null) {
                     $progress->state = $result->state;
                 }
-                $beforeLevel = $progress->completed_level;
                 $this->updateCompletedLevel($progress, $achievement);
                 if ($progress->completed_level > $beforeLevel) {
                     $this->grantLevelRewards($event->user(), $event->periodId(), $achievement, $beforeLevel, $progress->completed_level);
@@ -219,7 +224,7 @@ class AchievementService
         $progresses = [];
         foreach ($runs as $run) {
             $event = new GameRunCompleted($user, $game, $run, $run->score_details ?? []);
-            foreach ($this->rules as $rule) {
+            foreach ($this->rules() as $rule) {
                 $achievement = $byKey->get($rule->achievementKey());
                 if (!$achievement || $rule->category() !== $achievement->category || !$rule->supports($event)) {
                     continue;
@@ -291,48 +296,90 @@ class AchievementService
         ]);
     }
 
-    private function findAchievement(AchievementRule $rule, Game $game): ?Achievement
+    /**
+     * The rules of the event with their achievement, which is active: its achievements are read once.
+     *
+     * @return list<array{rule: AchievementRule, achievement: Achievement}>
+     */
+    private function rulesWithAchievements(AchievementEventPayload $event): array
     {
-        $query = Achievement::query()
-            ->with('levels')
-            ->where('key', $rule->achievementKey())
-            ->where('category', $rule->category()->value)
-            ->where('is_active', true);
-
-        if ($rule->category() === AchievementCategory::GAME && $rule->gameKey() === null) {
-            $query->where('game_id', $game->id);
-        } elseif ($rule->gameKey() === null) {
-            $query->whereNull('game_id');
-        } else {
-            $query->where('game_id', $game->id);
+        $rules = array_filter($this->rules(), fn (AchievementRule $rule) => $rule->supports($event));
+        if ($rules === []) {
+            return [];
         }
 
-        return $query->first();
+        $gameId = $event->game()->id;
+        $achievements = Achievement::query()
+            ->with('levels', 'game')
+            ->where('is_active', true)
+            ->where(fn ($query) => $query->where('game_id', $gameId)->orWhereNull('game_id'))
+            ->get();
+
+        $found = [];
+        foreach ($rules as $rule) {
+            $ofTheGame = $rule->category() === AchievementCategory::GAME || $rule->gameKey() !== null;
+            $achievement = $achievements->first(fn (Achievement $achievement) => $achievement->key === $rule->achievementKey()
+                && $achievement->category === $rule->category()
+                && $achievement->game_id === ($ofTheGame ? $gameId : null));
+            if ($achievement) {
+                $found[] = ['rule' => $rule, 'achievement' => $achievement];
+            }
+        }
+
+        return $found;
     }
 
-    private function findOrCreateProgress(User $user, Achievement $achievement, ?int $periodId): ?UserAchievementProgress
+    /**
+     * The progress of the player in these achievements, created when missing and locked until the end of the transaction
+     * of handle(): two runs of the player finished at once progress one after the other (each from the value saved by the
+     * other, a level crossed and paid once). None for an achievement by period out of a period.
+     *
+     * @param  list<Achievement>  $achievements
+     * @return BaseCollection<int, UserAchievementProgress>
+     */
+    private function lockedProgresses(AchievementEventPayload $event, array $achievements): BaseCollection
     {
-        $periodId = $achievement->progress_scope === AchievementProgressScope::PER_PERIOD ? $periodId : null;
-
-        if ($achievement->progress_scope === AchievementProgressScope::PER_PERIOD && $periodId === null) {
-            return null;
+        $userId = $event->user()->id;
+        $scopes = [];
+        foreach ($achievements as $achievement) {
+            $periodId = $achievement->progress_scope === AchievementProgressScope::PER_PERIOD ? $event->periodId() : null;
+            if ($achievement->progress_scope !== AchievementProgressScope::PER_PERIOD || $periodId !== null) {
+                $scopes[$achievement->id] = ['achievement' => $achievement, 'period_id' => $periodId, 'scope_key' => $periodId === null ? 'lifetime' : 'period:'.$periodId];
+            }
         }
 
-        $progress = UserAchievementProgress::query()->firstOrCreate([
-            'user_id' => $user->id,
-            'achievement_id' => $achievement->id,
-            'scope_key' => $periodId === null ? 'lifetime' : 'period:'.$periodId,
-        ], [
-            'game_id' => $achievement->game_id,
-            'period_id' => $periodId,
+        // (always in the same order: two runs lock them one after the other)
+        $lock = fn () => UserAchievementProgress::query()
+            ->where('user_id', $userId)
+            ->whereIn('achievement_id', array_keys($scopes))
+            ->whereIn('scope_key', array_unique(array_column($scopes, 'scope_key')))
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('achievement_id');
+
+        $progresses = $lock();
+        $missing = array_diff_key($scopes, $progresses->all());
+        if ($missing === []) {
+            return $progresses;
+        }
+
+        $now = now();
+        // (another run may create them at the same time)
+        UserAchievementProgress::query()->insertOrIgnore(array_map(fn (array $scope) => [
+            'user_id' => $userId,
+            'achievement_id' => $scope['achievement']->id,
+            'game_id' => $scope['achievement']->game_id,
+            'period_id' => $scope['period_id'],
+            'scope_key' => $scope['scope_key'],
             'current_value' => 0,
             'completed_level' => 0,
-            'state' => [],
-        ]);
+            'state' => '[]',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], array_values($missing)));
 
-        // locked until the end of the transaction of handle(), read again: two runs of the player finished at once
-        // progress one after the other (each from the value saved by the other, a level crossed and paid once)
-        return UserAchievementProgress::query()->whereKey($progress->getKey())->lockForUpdate()->first();
+        return $lock();
     }
 
     private function updateCompletedLevel(UserAchievementProgress $progress, Achievement $achievement): void

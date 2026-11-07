@@ -10,6 +10,7 @@ use App\Models\Game;
 use App\Models\Run;
 use App\Models\User;
 use App\Models\UserAchievementProgress;
+use App\Services\AchievementService;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
 use Tests\TestCase;
@@ -106,7 +107,7 @@ class AchievementRulesRobustnessTest extends TestCase
     private function rulesByGame(): array
     {
         $rules = [];
-        foreach (app()->tagged('achievement.rules') as $rule) {
+        foreach (app(AchievementService::class)->rules() as $rule) {
             if ($rule->gameKey() !== null) {
                 $rules[$rule->gameKey()][] = $rule;
             }

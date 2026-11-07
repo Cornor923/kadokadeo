@@ -18,8 +18,8 @@ class KSlashNoShurikenScoreRule extends KSlashRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $firstShurikenScore = data_get($event->stats, 'fssc', 0);
-        $scoreWithoutShuriken = $firstShurikenScore === 0 ? $event->run->score : $firstShurikenScore;
+        $firstShurikenScore = data_get($event->stats, 'fssc', -1);
+        $scoreWithoutShuriken = $firstShurikenScore < 0 ? $event->run->score : $firstShurikenScore;
 
         return $this->bestProgress($progress->current_value, $scoreWithoutShuriken);
     }

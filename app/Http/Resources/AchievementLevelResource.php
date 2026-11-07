@@ -22,7 +22,6 @@ class AchievementLevelResource extends JsonResource
             'target' => $this->target,
             'reward' => $this->reward,
             'icon' => $this->icon,
-            'obtained_percentage' => $this->when(isset($this->obtained_percentage), fn () => $this->obtained_percentage),
         ];
     }
 }

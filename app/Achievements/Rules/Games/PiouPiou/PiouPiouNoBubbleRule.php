@@ -18,8 +18,10 @@ class PiouPiouNoBubbleRule extends PiouPiouRule
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        $firstBubbleLevel = data_get($event->stats, 'fbl', 0);
+        $firstBubbleLevel = data_get($event->stats, 'fbl', -1);
+        // (no bubble: the whole climb)
+        $height = $firstBubbleLevel < 0 ? data_get($event->stats, 'l', 0) : $firstBubbleLevel;
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $firstBubbleLevel));
+        return AchievementRuleResult::setProgress(max($progress->current_value, $height));
     }
 }

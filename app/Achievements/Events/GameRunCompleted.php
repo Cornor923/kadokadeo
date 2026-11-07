@@ -9,6 +9,8 @@ use App\Models\User;
 
 class GameRunCompleted implements AchievementEventPayload
 {
+    private ?string $gameKey = null;
+
     public function __construct(
         public readonly User $user,
         public readonly Game $game,
@@ -18,7 +20,8 @@ class GameRunCompleted implements AchievementEventPayload
 
     public function gameKey(): string
     {
-        return $this->game->game_key;
+        // (asked by every rule)
+        return $this->gameKey ??= $this->game->game_key;
     }
 
     public function user(): User

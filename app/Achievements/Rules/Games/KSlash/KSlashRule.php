@@ -36,7 +36,8 @@ abstract class KSlashRule implements AchievementRule
         $dif = data_get($event->stats, 'dif', 0);
         $respawn = data_get($event->stats, 'respawn', 0);
         $supak = data_get($event->stats, 'supak', 0);
-        $firstStarScore = data_get($event->stats, 'fssc', 0);
+        // -1: no shuriken in the run
+        $firstStarScore = data_get($event->stats, 'fssc', -1);
         $maxs = data_get($event->stats, 'maxs', 0);
         $maxb = data_get($event->stats, 'maxb', 0);
 
@@ -44,7 +45,7 @@ abstract class KSlashRule implements AchievementRule
             return false;
         }
 
-        foreach ([$respawn, $supak, $firstStarScore, $maxs, $maxb] as $count) {
+        foreach ([$respawn, $supak, $maxs, $maxb] as $count) {
             if (!Stats::isCount($count)) {
                 return false;
             }
@@ -68,7 +69,7 @@ abstract class KSlashRule implements AchievementRule
             return false;
         }
 
-        if ($firstStarScore > $event->run->score) {
+        if (!is_int($firstStarScore) || $firstStarScore < -1 || $firstStarScore > $event->run->score) {
             return false;
         }
 

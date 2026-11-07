@@ -91,7 +91,7 @@ class Game implements kado.GameInterface {
 		data = {
 			b: [0, 0, 0],
 			l: 0,
-			fbl: 0,
+			fbl: -1,
 			fb: [0, 0, 0],
 			bp: [0, 0, 0],
 			ch: 0,

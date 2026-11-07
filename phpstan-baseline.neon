@@ -205,12 +205,6 @@ parameters:
 			path: app/Helpers/Format.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Achievement\:\:\$level_user_counts\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AchievementController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\ClanAction\:\:\$attack\.$#'
 			identifier: property.notFound
 			count: 5
@@ -691,12 +685,6 @@ parameters:
 			path: app/Http/Resources/AchievementLevelResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$obtained_percentage\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/AchievementLevelResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementLevelResource\:\:\$reward\.$#'
 			identifier: property.notFound
 			count: 1
@@ -715,12 +703,6 @@ parameters:
 			path: app/Http/Resources/AchievementLevelResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$category\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/AchievementResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$game\.$#'
 			identifier: property.notFound
 			count: 1
@@ -733,19 +715,7 @@ parameters:
 			path: app/Http/Resources/AchievementResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$level_user_counts\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/AchievementResource.php
-
-		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$levels\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/AchievementResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\AchievementResource\:\:\$progress_scope\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/AchievementResource.php

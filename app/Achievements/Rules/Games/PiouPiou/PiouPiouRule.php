@@ -30,13 +30,14 @@ abstract class PiouPiouRule implements AchievementRule
     {
         $bubbles = data_get($event->stats, 'b', []);
         $height = data_get($event->stats, 'l', 0);
-        $firstBubbleLevel = data_get($event->stats, 'fbl', 0);
+        // -1: no bubble in the run
+        $firstBubbleLevel = data_get($event->stats, 'fbl', -1);
         $fallingBubbles = data_get($event->stats, 'fb', []);
         $bubblePopped = data_get($event->stats, 'bp', []);
         $climbHeight = data_get($event->stats, 'ch', 0);
 
         return Stats::isCount($height)
-            && Stats::isCount($firstBubbleLevel)
+            && is_int($firstBubbleLevel) && $firstBubbleLevel >= -1 && $firstBubbleLevel <= $height
             && Stats::isCount($climbHeight)
             && Stats::isCounts($bubbles, 3)
             && Stats::isCounts($fallingBubbles, 3)
