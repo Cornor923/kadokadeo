@@ -24,8 +24,43 @@ typedef PC = mt.player.Clip;
 typedef ColTarget = flash.display.DisplayObject;
 typedef ColTransform = flash.geom.ColorTransform;
 #else
-// (JS: the display objects of arkadeo, the AS3 display list of the Arkadeo games on PixiJS)
-typedef ColTarget = arkadeo.DisplayObject;
+// (JS: the display objects of arkadeo, the AS3 display list of the Arkadeo games on PixiJS, and the clips nested in a
+// timeline the code drives by their name: arkadeo.Clip, coloured with setColour, e.g. Trigo's gfx.Clock._clock._col
+// tinted by mt.fx.Radiate)
+abstract ColTarget(Dynamic) from arkadeo.DisplayObject from arkadeo.Clip {
+	// (mc.transform.colorTransform = ct)
+	public var transform(get, never):ColTarget;
+
+	inline function get_transform():ColTarget
+		return this;
+
+	public var colorTransform(never, set):arkadeo.ColorTransform;
+
+	function set_colorTransform(ct:arkadeo.ColorTransform):arkadeo.ColorTransform {
+		if (Std.isOfType(this, arkadeo.Clip))
+			(this : arkadeo.Clip).setColour(ct.tint(), ct.add());
+		else
+			(this : arkadeo.DisplayObject).transform.colorTransform = ct;
+		return ct;
+	}
+
+	public var visible(get, never):Bool;
+
+	function get_visible():Bool {
+		return Std.isOfType(this, arkadeo.Clip) ? (this : arkadeo.Clip)._visible : (this : arkadeo.DisplayObject).visible;
+	}
+
+	public var alpha(never, set):Float;
+
+	function set_alpha(a:Float):Float {
+		if (Std.isOfType(this, arkadeo.Clip))
+			(this : arkadeo.Clip)._alpha = a * 100;
+		else
+			(this : arkadeo.DisplayObject).alpha = a;
+		return a;
+	}
+}
+
 typedef ColTransform = arkadeo.ColorTransform;
 #end
 

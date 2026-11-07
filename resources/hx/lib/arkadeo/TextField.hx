@@ -248,6 +248,25 @@ class TextField extends DisplayObject {
 		return w;
 	}
 
+	// the colour of a glyph through the multipliers of the colour transform of the field (an embedded font: Trigo's combo
+	// number darkened by the timeline of its box, arkadeo.Clip.attach); with colour offsets the colour matrix of
+	// DisplayObject draws the whole transform
+	function tintOf(c:Int):Int {
+		if (ct == null || ct.redOffset != 0 || ct.greenOffset != 0 || ct.blueOffset != 0)
+			return c;
+		var m = ct.tint();
+		var r = Math.round(((c >> 16) & 0xFF) * ((m >> 16) & 0xFF) / 255);
+		var g = Math.round(((c >> 8) & 0xFF) * ((m >> 8) & 0xFF) / 255);
+		var b = Math.round((c & 0xFF) * (m & 0xFF) / 255);
+		return (r << 16) | (g << 8) | b;
+	}
+
+	override function applyColour() {
+		super.applyColour();
+		if (pixiText == null)
+			layout();
+	}
+
 	function layout() {
 		node.removeChildren();
 		var d = font.def;
@@ -272,7 +291,7 @@ class TextField extends DisplayObject {
 				if (j == null)
 					continue;
 				var s = new PixiSprite(font.tex[j]);
-				s.tint = rc != null ? rc : color;
+				s.tint = tintOf(rc != null ? rc : color);
 				s.anchor.copyFrom(font.tex[j].defaultAnchor);
 				s.x = x;
 				s.y = y;
