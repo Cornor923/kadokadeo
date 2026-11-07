@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteSameBonusRule extends IronChouquetteRule
@@ -12,11 +13,8 @@ class IronChouquetteSameBonusRule extends IronChouquetteRule
         return 'same_bonus';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $maxSameBonus = 0;
 
         $this->iterateThroughBonuses($event, function ($bonusSlots) use (&$maxSameBonus) {
@@ -25,6 +23,6 @@ class IronChouquetteSameBonusRule extends IronChouquetteRule
             $maxSameBonus = max($maxSameBonus, $sameBonusCount);
         });
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $maxSameBonus));
+        return $this->best($progress, $maxSameBonus);
     }
 }

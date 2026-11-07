@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteSacrificesRule extends IronChouquetteRule
@@ -12,16 +13,13 @@ class IronChouquetteSacrificesRule extends IronChouquetteRule
         return 'sacrifices';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $bonuses = data_get($event->stats, 'b', []);
 
         $total = count(array_filter($bonuses, fn ($b) => $b[1] > 99));
         if ($total) {
-            return AchievementRuleResult::setProgress(max($progress->current_value, $total));
+            return $this->best($progress, $total);
         }
 
         return AchievementRuleResult::unchanged($progress->current_value);

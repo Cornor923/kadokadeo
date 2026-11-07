@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\PiouPiou;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class PiouPiouPinkBubblePoppedRule extends PiouPiouRule
@@ -12,12 +13,8 @@ class PiouPiouPinkBubblePoppedRule extends PiouPiouRule
         return 'pink_bubble_popped';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $bubblePopped = data_get($event->stats, 'bp', []);
 
         if ($bubblePopped[2] > 0) {

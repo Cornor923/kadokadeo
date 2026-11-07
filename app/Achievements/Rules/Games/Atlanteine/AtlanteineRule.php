@@ -2,30 +2,13 @@
 
 namespace App\Achievements\Rules\Games\Atlanteine;
 
-use App\Achievements\AchievementRule;
-use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class AtlanteineRule implements AchievementRule
+abstract class AtlanteineRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'atlanteine') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'atlanteine';
 
     public function validate(GameRunCompleted $event): bool
     {
@@ -55,14 +38,5 @@ abstract class AtlanteineRule implements AchievementRule
     protected function finishedLevels(GameRunCompleted $event): array
     {
         return array_slice($this->levels($event), 0, -1);
-    }
-
-    protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
-    {
-        if ($value <= $currentValue) {
-            return AchievementRuleResult::unchanged($currentValue);
-        }
-
-        return AchievementRuleResult::setProgress($value);
     }
 }

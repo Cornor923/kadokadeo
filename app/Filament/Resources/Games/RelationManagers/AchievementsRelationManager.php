@@ -30,46 +30,62 @@ class AchievementsRelationManager extends RelationManager
 
     protected static string $relationship = 'achievements';
 
+    protected static ?string $title = 'Succès';
+
+    protected static ?string $modelLabel = 'succès';
+
+    protected static ?string $pluralModelLabel = 'succès';
+
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('key')
+                    ->label('Clé')
                     ->required()
                     ->maxLength(96),
                 Select::make('category')
-                    ->options(self::categoryOptions())
+                    ->label('Catégorie')
+                    ->options(AchievementCategory::class)
                     ->required(),
                 Select::make('progress_scope')
-                    ->options(self::progressScopeOptions())
+                    ->label('Progression')
+                    ->options(AchievementProgressScope::class)
                     ->required(),
                 Toggle::make('is_active')
+                    ->label('Actif')
                     ->required(),
                 Repeater::make('levels')
+                    ->label('Paliers')
                     ->relationship('levels')
                     ->schema([
                         TextInput::make('level')
+                            ->label('Palier')
                             ->required()
                             ->numeric()
                             ->minValue(1),
                         TextInput::make('target')
+                            ->label('Objectif')
                             ->required()
                             ->numeric()
                             ->minValue(1),
                         TextInput::make('reward')
+                            ->label('Récompense (kadopoints)')
                             ->required()
                             ->numeric()
                             ->minValue(0),
                         TextInput::make('title')
+                            ->label('Titre')
                             ->maxLength(255),
                         Textarea::make('description')
+                            ->label('Description')
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->defaultItems(0)
                     ->reorderable(false)
                     ->collapsible()
-                    ->itemLabel(fn (?array $state): ?string => isset($state['level']) ? 'Level '.$state['level'] : null)
+                    ->itemLabel(fn (?array $state): ?string => isset($state['level']) ? 'Palier '.$state['level'] : null)
                     ->columnSpanFull(),
             ]);
     }
@@ -81,7 +97,7 @@ class AchievementsRelationManager extends RelationManager
             ->description(fn () => static::achievementsDisabledNotice())
             ->columns([
                 ImageColumn::make('level_icons')
-                    ->label('Icons')
+                    ->label('Icônes')
                     ->state(fn ($record) => $record->levels
                         ->map(fn ($level) => $level->icon)
                         ->filter()
@@ -94,36 +110,43 @@ class AchievementsRelationManager extends RelationManager
                     ->label('ID')
                     ->sortable(),
                 TextColumn::make('key')
+                    ->label('Clé')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category')
-                    ->formatStateUsing(fn (mixed $state): string => self::formatEnumState($state))
+                    ->label('Catégorie')
                     ->sortable(),
                 TextColumn::make('progress_scope')
-                    ->formatStateUsing(fn (mixed $state): string => self::formatEnumState($state))
+                    ->label('Progression')
                     ->sortable(),
                 TextColumn::make('levels_count')
-                    ->label('Levels')
+                    ->label('Paliers')
                     ->counts('levels')
                     ->sortable(),
                 IconColumn::make('is_active')
+                    ->label('Actif')
                     ->boolean()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Créé le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Modifié le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('category')
-                    ->options(self::categoryOptions()),
+                    ->label('Catégorie')
+                    ->options(AchievementCategory::class),
                 SelectFilter::make('progress_scope')
-                    ->options(self::progressScopeOptions()),
-                TernaryFilter::make('is_active'),
+                    ->label('Progression')
+                    ->options(AchievementProgressScope::class),
+                TernaryFilter::make('is_active')
+                    ->label('Actif'),
             ])
             ->headerActions([
                 CreateAction::make(),
@@ -137,37 +160,5 @@ class AchievementsRelationManager extends RelationManager
                     DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    private static function categoryOptions(): array
-    {
-        return collect(AchievementCategory::cases())
-            ->mapWithKeys(fn (AchievementCategory $category): array => [$category->value => self::formatOption($category->value)])
-            ->all();
-    }
-
-    private static function progressScopeOptions(): array
-    {
-        return collect(AchievementProgressScope::cases())
-            ->mapWithKeys(fn (AchievementProgressScope $scope): array => [$scope->value => self::formatOption($scope->value)])
-            ->all();
-    }
-
-    private static function formatEnumState(mixed $state): string
-    {
-        if ($state instanceof \BackedEnum) {
-            return self::formatOption((string) $state->value);
-        }
-
-        return self::formatOption($state === null ? null : (string) $state);
-    }
-
-    private static function formatOption(?string $value): string
-    {
-        if ($value === null || $value === '') {
-            return '-';
-        }
-
-        return ucfirst(str_replace('_', ' ', $value));
     }
 }

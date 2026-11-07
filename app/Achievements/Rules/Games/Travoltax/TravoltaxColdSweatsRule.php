@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Travoltax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TravoltaxColdSweatsRule extends TravoltaxRule
@@ -16,12 +17,8 @@ class TravoltaxColdSweatsRule extends TravoltaxRule
         return 'cold_sweats';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $survivalSeconds = min(self::TARGET_SECONDS, intdiv(data_get($event->stats, '_t'), self::FRAMES_PER_SECOND));
         if ($survivalSeconds > $progress->current_value) {
             return AchievementRuleResult::setProgress($survivalSeconds);

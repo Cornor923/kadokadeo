@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Atlanteine;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class AtlanteineGhostBusterRule extends AtlanteineRule
@@ -12,14 +13,10 @@ class AtlanteineGhostBusterRule extends AtlanteineRule
         return 'ghost_buster';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $ghosts = array_map(fn (array $level): int => $level[3], $this->finishedLevels($event));
 
-        return $this->bestProgress($progress->current_value, max($ghosts ?: [0]));
+        return $this->best($progress, max($ghosts ?: [0]));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\KSlash;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class KSlashDiversityRule extends KSlashRule
@@ -12,12 +13,8 @@ class KSlashDiversityRule extends KSlashRule
         return 'diversity';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $kills = data_get($event->stats, 'k', []);
 
         if (min($kills) > 0) {

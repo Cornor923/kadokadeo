@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteKillBlocksRule extends IronChouquetteRule
@@ -12,11 +13,8 @@ class IronChouquetteKillBlocksRule extends IronChouquetteRule
         return 'kill_total_blocks';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $kills = data_get($event->stats, 'k', []);
 
         $k = array_find($kills, fn ($k) => $k[0] === 1000);

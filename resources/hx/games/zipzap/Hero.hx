@@ -42,6 +42,8 @@ class Hero {
 
 	public function action():Void {
 		if (!lock) {
+			// a move, by the mouse or the keyboard (the achievement fast_finish)
+			game.stats.m++;
 			game.stats.pa.push([0, 0, 0, 0, 0, 0]);
 			lock = true;
 			moving = (x < KadoKadeoManager.I(150)) ? 1 : -1;

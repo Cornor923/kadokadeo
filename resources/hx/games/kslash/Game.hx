@@ -474,7 +474,8 @@ class Game implements kado.GameInterface {
 		var max = 0;
 		for (i in 0...optList.length) {
 			if (optList[i]) {
-				max += i << i;
+				// (a bit by bonus: 7 = the 3 at once, the achievement all_bonuses)
+				max += 1 << i;
 				var mc = Clip.attach(dm, "mcIcon", DP_INTER);
 				mc.gotoAndStop(i + 1);
 				mc._x = x;

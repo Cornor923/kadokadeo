@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteSixBonusesRule extends IronChouquetteRule
@@ -12,11 +13,8 @@ class IronChouquetteSixBonusesRule extends IronChouquetteRule
         return 'six_bonuses';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $diffBonuses = [];
 
         $this->iterateThroughBonuses($event, function ($bonusSlots) use (&$diffBonuses) {
@@ -24,6 +22,6 @@ class IronChouquetteSixBonusesRule extends IronChouquetteRule
             $diffBonuses = array_unique(array_merge($diffBonuses, $bonuses->filter(fn ($b) => $b !== -1)->unique()->toArray()));
         });
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, count($diffBonuses)));
+        return $this->best($progress, count($diffBonuses));
     }
 }

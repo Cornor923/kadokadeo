@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Synapses;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class SynapsesNeuronScoreRule extends SynapsesRule
@@ -12,12 +13,8 @@ class SynapsesNeuronScoreRule extends SynapsesRule
         return 'neuron_score';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $connectedNeurons = data_get($event->stats, 'cn', []);
         $max = 0;
         foreach ($connectedNeurons as $levelConnectedNeurons) {
@@ -26,6 +23,6 @@ class SynapsesNeuronScoreRule extends SynapsesRule
             }
         }
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $max));
+        return $this->best($progress, $max);
     }
 }

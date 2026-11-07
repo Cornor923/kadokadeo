@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Travoltax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TravoltaxClearGridRule extends TravoltaxRule
@@ -12,12 +13,8 @@ class TravoltaxClearGridRule extends TravoltaxRule
         return 'clear_grid';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         if (data_get($event->stats, '_cc') > 0) {
             return AchievementRuleResult::setProgress(1);
         }

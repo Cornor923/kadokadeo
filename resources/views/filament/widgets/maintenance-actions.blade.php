@@ -11,7 +11,7 @@
             Mettre à jour les succès
         </x-filament::button>
         <x-filament::button color="danger" icon="heroicon-o-trash" wire:click="deleteAchievements" wire:loading.attr="disabled" wire:target="deleteAchievements"
-            wire:confirm="Tous les succès seront supprimés puis recréés. Continuer ?">
+            wire:confirm="Tous les succès et toute la progression des joueurs seront supprimés, puis les succès recréés à zéro : les récompenses déjà payées seront payées une seconde fois. Pour mettre à jour les succès, utilisez « Mettre à jour les succès ». Continuer ?">
             Supprimer et recréer les succès
         </x-filament::button>
     </x-filament::section>

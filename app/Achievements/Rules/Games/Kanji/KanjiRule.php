@@ -2,29 +2,13 @@
 
 namespace App\Achievements\Rules\Games\Kanji;
 
-use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class KanjiRule implements AchievementRule
+abstract class KanjiRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'kanji') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'kanji';
 
     public function validate(GameRunCompleted $event): bool
     {

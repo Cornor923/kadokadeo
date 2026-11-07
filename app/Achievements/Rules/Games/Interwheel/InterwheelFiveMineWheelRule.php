@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Interwheel;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class InterwheelFiveMineWheelRule extends InterwheelRule
@@ -12,12 +13,8 @@ class InterwheelFiveMineWheelRule extends InterwheelRule
         return 'five_mine_wheel';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $maxMines = 0;
         foreach (data_get($event->stats, 'ws', []) as $wheel) {
             $maxMines = max($maxMines, $wheel[1]);

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\KanjisNightmare;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class KanjisNightmareRepairBrokenArmorRule extends KanjisNightmareRule
@@ -12,12 +13,8 @@ class KanjisNightmareRepairBrokenArmorRule extends KanjisNightmareRule
         return 'repair_broken_armor';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $opts = data_get($event->stats, 'opt', []);
         $cnt = $opts[self::OPT_HP_UP];
 

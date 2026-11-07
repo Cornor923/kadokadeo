@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Starfang;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class StarfangFastLevelRule extends StarfangRule
@@ -12,12 +13,8 @@ class StarfangFastLevelRule extends StarfangRule
         return 'fast_level';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $best = 0;
         foreach ($this->completedLevels(data_get($event->stats, 'l', [])) as $levelIndex => $level) {
             if ($levelIndex < 6) {
@@ -33,6 +30,6 @@ class StarfangFastLevelRule extends StarfangRule
             });
         }
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $best));
+        return $this->best($progress, $best);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteLapinvinciblesWaveRule extends IronChouquetteRule
@@ -12,11 +13,8 @@ class IronChouquetteLapinvinciblesWaveRule extends IronChouquetteRule
         return 'lapinvincibles_wave';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $waves = data_get($event->stats, 'w', []);
         $indexOf34 = array_search(34, $waves);
 

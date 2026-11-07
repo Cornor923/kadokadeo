@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\F1Champion;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class F1ChampionRideOnHealRule extends F1ChampionRule
@@ -12,14 +13,10 @@ class F1ChampionRideOnHealRule extends F1ChampionRule
         return 'ride_on_heal';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $b = data_get($event->stats, 'b', []);
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $b[0] ?? 0));
+        return $this->best($progress, $b[0] ?? 0);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Kaskade2;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class Kaskade2SameColorClicksRule extends Kaskade2Rule
@@ -12,12 +13,8 @@ class Kaskade2SameColorClicksRule extends Kaskade2Rule
         return 'same_color_clicks';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $longestSequence = 0;
         $currentSequence = 0;
         $previousColor = null;
@@ -29,6 +26,6 @@ class Kaskade2SameColorClicksRule extends Kaskade2Rule
             $previousColor = $color;
         }
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $longestSequence));
+        return $this->best($progress, $longestSequence);
     }
 }

@@ -53,8 +53,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
     const p = achievementProgress.value
-    console.log('currentProgress:', p)
-    console.log('achievement_updates:', endRunDetails.achievement_updates)
     for (let au of endRunDetails?.achievement_updates ?? []) {
       const pr = p.find((ap) => ap.achievement_id === au.id)
       if (pr) {

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Bactery;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class BacteryStonesRule extends BacteryRule
@@ -12,12 +13,8 @@ class BacteryStonesRule extends BacteryRule
         return 'stones';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
-        return AchievementRuleResult::setProgress(max($progress->current_value, data_get($event->stats, 'w')));
+        return $this->best($progress, data_get($event->stats, 'w'));
     }
 }

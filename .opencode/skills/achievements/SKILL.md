@@ -57,7 +57,8 @@ Si une information est ambigue, manquante ou contradictoire, demander confirmati
 
 3. Implementer ou modifier la rule principale
 
-- La fonction `validate` doit retourner `true` si les stats necessaires sont considerees valides, sinon `false`.
+- La rule principale `<GameName>Rule` est abstraite, etend `App\Achievements\GameRule` et donne le jeu (`protected const GAME = '<game_key>';`): categorie, `supports` et garde viennent de `GameRule`.
+- La fonction `validate` doit retourner `true` si les stats necessaires sont considerees valides, sinon `false`. `GameRule` l'appelle une fois par partie pour toutes les rules du jeu: une stat refusee ne fait progresser aucun succes du jeu.
 - Recuperer les stats avec `data_get`, par exemple:
 
 ```php
@@ -73,6 +74,7 @@ $bads = data_get($event->stats, 'bads', []);
 
 - Creer une classe par achievement dans `app/Achievements/Rules/Games/<GameName>/` si le repo suit deja ce modele pour le jeu.
 - Nommer les classes selon les conventions existantes: `<GameName><AchievementName>Rule`.
+- Chaque rule donne sa cle (`achievementKey()`) et sa progression (`protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult`), appelee seulement sur des stats validees: elle ne revalide pas.
 - Utiliser les stats deja validees par la rule principale.
 - Retourner la valeur/progression attendue selon les patterns existants du projet.
 - Pour les achievements cumulatifs, suivre les exemples existants avec `AchievementProgressScope::LIFETIME` dans le seeder.
@@ -80,29 +82,22 @@ $bads = data_get($event->stats, 'bads', []);
 - Un nombre a atteindre en une partie (par exemple avoir 70 pierres) ne compte pas en oui/non: la progression suit la vraie valeur. Le `target` du seeder est le seuil (70, pas 1) et la rule garde le meilleur resultat: avec 59 pierres la progression passe a 59, et elle reste a 59 si la partie d'apres en donne 57.
 
 ```php
-return AchievementRuleResult::setProgress(max($progress->current_value, data_get($event->stats, 'w')));
+return $this->best($progress, data_get($event->stats, 'w'));
 ```
 
 - Un seuil a ne pas depasser (10 bacteries ou moins) ne peut pas suivre sa valeur, puisque plus bas est mieux: il garde des paliers 1, 2, 3, comme `BacteryFewBacteriaRule`.
 
 5. Ajouter les achievements au seeder
 
-- Ajouter ou completer la methode `create<GameName>Achievements()`.
-- Ajouter l'appel a cette methode dans `run()` si le jeu n'a pas encore de section.
-- Recuperer le jeu via son `game_key`:
+- Ajouter le jeu (son `game_key`) et ses succes dans la table `ACHIEVEMENTS` de `database/seeders/AchievementsSeeder.php`: un succes par cle, ses paliers dans l'ordre `[target, reward, title, description]`. Les succes communs (`stars`, `paradise_league`) sont crees pour tous les jeux par `run()`.
 
 ```php
-$game = $this->games->where('game_key', '<game_key>')->first();
-if (!$game) {
-    return;
-}
-```
-
-- Creer les achievements et leurs levels en suivant exactement le style existant:
-
-```php
-$achievement = $game->achievements()->updateOrCreate(['key' => '<key>'], ['category' => AchievementCategory::GAME, 'progress_scope' => AchievementProgressScope::LIFETIME]);
-$achievement->levels()->updateOrCreate(['level' => 1], ['target' => 1000, 'reward' => 100, 'title' => '<titre>', 'description' => '<description avec 1.000 si besoin>']);
+'bactery' => [
+    'total_stars' => [
+        [10, 100, 'Admirateur d\'astres', 'Amasser un total de 10 étoiles.'],
+        [100, 500, 'Collectionneur de constellations', 'Amasser un total de 100 étoiles.'],
+    ],
+],
 ```
 
 - Le seeder se relance sur une base existante (bouton admin « Mettre à jour les succès », ou `php artisan db:seed --class=AchievementsSeeder --force`) : il ajoute ce qui manque et met à jour titres, descriptions, seuils et récompenses, sans toucher à la progression des joueurs. Il écrase donc ce qui a été modifié à la main dans l'admin : le seeder est la référence.

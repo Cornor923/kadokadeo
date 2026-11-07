@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Travoltax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TravoltaxMafiaRule extends TravoltaxRule
@@ -14,12 +15,8 @@ class TravoltaxMafiaRule extends TravoltaxRule
         return 'mafia';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $contracts = data_get($event->stats, '_c');
         foreach ($contracts as $contract) {
             if ($contract >= self::MINIMUM_EIGHT_THOUSAND_POINTS_CONTRACT) {

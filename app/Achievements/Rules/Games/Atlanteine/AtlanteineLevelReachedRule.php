@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Atlanteine;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class AtlanteineLevelReachedRule extends AtlanteineRule
@@ -12,12 +13,8 @@ class AtlanteineLevelReachedRule extends AtlanteineRule
         return 'level_reached';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
-        return $this->bestProgress($progress->current_value, count($this->levels($event)));
+        return $this->best($progress, count($this->levels($event)));
     }
 }

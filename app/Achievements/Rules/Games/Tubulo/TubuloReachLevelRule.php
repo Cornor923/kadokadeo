@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Tubulo;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TubuloReachLevelRule extends TubuloRule
@@ -12,12 +13,8 @@ class TubuloReachLevelRule extends TubuloRule
         return 'reach_level';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
-        return $this->bestProgress($progress->current_value, count($this->completedLevels($event)) + 1);
+        return $this->best($progress, count($this->completedLevels($event)) + 1);
     }
 }

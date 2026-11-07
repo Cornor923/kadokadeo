@@ -171,7 +171,6 @@ class Game implements kado.GameInterface {
 
 		if (MouseManager.isButtonJustPressed(MouseManager.BUTTON_LEFT) && hero.moving == null) {
 			waitTimer = 0;
-			stats.m++;
 			hero.action();
 		}
 

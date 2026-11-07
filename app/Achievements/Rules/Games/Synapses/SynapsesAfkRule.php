@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Synapses;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class SynapsesAfkRule extends SynapsesRule
@@ -12,12 +13,8 @@ class SynapsesAfkRule extends SynapsesRule
         return 'afk';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         foreach (data_get($event->stats, 'ls', []) as $k => $levelStats) {
             if ($k === 0) {
                 continue;

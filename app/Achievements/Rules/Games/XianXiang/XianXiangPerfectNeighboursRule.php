@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\XianXiang;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class XianXiangPerfectNeighboursRule extends XianXiangRule
@@ -12,12 +13,8 @@ class XianXiangPerfectNeighboursRule extends XianXiangRule
         return 'perfect_neighbours';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         return AchievementRuleResult::increment($progress->current_value, data_get($event->stats, 'n'));
     }
 }

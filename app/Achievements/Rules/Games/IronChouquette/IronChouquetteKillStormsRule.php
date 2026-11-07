@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\IronChouquette;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class IronChouquetteKillStormsRule extends IronChouquetteRule
@@ -12,11 +13,8 @@ class IronChouquetteKillStormsRule extends IronChouquetteRule
         return 'kill_storms';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
         $kills = data_get($event->stats, 'k', []);
 
         $k = array_filter($kills, fn ($k) => in_array($k[0], [2000, 3500, 8000]));

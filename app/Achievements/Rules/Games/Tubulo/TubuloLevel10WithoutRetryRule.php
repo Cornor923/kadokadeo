@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Tubulo;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TubuloLevel10WithoutRetryRule extends TubuloRule
@@ -12,14 +13,13 @@ class TubuloLevel10WithoutRetryRule extends TubuloRule
         return 'level_10_without_retry';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)
-            || count($this->completedLevels($event)) < 9
+        if (count($this->completedLevels($event)) < 9
             || count($this->resets($event)) > 0) {
             return AchievementRuleResult::unchanged($progress->current_value);
         }
 
-        return $this->bestProgress($progress->current_value, 1);
+        return $this->best($progress, 1);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Atlanteine;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class AtlanteineBonusBoxesRule extends AtlanteineRule
@@ -12,12 +13,8 @@ class AtlanteineBonusBoxesRule extends AtlanteineRule
         return 'bonus_boxes';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $max = 0;
         foreach ($this->finishedLevels($event) as $level) {
             if ($level[7] == 0) {
@@ -25,6 +22,6 @@ class AtlanteineBonusBoxesRule extends AtlanteineRule
             }
         }
 
-        return $this->bestProgress($progress->current_value, $max);
+        return $this->best($progress, $max);
     }
 }

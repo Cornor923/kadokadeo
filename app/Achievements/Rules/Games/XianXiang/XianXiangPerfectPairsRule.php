@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\XianXiang;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class XianXiangPerfectPairsRule extends XianXiangRule
@@ -12,12 +13,8 @@ class XianXiangPerfectPairsRule extends XianXiangRule
         return 'perfect_pairs';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
-        return AchievementRuleResult::setProgress(max($progress->current_value, data_get($event->stats, 'c.3')));
+        return $this->best($progress, data_get($event->stats, 'c.3'));
     }
 }

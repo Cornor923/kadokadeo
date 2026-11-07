@@ -2,12 +2,11 @@
 
 namespace App\Achievements\Rules\Games\KanjisNightmare;
 
-use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class KanjisNightmareRule implements AchievementRule
+abstract class KanjisNightmareRule extends GameRule
 {
     public const OPT_200_PTS = 0;
 
@@ -37,22 +36,7 @@ abstract class KanjisNightmareRule implements AchievementRule
 
     public const OPT_SUSHI = 24;
 
-    public function __construct(private readonly string $gameKey = 'kanjisnightmare') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'kanjisnightmare';
 
     public function validate(GameRunCompleted $event): bool
     {

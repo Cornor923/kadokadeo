@@ -6,6 +6,7 @@ use App\Models\Achievement;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class MaintenanceActions extends Widget
@@ -79,8 +80,11 @@ class MaintenanceActions extends Widget
     public function deleteAchievements(): void
     {
         try {
-            Achievement::query()->delete();
-            Artisan::call('db:seed', ['--force' => true, '--class' => 'AchievementsSeeder']);
+            // (all or nothing: a seeder that fails leaves the achievements there)
+            DB::transaction(function () {
+                Achievement::query()->delete();
+                Artisan::call('db:seed', ['--force' => true, '--class' => 'AchievementsSeeder']);
+            });
 
             Notification::make()
                 ->title('Succès supprimés et recréés.')

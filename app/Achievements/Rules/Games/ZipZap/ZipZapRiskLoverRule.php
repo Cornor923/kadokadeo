@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\ZipZap;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class ZipZapRiskLoverRule extends ZipZapRule
@@ -12,12 +13,8 @@ class ZipZapRiskLoverRule extends ZipZapRule
         return 'risk_lover';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $blackBalloonsPopped = array_sum(array_map(fn ($action) => $action[5], data_get($event->stats, 'pa', [])));
         $riskyBlackBalloons = count(array_filter(data_get($event->stats, 'bb', []), fn ($blackBalloon) => $blackBalloon[1] >= 50));
 

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\PiouPiou;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class PiouPiouClimbHeightRule extends PiouPiouRule
@@ -12,14 +13,10 @@ class PiouPiouClimbHeightRule extends PiouPiouRule
         return 'climb_height';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $climbHeight = data_get($event->stats, 'ch', 0);
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $climbHeight));
+        return $this->best($progress, $climbHeight);
     }
 }

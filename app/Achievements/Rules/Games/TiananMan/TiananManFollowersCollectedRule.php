@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\TiananMan;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TiananManFollowersCollectedRule extends TiananManRule
@@ -12,12 +13,8 @@ class TiananManFollowersCollectedRule extends TiananManRule
         return 'followers_collected';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $followersCollected = data_get($event->stats, 'fc', []);
 
         return AchievementRuleResult::increment($progress->current_value, count($followersCollected));

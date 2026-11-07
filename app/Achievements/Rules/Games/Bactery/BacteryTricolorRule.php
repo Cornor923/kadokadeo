@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Bactery;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class BacteryTricolorRule extends BacteryRule
@@ -12,12 +13,8 @@ class BacteryTricolorRule extends BacteryRule
         return 'tricolor';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $bacteria = data_get($event->stats, 'm');
         $tricolor = $bacteria === data_get($event->stats, 'w') && $bacteria === data_get($event->stats, 'k');
 

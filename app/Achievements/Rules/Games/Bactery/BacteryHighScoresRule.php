@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Bactery;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class BacteryHighScoresRule extends BacteryRule
@@ -12,12 +13,8 @@ class BacteryHighScoresRule extends BacteryRule
         return 'high_scores';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         if ($event->run->score < 17000) {
             return AchievementRuleResult::unchanged($progress->current_value);
         }

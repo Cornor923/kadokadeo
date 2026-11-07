@@ -46,15 +46,6 @@ export const useAchievementStore = defineStore('achievement', () => {
     )
   }
 
-  function normalizeResource(resource) {
-    return resource?.data ?? resource
-  }
-
-  function normalizeResourceCollection(collection) {
-    if (Array.isArray(collection)) return collection
-    return collection?.data ?? []
-  }
-
   function findAchievement(achievementUpdate) {
     return (
       achievements.value?.find(
@@ -92,21 +83,9 @@ export const useAchievementStore = defineStore('achievement', () => {
 
   function addUnlockedAchievement(achievementUpdate) {
     const achievement = findAchievement(achievementUpdate)
-    const currentLevel = normalizeResource(achievementUpdate.current_level)
-    const nextLevel = normalizeResource(achievementUpdate.next_level)
-    const unlockedLevels = normalizeResourceCollection(achievementUpdate.newly_unlocked_levels)
-    const levels = unlockedLevels.length
-      ? unlockedLevels
-      : [
-        currentLevel ??
-            achievement?.levels?.find(
-              (level) => Number(level.level) === Number(achievementUpdate.completed_level),
-            ),
-      ].filter(Boolean)
-
-    for (const level of levels) {
+    for (const level of achievementUpdate.newly_unlocked_levels ?? []) {
       const notificationId = `${achievementUpdate.id}-${level.id}-${Date.now()}-${nextCompletedAchievementNotificationId++}`
-      const maxLevel = achievement?.levels?.length ?? (nextLevel ? 3 : level.level)
+      const maxLevel = achievement?.levels?.length ?? (achievementUpdate.next_level ? 3 : level.level)
 
       completedAchievements.value.push({
         id: notificationId,
@@ -133,20 +112,6 @@ export const useAchievementStore = defineStore('achievement', () => {
     }
   }
 
-  // addUnlockedAchievement({
-  //   achievement_key: 'elevation',
-  //   category: 'game',
-  //   completed_level: 1,
-  //   completed_level_before: 0,
-  //   current_level: { description: 'Monter d\'une hauteur de 1.000 mètres en une seule ascension.', id: 19, level: 1, reward: 100, target: 1000, title: 'Mont-Blanc' },
-  //   game_key: 'interwheel',
-  //   id: 7,
-  //   newly_unlocked_levels: [{ description: 'Monter d\'une hauteur de 1.000 mètres en une seule ascension.', id: 19, level: 1, reward: 100, target: 1000, title: 'Mont-Blanc' }],
-  //   next_level: { description: 'Monter d\'une hauteur de 2.500 mètres en une seule ascension.', id: 20, level: 2, reward: 500, target: 2500, title: 'Kilimanjaro' },
-  //   progress: 1109,
-  //   progress_before: 834,
-  //   type: 'unlocked',
-  // })
 
   return {
     enabled: achievementsEnabled,

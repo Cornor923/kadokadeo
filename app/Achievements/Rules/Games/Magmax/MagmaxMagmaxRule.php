@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Magmax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class MagmaxMagmaxRule extends MagmaxRule
@@ -12,12 +13,8 @@ class MagmaxMagmaxRule extends MagmaxRule
         return 'magmax';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $combos = data_get($event->stats, 'c', []);
 
         if ($combos[3] > 0) {

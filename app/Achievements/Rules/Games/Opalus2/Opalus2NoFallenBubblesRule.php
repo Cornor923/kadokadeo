@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Opalus2;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class Opalus2NoFallenBubblesRule extends Opalus2Rule
@@ -12,12 +13,8 @@ class Opalus2NoFallenBubblesRule extends Opalus2Rule
         return 'no_fallen_bubbles';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $sum = array_sum(array_map(fn (array $turn): int => $turn[2], $this->turns($event)));
 
         if ($sum === 0) {

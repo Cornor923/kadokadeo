@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Travoltax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TravoltaxUsePsychoRule extends TravoltaxRule
@@ -12,12 +13,8 @@ class TravoltaxUsePsychoRule extends TravoltaxRule
         return 'use_psycho';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $opts = data_get($event->stats, '_o', []);
         $psychoUses = array_filter($opts, function ($opt) {
             return $opt === 15;

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\F1Champion;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class F1ChampionTotalKmRule extends F1ChampionRule
@@ -16,12 +17,8 @@ class F1ChampionTotalKmRule extends F1ChampionRule
         return 'total_km';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $remainingDistanceUnits = $progress->state['remaining_distance_units'] ?? 0;
         $distanceUnits = $remainingDistanceUnits + min(
             self::MAX_KM_PER_RUN * self::DISTANCE_UNITS_PER_KM,

@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Magmax;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class MagmaxBothBonusesRule extends MagmaxRule
@@ -12,12 +13,8 @@ class MagmaxBothBonusesRule extends MagmaxRule
         return 'both_bonuses';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         if (data_get($event->stats, 'dual', 0) > 0) {
             return AchievementRuleResult::setProgress(1);
         }

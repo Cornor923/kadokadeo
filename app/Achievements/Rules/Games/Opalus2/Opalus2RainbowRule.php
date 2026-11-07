@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Opalus2;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class Opalus2RainbowRule extends Opalus2Rule
@@ -12,18 +13,14 @@ class Opalus2RainbowRule extends Opalus2Rule
         return 'rainbow';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $max = 0;
         foreach ($this->fallenByColor($event) as $turn) {
             $colors = count(array_filter($turn, fn (int $fallenCount): bool => $fallenCount > 0));
             $max = max($max, $colors);
         }
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $max));
+        return $this->best($progress, $max);
     }
 }

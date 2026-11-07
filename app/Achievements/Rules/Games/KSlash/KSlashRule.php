@@ -2,30 +2,13 @@
 
 namespace App\Achievements\Rules\Games\KSlash;
 
-use App\Achievements\AchievementRule;
-use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class KSlashRule implements AchievementRule
+abstract class KSlashRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'kslash') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'kslash';
 
     public function validate(GameRunCompleted $event): bool
     {
@@ -74,14 +57,5 @@ abstract class KSlashRule implements AchievementRule
         }
 
         return $maxs <= 200 && is_int($dif);
-    }
-
-    protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
-    {
-        if ($value <= $currentValue) {
-            return AchievementRuleResult::unchanged($currentValue);
-        }
-
-        return AchievementRuleResult::setProgress($value);
     }
 }

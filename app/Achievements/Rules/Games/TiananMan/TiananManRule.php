@@ -2,29 +2,13 @@
 
 namespace App\Achievements\Rules\Games\TiananMan;
 
-use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class TiananManRule implements AchievementRule
+abstract class TiananManRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'tiananman') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'tiananman';
 
     public function validate(GameRunCompleted $event): bool
     {

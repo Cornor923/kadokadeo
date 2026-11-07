@@ -2,11 +2,10 @@
 
 namespace App\Achievements\Rules\Games\Bactery;
 
-use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
-use App\Enums\AchievementCategory;
+use App\Achievements\GameRule;
 
-abstract class BacteryRule implements AchievementRule
+abstract class BacteryRule extends GameRule
 {
     // the board has 100 cells, all counted at the end of the game
     private const CELLS = 100;
@@ -14,22 +13,7 @@ abstract class BacteryRule implements AchievementRule
     // the deal has 1 to 5 of them
     private const MAX_STARS = 5;
 
-    public function __construct(private readonly string $gameKey = 'bactery') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'bactery';
 
     public function validate(GameRunCompleted $event): bool
     {

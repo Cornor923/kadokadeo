@@ -2,32 +2,16 @@
 
 namespace App\Achievements\Rules\Games\XianXiang;
 
-use App\Achievements\AchievementRule;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class XianXiangRule implements AchievementRule
+abstract class XianXiangRule extends GameRule
 {
     // the 42 cards of the board: a game only ends once they are all gone
     protected const PAIRS = 21;
 
-    public function __construct(private readonly string $gameKey = 'xianxiang') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'xianxiang';
 
     public function validate(GameRunCompleted $event): bool
     {

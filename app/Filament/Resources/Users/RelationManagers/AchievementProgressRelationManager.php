@@ -28,35 +28,48 @@ class AchievementProgressRelationManager extends RelationManager
 
     protected static string $relationship = 'achievementProgress';
 
-    protected static ?string $title = 'Achievements';
+    protected static ?string $title = 'Succès';
+
+    protected static ?string $modelLabel = 'progression';
+
+    protected static ?string $pluralModelLabel = 'progressions';
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 Select::make('achievement_id')
+                    ->label('Succès')
                     ->options(fn () => self::achievementOptions())
                     ->searchable()
                     ->required(),
                 Select::make('game_id')
+                    ->label('Jeu')
                     ->options(fn () => Game::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
-                    ->placeholder('Global'),
+                    ->placeholder('Tous les jeux'),
                 TextInput::make('period_id')
+                    ->label('Période')
                     ->numeric(),
                 TextInput::make('scope_key')
+                    ->label('Portée')
+                    ->helperText('« lifetime », ou « period:<id> » pour un succès par période')
                     ->required()
                     ->maxLength(64),
                 TextInput::make('current_value')
+                    ->label('Progression')
                     ->required()
                     ->numeric()
                     ->minValue(0),
                 TextInput::make('completed_level')
+                    ->label('Palier atteint')
                     ->required()
                     ->numeric()
                     ->minValue(0),
-                DateTimePicker::make('completed_at'),
+                DateTimePicker::make('completed_at')
+                    ->label('Premier palier le'),
                 KeyValue::make('state')
+                    ->label('État de la règle')
                     ->columnSpanFull(),
             ]);
     }
@@ -71,54 +84,61 @@ class AchievementProgressRelationManager extends RelationManager
                     ->label('ID')
                     ->sortable(),
                 TextColumn::make('achievement.key')
-                    ->label('Achievement')
+                    ->label('Succès')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('game.name')
-                    ->placeholder('Global')
+                    ->label('Jeu')
+                    ->placeholder('Tous les jeux')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('achievement.category')
-                    ->label('Category')
-                    ->formatStateUsing(fn (mixed $state): string => self::formatEnumState($state))
+                    ->label('Catégorie')
                     ->sortable(),
                 TextColumn::make('achievement.progress_scope')
-                    ->label('Scope')
-                    ->formatStateUsing(fn (mixed $state): string => self::formatEnumState($state))
+                    ->label('Progression')
                     ->sortable(),
                 TextColumn::make('scope_key')
+                    ->label('Portée')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('current_value')
+                    ->label('Valeur')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('completed_level')
+                    ->label('Palier atteint')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('period_id')
+                    ->label('Période')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('state')
+                    ->label('État de la règle')
                     ->formatStateUsing(fn (mixed $state): string => $state ? json_encode($state) ?: '-' : '-')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('completed_at')
+                    ->label('Premier palier le')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('updated_at')
+                    ->label('Modifié le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Filter::make('completed')
+                    ->label('Avec un palier atteint')
                     ->query(fn (Builder $query): Builder => $query->where('completed_level', '>', 0)),
                 SelectFilter::make('achievement_id')
-                    ->label('Achievement')
+                    ->label('Succès')
                     ->options(fn () => self::achievementOptions())
                     ->searchable(),
                 SelectFilter::make('game_id')
-                    ->label('Game')
+                    ->label('Jeu')
                     ->options(fn () => Game::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable(),
             ])
@@ -144,25 +164,7 @@ class AchievementProgressRelationManager extends RelationManager
             ->orderBy('key')
             ->get()
             ->mapWithKeys(fn (Achievement $achievement): array => [
-                $achievement->id => ($achievement->game?->name ?? 'Global').' / '.$achievement->key,
+                $achievement->id => ($achievement->game?->name ?? 'Tous les jeux').' / '.$achievement->key,
             ]);
-    }
-
-    private static function formatEnumState(mixed $state): string
-    {
-        if ($state instanceof \BackedEnum) {
-            return self::formatOption((string) $state->value);
-        }
-
-        return self::formatOption($state === null ? null : (string) $state);
-    }
-
-    private static function formatOption(?string $value): string
-    {
-        if ($value === null || $value === '') {
-            return '-';
-        }
-
-        return ucfirst(str_replace('_', ' ', $value));
     }
 }

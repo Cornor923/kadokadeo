@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Tubulo;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class TubuloGreenPaintRule extends TubuloRule
@@ -12,12 +13,8 @@ class TubuloGreenPaintRule extends TubuloRule
         return 'green_paint';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $completedLevelCount = count($this->completedLevels($event));
         $paintedGreen = 0;
         foreach (array_slice($this->levelColors($event), 0, $completedLevelCount) as $colors) {

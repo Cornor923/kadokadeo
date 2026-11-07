@@ -2,30 +2,13 @@
 
 namespace App\Achievements\Rules\Games\Magmax;
 
-use App\Achievements\AchievementRule;
-use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class MagmaxRule implements AchievementRule
+abstract class MagmaxRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'magmax') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'magmax';
 
     // g: monsters generated per type (0 bomb, 1 flower, 2 turret), k: killed per type, c: combos per level (3: Magmax),
     // b: bonuses picked up per type (0-2 gems, 3 speed, 4 double fire), seq: bomb, flower, turret killed in a row in one
@@ -63,14 +46,5 @@ abstract class MagmaxRule implements AchievementRule
         }
 
         return $dual <= $bonuses[3] + $bonuses[4];
-    }
-
-    protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
-    {
-        if ($value <= $currentValue) {
-            return AchievementRuleResult::unchanged($currentValue);
-        }
-
-        return AchievementRuleResult::setProgress($value);
     }
 }

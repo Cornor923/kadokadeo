@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\F1Champion;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class F1ChampionRiskTakerRule extends F1ChampionRule
@@ -12,14 +13,10 @@ class F1ChampionRiskTakerRule extends F1ChampionRule
         return 'risk_taker';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $outs = min(5, data_get($event->stats, 'o', 0));
 
-        return AchievementRuleResult::setProgress(max($progress->current_value, $outs));
+        return $this->best($progress, $outs);
     }
 }

@@ -2,30 +2,13 @@
 
 namespace App\Achievements\Rules\Games\Tubulo;
 
-use App\Achievements\AchievementRule;
-use App\Achievements\AchievementRuleResult;
 use App\Achievements\Events\GameRunCompleted;
+use App\Achievements\GameRule;
 use App\Achievements\Stats;
-use App\Enums\AchievementCategory;
 
-abstract class TubuloRule implements AchievementRule
+abstract class TubuloRule extends GameRule
 {
-    public function __construct(private readonly string $gameKey = 'tubulo') {}
-
-    public function category(): AchievementCategory
-    {
-        return AchievementCategory::GAME;
-    }
-
-    public function gameKey(): ?string
-    {
-        return $this->gameKey;
-    }
-
-    public function supports(object $event): bool
-    {
-        return $event instanceof GameRunCompleted && $event->gameKey() === $this->gameKey;
-    }
+    protected const GAME = 'tubulo';
 
     public function validate(GameRunCompleted $event): bool
     {
@@ -38,7 +21,8 @@ abstract class TubuloRule implements AchievementRule
             return false;
         }
 
-        if (count($levelColors) !== count($completedLevels) + 1 || count($levelChronos) !== count($completedLevels)) {
+        // (the colors of the level being played, missing when its reset filled the chrono: the game ends then)
+        if (!in_array(count($levelColors) - count($completedLevels), [0, 1], true) || count($levelChronos) !== count($completedLevels)) {
             return false;
         }
 
@@ -81,14 +65,5 @@ abstract class TubuloRule implements AchievementRule
     protected function levelChronos(GameRunCompleted $event): array
     {
         return data_get($event->stats, '_cl', []);
-    }
-
-    protected function bestProgress(int $currentValue, int $value): AchievementRuleResult
-    {
-        if ($value <= $currentValue) {
-            return AchievementRuleResult::unchanged($currentValue);
-        }
-
-        return AchievementRuleResult::setProgress($value);
     }
 }

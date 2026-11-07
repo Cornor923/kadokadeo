@@ -3,6 +3,7 @@
 namespace App\Achievements\Rules\Games\Popcorn;
 
 use App\Achievements\AchievementRuleResult;
+use App\Achievements\Events\GameRunCompleted;
 use App\Models\UserAchievementProgress;
 
 class PopcornFastkillPokepiRule extends PopcornRule
@@ -14,15 +15,11 @@ class PopcornFastkillPokepiRule extends PopcornRule
         return 'fastkill_pokepi';
     }
 
-    public function evaluate(object $event, UserAchievementProgress $progress): AchievementRuleResult
+    protected function progress(GameRunCompleted $event, UserAchievementProgress $progress): AchievementRuleResult
     {
-        if (!$this->validate($event)) {
-            return AchievementRuleResult::unchanged($progress->current_value);
-        }
-
         $bossHitFrames = data_get($event->stats, 'bhf', []);
         $fastKill = count($bossHitFrames) === 7 && max($bossHitFrames) < self::ONE_MINUTE_IN_FRAMES;
 
-        return $this->bestProgress($progress->current_value, $fastKill ? 1 : 0);
+        return $this->best($progress, $fastKill ? 1 : 0);
     }
 }
