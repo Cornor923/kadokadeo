@@ -244,3 +244,6 @@ fafi360.Game
 --next
 -js ./resources/js/games/nosushi.js
 nosushi.Game
+--next
+-js ./resources/js/games/trigo.js
+trigo.Game
