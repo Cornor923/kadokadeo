@@ -128,6 +128,12 @@ class Game implements kado.GameInterface {
 	var statC:Int;
 	var statS:Int;
 	var statL:Int;
+	// for the achievements: the furies used, the birds lost by type, the score at the first bird lost or the first fury
+	// (-1: neither), the most furies held at once
+	var statF:Int;
+	var statLT:Array<Int>;
+	var statFS:Int;
+	var statMF:Int;
 
 	var lifeIcons:Array<Clip>;
 	var specialIcons:Array<Clip>;
@@ -215,6 +221,10 @@ class Game implements kado.GameInterface {
 		statC = 0;
 		statS = 0;
 		statL = 0;
+		statF = 0;
+		statLT = [0, 0, 0, 0];
+		statFS = -1;
+		statMF = KKApi.val(INIT_SPECIAL);
 		pious = [];
 		parts = [];
 		partsP = [];
@@ -499,6 +509,8 @@ class Game implements kado.GameInterface {
 
 		if (keyDown(KeyboardManager.SPACE) && KKApi.val(specialCount) > 0) {
 			if (!pressSpace && !furie) {
+				statF++;
+				markFirstMistake();
 				specialCount = KKApi.const(KKApi.val(specialCount) - 1);
 				specialIcons.pop().play();
 				// (dmanager.attach("shock") of the original: the symbol was never exported, nothing shown)
@@ -649,6 +661,8 @@ class Game implements kado.GameInterface {
 					statS++;
 					if (p.type == 3) {
 						specialCount = KKApi.const(KKApi.val(specialCount) + 1);
+						if (KKApi.val(specialCount) > statMF)
+							statMF = KKApi.val(specialCount);
 						addSpecial();
 					} else
 						addScore(KKApi.val(POINTS[p.type]));
@@ -661,6 +675,8 @@ class Game implements kado.GameInterface {
 					dm.swap(mc, PLAN_BG2);
 			} else if (mc._y >= 280) {
 				statL++;
+				statLT[p.type]++;
+				markFirstMistake();
 				var sp = Clip.attach(dm, "splatch", PLAN_PART);
 				sp._x = mc._x;
 				sp._y = 295;
@@ -785,6 +801,12 @@ class Game implements kado.GameInterface {
 	}
 
 	// ---------------------------------------------------------------- SCORE / END
+	// the score before the first bird lost or the first fury (the achievement clean_score)
+	function markFirstMistake() {
+		if (statFS == -1)
+			statFS = KadoKadeoManager.kkm.score.get();
+	}
+
 	function addScore(n:Int) {
 		if (!over)
 			KadoKadeoManager.kkm.addScore(n);
@@ -794,8 +816,17 @@ class Game implements kado.GameInterface {
 		if (over)
 			return;
 		over = true;
-		// stats of the original ($c: birds shot, $s: saved, $l: lost), keys without $ like the other games
-		var stats = {c: statC, s: statS, l: statL};
+		// stats of the original ($c: birds shot, $s: saved, $l: lost), keys without $ like the other games, and the ones of
+		// the achievements
+		var stats = {
+			c: statC,
+			s: statS,
+			l: statL,
+			f: statF,
+			lt: statLT,
+			fs: statFS,
+			mf: statMF
+		};
 		#if debug
 		// test harness: state of the game at its end (compared between a game and its replay)
 		untyped js.Browser.window.__over = {

@@ -511,6 +511,32 @@ class AchievementsSeeder extends Seeder
                 [5, 2000, 'Déblocage vertical', 'Monter de 5 cases d\'un coup.'],
             ],
         ],
+        'pioutch' => [
+            'furies_used' => [
+                [10, 100, 'Volez petits pious', 'Utiliser 10 fury.'],
+                [100, 500, 'Tempête de pious', 'Utiliser 100 fury.'],
+                [1000, 1000, 'Lévitation pioutesque', 'Utiliser 1.000 fury.'],
+            ],
+            'saved' => [
+                [100, 100, 'Et hop, panier', 'Faire rentrer 100 pious.'],
+                [1000, 500, 'Pro du trampo', 'Faire rentrer 1.000 pious.'],
+                [10000, 1000, 'Tireur d\'élite', 'Faire rentrer 10.000 pious.'],
+            ],
+            'lost' => [
+                [10, 100, 'Atterrissage raté', 'Faire tomber 10 pious.'],
+                [100, 500, 'Le sol est dur', 'Faire tomber 100 pious.'],
+                [1000, 1000, 'Omelette de pioutch', 'Faire tomber 1.000 pious.'],
+            ],
+            'violet_lost' => [
+                [1, 250, 'Colis fragile', 'Faire tomber un violet.'],
+            ],
+            'clean_score' => [
+                [20000, 1000, 'Maître du référentiel bondissant', 'Faire 20.000 sans perdre une vie et sans fury.'],
+            ],
+            'fury_stock' => [
+                [5, 2000, 'Folie fury-euse', 'Avoir 5 fury en réserve en même temps.'],
+            ],
+        ],
         'popcorn' => [
             'total_buble_destroyed' => [
                 [1500, 100, 'Ventre vide', 'Manger un total de 1.500 grains.'],
