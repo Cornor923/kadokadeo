@@ -247,3 +247,6 @@ nosushi.Game
 --next
 -js ./resources/js/games/trigo.js
 trigo.Game
+--next
+-js ./resources/js/games/labrute.js
+labrute.Game

@@ -1,0 +1,250 @@
+{
+	"files": {
+		"agility": "agility.webp",
+		"background": "background.png",
+		"button-hover": "button-hover.webp",
+		"button-recap-hover": "button-recap-hover.png",
+		"button-recap": "button-recap.png",
+		"button-square-hover": "button-square-hover.webp",
+		"button-square": "button-square.webp",
+		"button": "button.webp",
+		"card": "card.webp",
+		"confetti-1": "confetti-1.png",
+		"confetti-10": "confetti-10.png",
+		"confetti-11": "confetti-11.png",
+		"confetti-12": "confetti-11.png",
+		"confetti-13": "confetti-13.png",
+		"confetti-14": "confetti-13.png",
+		"confetti-15": "confetti-15.png",
+		"confetti-16": "confetti-15.png",
+		"confetti-17": "confetti-17.png",
+		"confetti-18": "confetti-17.png",
+		"confetti-19": "confetti-19.png",
+		"confetti-2": "confetti-1.png",
+		"confetti-20": "confetti-19.png",
+		"confetti-21": "confetti-1.png",
+		"confetti-3": "confetti-3.png",
+		"confetti-4": "confetti-3.png",
+		"confetti-5": "confetti-5.png",
+		"confetti-6": "confetti-5.png",
+		"confetti-7": "confetti-7.png",
+		"confetti-8": "confetti-7.png",
+		"confetti-9": "confetti-10.png",
+		"ear": "ear.png",
+		"fight-de": "fight-de.webp",
+		"fight-en": "fight-de.webp",
+		"fight-es": "fight-de.webp",
+		"fight-hover-de": "fight-hover-de.webp",
+		"fight-hover-en": "fight-hover-de.webp",
+		"fight-hover-es": "fight-hover-de.webp",
+		"fight-hover-pt": "fight-hover-de.webp",
+		"fight-hover-ru": "fight-hover-ru.webp",
+		"fight-hover": "fight-hover.webp",
+		"fight-pt": "fight-de.webp",
+		"fight-ru": "fight-ru.webp",
+		"fight": "fight.webp",
+		"flag-de": "flag-de.webp",
+		"flag-en": "flag-en.webp",
+		"flag-es": "flag-es.webp",
+		"flag-fr": "flag-fr.webp",
+		"flag-pt": "flag-pt.webp",
+		"flag-ru": "flag-ru.webp",
+		"font-title": "font-title.woff2",
+		"gold": "gold.png",
+		"header": "header.png",
+		"hp": "hp.webp",
+		"notif-banner": "notif-banner.png",
+		"panel-weapons": "panel-weapons.webp",
+		"pet-bear": "pet-bear.webp",
+		"pet-dog1": "pet-dog1.webp",
+		"pet-dog2": "pet-dog2.webp",
+		"pet-dog3": "pet-dog3.webp",
+		"pet-panther": "pet-panther.webp",
+		"rank-1": "rank-1.webp",
+		"rank-10": "rank-10.webp",
+		"rank-11": "rank-11.webp",
+		"rank-12": "rank-12.webp",
+		"rank-2": "rank-2.webp",
+		"rank-3": "rank-3.webp",
+		"rank-4": "rank-4.webp",
+		"rank-5": "rank-5.webp",
+		"rank-6": "rank-6.webp",
+		"rank-7": "rank-7.webp",
+		"rank-8": "rank-8.webp",
+		"rank-9": "rank-9.webp",
+		"ranking": "ranking.png",
+		"recap": "recap.png",
+		"speed": "speed.webp",
+		"strength": "strength.webp",
+		"topbar": "topbar.png",
+		"weapon-axe": "weapon-axe.webp",
+		"weapon-bare-hands": "weapon-bare-hands.webp",
+		"weapon-baton": "weapon-baton.webp",
+		"weapon-broadsword": "weapon-broadsword.webp",
+		"weapon-bumps": "weapon-bumps.webp",
+		"weapon-fan": "weapon-fan.webp",
+		"weapon-flail": "weapon-flail.webp",
+		"weapon-fryingPan": "weapon-fryingPan.webp",
+		"weapon-halbard": "weapon-halbard.webp",
+		"weapon-hatchet": "weapon-hatchet.webp",
+		"weapon-keyboard": "weapon-keyboard.webp",
+		"weapon-knife": "weapon-knife.webp",
+		"weapon-lance": "weapon-lance.webp",
+		"weapon-leek": "weapon-leek.webp",
+		"weapon-mammothBone": "weapon-mammothBone.webp",
+		"weapon-morningStar": "weapon-morningStar.webp",
+		"weapon-mug": "weapon-mug.webp",
+		"weapon-noodleBowl": "weapon-noodleBowl.webp",
+		"weapon-piopio": "weapon-piopio.webp",
+		"weapon-racquet": "weapon-racquet.webp",
+		"weapon-sai": "weapon-sai.webp",
+		"weapon-scimitar": "weapon-scimitar.webp",
+		"weapon-shuriken": "weapon-shuriken.webp",
+		"weapon-sword": "weapon-sword.webp",
+		"weapon-trident": "weapon-trident.webp",
+		"weapon-trombone": "weapon-trombone.webp",
+		"weapon-whip": "weapon-whip.webp"
+	},
+	"origins": {
+		"panel-weapons": {
+			"x": 0,
+			"y": 0,
+			"k": 2
+		},
+		"weapon-axe": {
+			"x": 2,
+			"y": 2,
+			"k": 2.9966996699669965
+		},
+		"weapon-bare-hands": {
+			"x": 2,
+			"y": 2,
+			"k": 3
+		},
+		"weapon-baton": {
+			"x": 2,
+			"y": 2,
+			"k": 3.00290309353409
+		},
+		"weapon-broadsword": {
+			"x": 2,
+			"y": 2,
+			"k": 2.9947151547906907
+		},
+		"weapon-bumps": {
+			"x": 2.0166664123535156,
+			"y": 2,
+			"k": 2.995426811849624
+		},
+		"weapon-fan": {
+			"x": 1.9499969482421875,
+			"y": 2,
+			"k": 3.0038019328184022
+		},
+		"weapon-flail": {
+			"x": 1.9799957275390625,
+			"y": 2,
+			"k": 2.992575762664076
+		},
+		"weapon-fryingPan": {
+			"x": 1.9921035766601562,
+			"y": 2,
+			"k": 2.997248451414346
+		},
+		"weapon-halbard": {
+			"x": 2,
+			"y": 2.0021724700927734,
+			"k": 2.999520667871382
+		},
+		"weapon-hatchet": {
+			"x": 1.9982452392578125,
+			"y": 2,
+			"k": 2.9945194096836456
+		},
+		"weapon-keyboard": {
+			"x": 2,
+			"y": 2,
+			"k": 3.0026810265647135
+		},
+		"weapon-knife": {
+			"x": 2,
+			"y": 2,
+			"k": 3.0033557815898866
+		},
+		"weapon-lance": {
+			"x": 2,
+			"y": 2,
+			"k": 2.9787233740347663
+		},
+		"weapon-leek": {
+			"x": 2,
+			"y": 1.9499988555908203,
+			"k": 3.008298707569507
+		},
+		"weapon-mammothBone": {
+			"x": 2,
+			"y": 2.001042366027832,
+			"k": 2.997565559305151
+		},
+		"weapon-morningStar": {
+			"x": 2.012500762939453,
+			"y": 2.002941131591797,
+			"k": 3.0066242575341944
+		},
+		"weapon-mug": {
+			"x": 2,
+			"y": 2,
+			"k": 2.9845622556884623
+		},
+		"weapon-noodleBowl": {
+			"x": 2,
+			"y": 2,
+			"k": 3.0114484589591552
+		},
+		"weapon-piopio": {
+			"x": 2.013400077819824,
+			"y": 2.0176000595092773,
+			"k": 3.0092054949723837
+		},
+		"weapon-racquet": {
+			"x": 1.9969711303710938,
+			"y": 2,
+			"k": 3.0014881576604
+		},
+		"weapon-sai": {
+			"x": 2.025846481323242,
+			"y": 2.015199661254883,
+			"k": 3.0018947211718783
+		},
+		"weapon-scimitar": {
+			"x": 2,
+			"y": 2,
+			"k": 2.9957203559571424
+		},
+		"weapon-shuriken": {
+			"x": 1.9992008209228516,
+			"y": 1.9986896514892578,
+			"k": 2.983419737416852
+		},
+		"weapon-sword": {
+			"x": 2,
+			"y": 2,
+			"k": 2.998809741921906
+		},
+		"weapon-trident": {
+			"x": 2,
+			"y": 2,
+			"k": 2.999722659779018
+		},
+		"weapon-trombone": {
+			"x": 2.010526657104492,
+			"y": 1.7999992370605469,
+			"k": 3.001228667842746
+		},
+		"weapon-whip": {
+			"x": 2,
+			"y": 2,
+			"k": 3.0071506781586845
+		}
+	}
+}
