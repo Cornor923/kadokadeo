@@ -163,6 +163,18 @@ class Particle extends arkadeo.Sprite {
 		return list;
 	}
 
+	// (-D spriteParticles of the original lib, Charlotte's Quest) the particle drawn once with its filters into a bitmap
+	// (+ padding), shown instead of its drawing and its children: the filters are not drawn again at each frame
+	public function flatten(?padding = 0.0) {
+		var bmp = Lib.flatten(this, padding);
+		graphics.clear();
+		while (children.length > 0)
+			removeChild(children[0]);
+		filters = [];
+		addChild(bmp);
+		return bmp;
+	}
+
 	// out of ALL and of the display list, its node freed
 	public function destroy() {
 		ALL.remove(this);

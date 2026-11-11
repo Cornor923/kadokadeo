@@ -613,7 +613,7 @@ class BitmapData {
 	public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, ?channelOptions:Int = 7, ?grayScale:Bool = false, ?offsets:Dynamic):Void {
 		flushQueues();
 		if (perlinFractal) {
-			fractalNoiseInto(baseX, baseY, numOctaves, randomSeed, fractalNoise, channelOptions, grayScale);
+			fractalNoiseInto(baseX, baseY, numOctaves, randomSeed, fractalNoise, channelOptions, grayScale, offsets);
 			return;
 		}
 		var a = ints != null ? ints : new Int32Array(width * height);
@@ -639,7 +639,8 @@ class BitmapData {
 		written(a);
 	}
 
-	function fractalNoiseInto(baseX:Float, baseY:Float, octaves:Int, seed:Int, fractal:Bool, channels:Int, gray:Bool) {
+	// (offsets: Flash's offsets of each octave, in pixels: Charlotte's Quest moves its plasma with them)
+	function fractalNoiseInto(baseX:Float, baseY:Float, octaves:Int, seed:Int, fractal:Bool, channels:Int, gray:Bool, ?offsets:Dynamic) {
 		// the gradients: a permutation of 256 drawn by an LCG of the seed
 		var st = (seed & 0x7FFFFFFF) + 1;
 		inline function next():Int {
@@ -691,7 +692,12 @@ class BitmapData {
 						continue;
 					var sum = 0.0, amp = 1.0, tot = 0.0, fx = 1 / baseX, fy = 1 / baseY;
 					for (o in 0...octaves) {
-						var n = noise(x * fx, y * fy, o + c * 13);
+						var ox = 0.0, oy = 0.0;
+						if (offsets != null && o < offsets.length) {
+							ox = offsets[o].x;
+							oy = offsets[o].y;
+						}
+						var n = noise((x + ox) * fx, (y + oy) * fy, o + c * 13);
 						sum += (fractal ? n : Math.abs(n)) * amp;
 						tot += amp;
 						amp *= 0.5;
@@ -951,6 +957,10 @@ class BitmapData {
 	// renders `o` (a PIXI object at its own place) into the RenderTexture with these extra filters and this blend; the
 	// blends of its leaves and filters are put back after
 	function renderWith(o:Dynamic, extra:Array<Dynamic>, blend:BlendMode, ?transform:Matrix) {
+		if (blend == DIFFERENCE) {
+			renderDifference(o, extra, transform);
+			return;
+		}
 		var saved:Array<Dynamic> = [];
 		var flts:Array<Dynamic> = o.filters;
 		var ov = overlayFilter(blend);
@@ -973,6 +983,25 @@ class BitmapData {
 		for (l in saved)
 			l.o.blendMode = l.b;
 		o.filters = flts;
+	}
+
+	// Flash's DIFFERENCE (Charlotte's Quest: the clouds of the background): `o` drawn alone into a picture of this size, then
+	// combined with the pixels under it by an OverlayFilter in difference mode (PIXI has no such blend)
+	function renderDifference(o:Dynamic, extra:Array<Dynamic>, ?transform:Matrix) {
+		var tmp:Dynamic = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", width, height, gpuScaleMode);
+		var flts:Array<Dynamic> = o.filters;
+		var all:Array<Dynamic> = (flts == null ? [] : flts.copy()).concat(extra);
+		o.filters = all.length > 0 ? all : null;
+		renderer().render(o, {renderTexture: tmp, clear: true, transform: transform != null ? transform.toPixi() : null});
+		o.filters = flts;
+		var base = copyTexture();
+		var s = new pixi.core.sprites.Sprite(base);
+		s.filters = [new OverlayFilter(tmp, width, height, true)];
+		untyped s.filterArea = new pixi.core.math.shapes.Rectangle(0, 0, width, height);
+		renderer().render(s, {renderTexture: rt, clear: true});
+		s.destroy();
+		base.destroy(true);
+		tmp.destroy(true);
 	}
 
 	function drawTexture(t:Dynamic, matrix:Matrix, ct:ColorTransform, blend:BlendMode) {
