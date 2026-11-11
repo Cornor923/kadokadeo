@@ -1161,9 +1161,6 @@ class Game extends Sprite implements kado.GameInterface {
 		// rainbow are pixels of 6 x 6), the glows of Flash
 		Flash.reset();
 		BitmapData.gpuScaleMode = 0;
-		// (the sheets are at 1.5 px per Flash pixel: the filtered sprites at 2 px per Flash pixel on a page of more pixels
-		// than the game, a whole number like BitmapData.screenScale)
-		Flash.filterResolution = BitmapData.screenScale();
 		// (the perlin noises: the bricks of the background, the stars, the plasma)
 		BitmapData.perlinFractal = true;
 		Particle.ALL = [];
