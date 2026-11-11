@@ -118,6 +118,9 @@ class Exporter:
         # every CUT / CLIP / MASK layer at this resolution (None: the one its scale needs); with a SWF rendered with
         # `nearest` at the zoom K x fixed_res, the textures are the Flash pixels and the matrices are applied at run time
         self.fixed_res = None
+        # pixels of the images per pixel of their textures: the images drawn finer than the resolution of the defs (the
+        # sheet says so, pack_multi PACK_SCALE: PIXI gives the textures their size divided by it); the defs do not change
+        self.phys = 1.0
         self.frames_for = {}           # sid -> frames used by the game in nested clips (as `frames` of export)
         # nested sprites exported with their white silhouettes (as `white` of export): a nested clip the code colours
         # (Trigo: the _col disk of the clock, tinted by mt.fx.Radiate)
@@ -239,8 +242,9 @@ class Exporter:
 
     # ------------------------------------------------------------------ rendering
     def render(self, cmd_lists, scale, margin=0.5, G=None):
-        """command lists drawn on a common canvas at `scale` px per world unit -> (images, registration px)"""
+        """command lists drawn on a common canvas at `scale` px per world unit (x phys) -> (images, registration px)"""
         G = G or self.G
+        scale = scale * self.phys
         if self._wrap:
             cmd_lists = [[('layer', c, self._wrap, None)] if c else c for c in cmd_lists]
         rd = R.Renderer(G, scale)

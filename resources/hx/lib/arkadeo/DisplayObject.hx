@@ -185,6 +185,9 @@ class DisplayObject {
 		}
 		if (ctFilter != null)
 			out.push(ctFilter.toPixi());
+		if (Flash.filterResolution != 1)
+			for (p in out)
+				p.resolution = Flash.filterResolution;
 		// filters given to an object that has a blend mode: the blend of the filtered picture (Flash: the blend mode of the
 		// object applies to it with its filters)
 		if (blend != NORMAL)

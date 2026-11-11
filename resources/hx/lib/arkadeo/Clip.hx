@@ -447,7 +447,10 @@ class Clip extends ASprite {
 			dx = f[6] * Math.cos(a);
 			dy = f[6] * Math.sin(a);
 		}
-		return new FlashGlow(f[0], f[1], f[2], Std.int(f[3]), f[4], false, dx, dy);
+		var g = new FlashGlow(f[0], f[1], f[2], Std.int(f[3]), f[4], false, dx, dy);
+		if (Flash.filterResolution != 1)
+			g.resolution = Flash.filterResolution;
+		return g;
 	}
 
 	function removeLayer(i:Int) {
