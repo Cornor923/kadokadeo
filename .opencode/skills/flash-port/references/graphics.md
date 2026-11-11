@@ -311,7 +311,8 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   still 4 px per Flash pixel). The sheets take about 2 times more memory: only for a game whose pictures are big on the
   screen. (The `.tps` of `make_tps.py` does not carry the scale: such sheets are rebuilt with `pack_multi.py`.) On the
   local Docker site, `/assets` goes through Vite, which only knows the files of `public/` it saw at its start: a new
-  sheet (`<game>-3.json`...) is a 404 until `kadokadeo_front` is restarted. Its pictures composed on the GPU (`arkadeo.BitmapData.gpuResolution =
-  BitmapData.screenScale()`: the rooms) and its live filters (`Flash.filterResolution`, PIXI 6 filters at 1 otherwise)
-  follow the screen: 2 when it has more pixels than the game, else 1 (whole numbers: at 1.75 PIXI 6 misplaced the filters
-  drawn into a RenderTexture).
+  sheet (`<game>-3.json`...) is a 404 until `kadokadeo_front` is restarted. Its pictures composed on the GPU (the rooms:
+  `arkadeo.BitmapData.gpuSmoothing` when `BitmapData.screenScale()` is above 1) are smoothed instead of blocky, at the
+  same cost. Drawing them at 2 px per Flash pixel with their filters, and the live filters too (PIXI 6 filters at 1
+  whatever the resolution of the page), was sharper but cost up to 6 times more per frame on an integrated GPU (the frames
+  per second measured without vsync: `--disable-gpu-vsync --disable-frame-rate-limit`, a capped 60 hides it).
