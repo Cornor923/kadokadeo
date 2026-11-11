@@ -30,18 +30,12 @@ class Flash {
 	// what moves is drawn at whole pixels (a game made of pixel art pictures)
 	public static var roundMoving = false;
 
-	// pixels of the filters of the display objects per Flash pixel (PIXI 6 filters them at 1 whatever the resolution of
-	// the page): a game whose sheets are finer than the Flash pixels gives the scale of the screen (Charlotte's Quest:
-	// BitmapData.screenScale, a whole number), or its filtered sprites are blurred on a high density screen
-	public static var filterResolution:Float = 1;
-
 	// the settings of a game, set in its constructor after reset(), and the statics of the timelines
 	public static function reset() {
 		useTwips = true;
 		snapFirstMove = false;
 		teleport = Math.POSITIVE_INFINITY;
 		roundMoving = false;
-		filterResolution = 1;
 		BlurFilter.scale = 0.5;
 		BlurFilter.forceQuality = 2;
 		GlowFilter.style = FLASH;

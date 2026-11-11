@@ -22,11 +22,12 @@ class BitmapData {
 	// the scale mode of the RenderTextures (Flash.reset: smoothed; 0 for the pixel art games)
 	public static var gpuScaleMode:Int = 1;
 
-	// pixels of the RenderTexture per pixel of the picture, set before it moves to the GPU (1: the Flash pixels). A picture
-	// shown bigger than its pixels on the page (screenScale: a high density screen, the canvas enlarged) drawn at the
-	// resolution of the screen, smoothed (Charlotte's Quest: its rooms composed of bricks finer than the Flash pixels).
-	// Nothing changes for the game: the picture keeps its size, its pixels are not read anyway once on the GPU
-	public var gpuResolution:Float = 1;
+	// this picture smoothed on the GPU whatever gpuScaleMode, set before it moves to the GPU: a picture of a game of
+	// pixels shown bigger than its pixels (screenScale above 1: the zoom of the page, a high density screen), smoothed
+	// instead of blocky (Charlotte's Quest: its rooms). Drawing it at the resolution of the screen instead (a
+	// RenderTexture of 2 px per Flash pixel, the filters drawn into it at 2 too) cost up to 6 times more per frame on an
+	// integrated GPU
+	public var gpuSmoothing = false;
 
 	public var width:Int;
 	public var height:Int;
@@ -749,7 +750,7 @@ class BitmapData {
 	public function clone():BitmapData {
 		flushQueues();
 		var b = new BitmapData(width, height, transparent, 0x0);
-		b.gpuResolution = gpuResolution;
+		b.gpuSmoothing = gpuSmoothing;
 		if (rt != null || texSrc != null) {
 			b.toGpu();
 			b.drawTexture(getTexture(), null, null, null);
@@ -866,58 +867,20 @@ class BitmapData {
 		return kado.KadoKadeoManager.kkm.renderer;
 	}
 
-	// the gpuResolution of a picture shown at the scale of the screen: 2 when the screen has more pixels than the game (the
-	// resolution of the page, its zoom or the density of the screen, times the enlargement of the canvas by the page: 600
-	// px wide shown wider), else 1. Whole numbers only: at 1.75, PIXI 6 misplaced the filters of the objects drawn into
-	// the RenderTexture (Charlotte's Quest: the inner shadows of the bricks of the background were lost)
+	// pixels of the screen per pixel of the game: the resolution of the page (its zoom, the density of the screen) times
+	// the enlargement of the canvas by the page (600 px wide shown wider)
 	public static function screenScale():Float {
 		var r:Dynamic = renderer();
 		var k:Float = r.resolution;
 		var view:Dynamic = r.view;
 		if (view != null && view.clientWidth > 0 && r.screen.width > 0)
 			k *= view.clientWidth / r.screen.width;
-		return k > 1.05 ? 2 : 1;
+		return k;
 	}
 
-	// a RenderTexture of w x h pixels of the picture, at its resolution (smoothed above 1)
+	// a RenderTexture of w x h pixels for this picture (its scale mode)
 	function newRt(w:Float, h:Float):Dynamic {
-		return js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}, resolution: {3}})", w, h,
-			gpuResolution != 1 ? 1 : gpuScaleMode, gpuResolution);
-	}
-
-	// the filters of `o` and of what it holds at the resolution of this picture while it is drawn into it (PIXI filters at
-	// their own resolution: 1, or Flash.filterResolution for the screen); their resolutions before, to put back
-	function filtersAtResolution(o:Dynamic, extra:Array<Dynamic>):Array<Dynamic> {
-		if (gpuResolution == 1 && Flash.filterResolution == 1)
-			return null;
-		var saved:Array<Dynamic> = [];
-		function set(f:Dynamic) {
-			// (overlayFilter gives false for a blend other than OVERLAY: a filter PIXI skips)
-			if (f == null || f == false)
-				return;
-			saved.push({f: f, r: f.resolution});
-			f.resolution = gpuResolution;
-		}
-		for (f in extra)
-			set(f);
-		function walk(n:Dynamic) {
-			var fl:Array<Dynamic> = n.filters;
-			if (fl != null)
-				for (f in fl)
-					set(f);
-			var ch:Array<Dynamic> = n.children;
-			if (ch != null)
-				for (c in ch)
-					walk(c);
-		}
-		walk(o);
-		return saved;
-	}
-
-	static function restoreResolutions(saved:Array<Dynamic>) {
-		if (saved != null)
-			for (s in saved)
-				s.f.resolution = s.r;
+		return js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", w, h, gpuSmoothing ? 1 : gpuScaleMode);
 	}
 
 	// the picture moves to a RenderTexture (what the canvas had drawn first), shown from then on by the Bitmaps
@@ -1028,7 +991,6 @@ class BitmapData {
 		if (ov != null)
 			extra.push(ov);
 		var all:Array<Dynamic> = (flts == null ? [] : flts.copy()).concat(extra);
-		var res = filtersAtResolution(o, extra);
 		var pb = pixiBlend(blend);
 		if (all.length > 0) {
 			o.filters = all;
@@ -1045,7 +1007,6 @@ class BitmapData {
 		for (l in saved)
 			l.o.blendMode = l.b;
 		o.filters = flts;
-		restoreResolutions(res);
 	}
 
 	// Flash's DIFFERENCE (Charlotte's Quest: the clouds of the background): `o` drawn alone into a picture of this size, then
@@ -1054,17 +1015,12 @@ class BitmapData {
 		var tmp:Dynamic = newRt(width, height);
 		var flts:Array<Dynamic> = o.filters;
 		var all:Array<Dynamic> = (flts == null ? [] : flts.copy()).concat(extra);
-		var res = filtersAtResolution(o, extra);
 		o.filters = all.length > 0 ? all : null;
 		renderer().render(o, {renderTexture: tmp, clear: true, transform: transform != null ? transform.toPixi() : null});
 		o.filters = flts;
-		restoreResolutions(res);
 		var base = copyTexture();
 		var s = new pixi.core.sprites.Sprite(base);
-		var ov = new OverlayFilter(tmp, width, height, true);
-		if (gpuResolution != 1)
-			ov.resolution = gpuResolution;
-		s.filters = [ov];
+		s.filters = [new OverlayFilter(tmp, width, height, true)];
 		untyped s.filterArea = new pixi.core.math.shapes.Rectangle(0, 0, width, height);
 		renderer().render(s, {renderTexture: rt, clear: true});
 		s.destroy();
