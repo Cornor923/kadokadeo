@@ -3,11 +3,19 @@
 // drawn as they come (the bricks and their filters, the glows of the walls); prints the shader programs compiled after
 // the start of the game (warmShaders: none expected), the length of the browser frames and the longest ones with the
 // frame of the game.
-// usage: GPU=1 node cperf.mjs [seconds]      env: EXTRA, PORT, HPORT
+// DPR=1.5 CSSW=696: a page at 150 % showing the canvas 696 px wide like the site (the rooms and filters at 2 px per
+// Flash pixel, the sheets at 1.5).
+// usage: GPU=1 node cperf.mjs [seconds]      env: EXTRA, PORT, HPORT, DPR, CSSW
 import { launch } from '../../harness/cdp.mjs'
 import { HOST } from '../../harness/paths.mjs'
 const secs = +(process.argv[2] || 60)
 const b = await launch(+(process.env.PORT || 9690))
+if (process.env.DPR)
+  await b.send('Emulation.setDeviceMetricsOverride', { width: 900, height: 800, deviceScaleFactor: +process.env.DPR, mobile: false })
+if (process.env.CSSW)
+  await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `document.addEventListener('DOMContentLoaded', () => {
+    const s = document.createElement('style'); s.textContent = 'canvas { width: ${+process.env.CSSW}px !important; height: ${+process.env.CSSW * 5 / 6}px !important }'
+    document.head.appendChild(s) })` })
 const K = { left: [37, 'ArrowLeft'], up: [38, 'ArrowUp'], right: [39, 'ArrowRight'], down: [40, 'ArrowDown'], space: [32, ' ', 'Space'] }
 const send = (type, [code, k, c]) => b.send('Input.dispatchKeyEvent', { type, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code, key: k, code: c || k })
 let rs = 7
