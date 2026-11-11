@@ -305,10 +305,13 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   of the page, and the site may show it wider): textures at 1 px per Flash pixel are enlarged there. Charlotte's Quest
   draws its images finer than its defs say: `Exporter.phys = 1.5` (every `render` 1.5 times finer, the defs and
   `Data.hx` unchanged) and `pack_multi.py` with `PACK_SCALE=1.5` (`meta.scale` of the sheets: PIXI gives the textures
-  their size divided by it, the game sees the same sizes); what is already finer or a bitmap of the game goes to sheets at
-  scale 1 (`PACK_LO_FILE`, one animation per line). The sheets take 2 to 2.5 times more memory: only for a game whose
-  pictures are big on the screen. (The `.tps` of `make_tps.py` does not carry the scale: such sheets are rebuilt with
-  `pack_multi.py`.) Its pictures composed on the GPU (`arkadeo.BitmapData.gpuResolution =
+  their size divided by it, the game sees the same sizes). One scale for the whole spritesheet: the spritesheets of the
+  old versions (`resources/js/games/builds/atlas.mjs`, for the replays) take the scale of the first sheet for all the
+  frames. What was already finer keeps its pixels through its `res` (the bricks of Charlotte's Quest: res 4 / (K x 1.5),
+  still 4 px per Flash pixel). The sheets take about 2 times more memory: only for a game whose pictures are big on the
+  screen. (The `.tps` of `make_tps.py` does not carry the scale: such sheets are rebuilt with `pack_multi.py`.) On the
+  local Docker site, `/assets` goes through Vite, which only knows the files of `public/` it saw at its start: a new
+  sheet (`<game>-3.json`...) is a 404 until `kadokadeo_front` is restarted. Its pictures composed on the GPU (`arkadeo.BitmapData.gpuResolution =
   BitmapData.screenScale()`: the rooms) and its live filters (`Flash.filterResolution`, PIXI 6 filters at 1 otherwise)
   follow the screen: 2 when it has more pixels than the game, else 1 (whole numbers: at 1.75 PIXI 6 misplaced the filters
   drawn into a RenderTexture).

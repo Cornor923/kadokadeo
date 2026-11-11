@@ -3,9 +3,9 @@
 - trim (1px margin), 1px extrude, identical frames aliased (autoAlias)
 - skyline packing on sheets of at most MAX x MAX; the first sheet holds every animation and every
   sheet lists the others in meta.related_multi_packs (like TexturePacker MultiPackAuto)
-- PACK_SCALE: pixels of the images per pixel of their textures (meta.scale: PIXI gives the textures their size divided
-  by it), images drawn finer than the pixels of the game; the animations listed in PACK_LO_FILE (one per line: images
-  at the pixels of the game, or already finer) go in sheets of their own at scale 1
+- PACK_SCALE: pixels of the images per pixel of their textures (meta.scale of every sheet: PIXI gives the textures
+  their size divided by it), images drawn finer than the pixels of the game. One scale for all the sheets: the
+  spritesheets of the old versions (resources/js/games/builds/atlas.mjs) take the scale of the first one
 usage: pack_multi.py <src dir> <out base name (…/name)> <pivots.json>
 """
 import os, sys, re, json, hashlib
@@ -15,7 +15,6 @@ from PIL import Image
 SRC, OUT_BASE, PIVOTS_FILE = sys.argv[1], sys.argv[2], sys.argv[3]
 MAX = int(os.environ.get('PACK_MAX', '2048'))
 SCALE = os.environ.get('PACK_SCALE', '1')
-LO = set(l.strip() for l in open(os.environ['PACK_LO_FILE'])) - {''} if os.environ.get('PACK_LO_FILE') else set()
 EXT = 1
 MARGIN = 1
 pivots = json.load(open(PIVOTS_FILE))
@@ -49,25 +48,18 @@ for name, full in items:
     arr = np.array(crop)
     arr[arr[..., 3] == 0] = 0
     crop = Image.fromarray(arr, 'RGBA')
+    h = hashlib.sha1(crop.tobytes() + bytes(str(crop.size), 'ascii')).hexdigest()
     group = name.rsplit('/', 1)[0] if '/' in name else name[:-4]
-    lo = SCALE != '1' and group in LO
-    # (an image of a scale 1 sheet is not an alias of the same image in a scaled sheet)
-    h = hashlib.sha1(crop.tobytes() + bytes(str(crop.size), 'ascii') + (b'lo' if lo else b'')).hexdigest()
     s = dict(name=name, rect=rect, src=im.size, group=group, hash=h)
     if h not in unique:
-        unique[h] = dict(img=crop, w=crop.width + 2 * EXT, h=crop.height + 2 * EXT, lo=lo)
+        unique[h] = dict(img=crop, w=crop.width + 2 * EXT, h=crop.height + 2 * EXT)
     sprites.append(s)
 
 # ---------------------------------------------------------------- skyline packing in sheets
 order = sorted(unique.keys(), key=lambda k: (-unique[k]['h'], -unique[k]['w']))
 sheets = []
-parts = [([k for k in order if not unique[k]['lo']], SCALE), ([k for k in order if unique[k]['lo']], '1')]
-left, scale = [], SCALE
-while left or parts:
-    if not left:
-        left, scale = parts.pop(0)
-        if not left:
-            continue
+left = order
+while left:
     sky = [[0, 0, MAX]]  # x, y, width
     placed = {}
     rest = []
@@ -123,7 +115,7 @@ while left or parts:
         raise SystemExit('sprite too big: %s' % [unique[k]['w'] for k in rest[:3]])
     W = max(x + unique[k]['w'] for k, (x, y) in placed.items())
     H = max(y + unique[k]['h'] for k, (x, y) in placed.items())
-    sheets.append(dict(placed=placed, W=W, H=H, scale=scale))
+    sheets.append(dict(placed=placed, W=W, H=H))
     left = rest
 
 loc = {}
@@ -191,12 +183,12 @@ for si, sh in enumerate(sheets):
               '\t"image": "%s.png",' % sh['file'],
               '\t"format": "RGBA8888",',
               '\t"size": {"w":%d,"h":%d},' % (sh['W'], sh['H']),
-              '\t"scale": "%s"' % sh['scale'] + (',' if others else '')]
+              '\t"scale": "%s"' % SCALE + (',' if others else '')]
     if others:
         lines.append('\t"related_multi_packs": [%s]' % ', '.join('"%s"' % o for o in others))
     lines += ['}', '}']
     open('%s-%d.json' % (OUT_BASE, si), 'w', newline='\n').write('\n'.join(lines) + '\n')
     json.load(open('%s-%d.json' % (OUT_BASE, si)))
 
-print('%d frames, %d unique, %d sheets: %s' % (len(sprites), len(unique), len(sheets),
-                                              ', '.join('%dx%d%s' % (s['W'], s['H'], '' if s['scale'] == '1' else ' @' + s['scale']) for s in sheets)))
+print('%d frames, %d unique, %d sheets%s: %s' % (len(sprites), len(unique), len(sheets), '' if SCALE == '1' else ' at scale ' + SCALE,
+                                                ', '.join('%dx%d' % (s['W'], s['H']) for s in sheets)))
