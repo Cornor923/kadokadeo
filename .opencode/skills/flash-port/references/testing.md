@@ -29,7 +29,9 @@ open "http://127.0.0.1:8765/game.html?game=<game>&cls=Game<Name>&seed=123"
 
 - After `build.sh`, reloading the page is enough (the server sends `no-store`).
 - Page parameters: `seed` (the **debug build always plays seed 123 live**, `createDebugContext`: pass `seed=123`
-  to replays too), `replay=<data>` (watch a replay), `test=<mode>` (below), `js=<bundle>` (another build).
+  to replays too), `replay=<data>` (watch a replay), `test=<mode>` (below), `js=<bundle>` (another build), `cw=<px>`
+  (width of the canvas on the screen in CSS pixels, 600 by default: the picture is drawn at that width x
+  devicePixelRatio).
 - At the end of a game KadoKadeo logs `Replay data: <data>` (debug builds), collected by the page in
   `window.__logs`; the game's own end state is in `window.__over` (see `code.md`).
 - PixiJS 6.0.2 and pixi-filters 5.0.0 are the files of the site (`public/vendor`), served by the server: tests run
@@ -51,6 +53,7 @@ await b.close()
 ```
 
 - `GPU=1` uses the real GPU (otherwise SwiftShader, a software renderer: right for logic, wrong for performance).
+- `DPR=1.5` emulates a devicePixelRatio (default 1): with `cw`, the sharpness of the picture on a scaled screen.
 - From test JS, Haxe properties are read through their getters (`mc.get__x()`), and
   `obj.constructor.prototype` is `Object.prototype` (use `Object.getPrototypeOf(obj)`).
 - `kk` is the `KadoKadeoManager`: `kk.game` (the game instance), `kk.seekReplay(f)`, `kk.setReplaySpeed(s)`

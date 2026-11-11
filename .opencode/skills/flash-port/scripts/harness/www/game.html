@@ -6,7 +6,10 @@
 <style>
   @font-face { font-family: 'Fredoka Bold'; src: url('/fonts/Fredoka-Bold.ttf') format('truetype'); }
   @font-face { font-family: 'Pricedown'; src: url('/fonts/Pricedown.ttf') format('truetype'); }
-  body { background: #2b2b2b; color: #eee; font-family: sans-serif; margin: 8px; } canvas { display: block; }
+  body { background: #2b2b2b; color: #eee; font-family: sans-serif; margin: 8px; }
+  /* a CSS width, as on the site: without it the canvas takes the size of its picture, which follows its size on the
+     screen (KadoKadeoManager.fitResolution) */
+  canvas { display: block; width: 600px; }
 </style>
 <script>
   window.Kado = { public_key: '' };
@@ -25,13 +28,15 @@
 <canvas id="c" width="600" height="640"></canvas>
 <div>score: <span id="score">0</span></div>
 <script>
-  // usage: game.html?game=<package>&cls=<exposed class>&seed=123[&replay=...][&test=...][&h=500]
+  // usage: game.html?game=<package>&cls=<exposed class>&seed=123[&replay=...][&test=...][&h=500][&cw=696]
   //   h: height of the canvas (640, 500 for an Arkadeo game: its 600 x 460 area and the bar)
+  //   cw: its width on the screen in CSS pixels (600; the page of a game may show it larger or smaller)
   // The debug build always plays the seed 123 live (createDebugContext): give seed=123 to the replays too.
   const q = new URLSearchParams(location.search);
   const game = q.get('game'), cls = q.get('cls');
   const H = +(q.get('h') || 640);
   document.getElementById('c').height = H;
+  if (q.get('cw')) document.getElementById('c').style.width = (+q.get('cw')) + 'px';
   // test modes of the game: modes/<game>.js (optional) fills window.TEST_MODES[name] = (proto, query) => {...}
   window.FP_STATE = {};
   window.TEST_MODES = {

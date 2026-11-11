@@ -2,6 +2,9 @@
 // No dependency: needs the global WebSocket of Node 22+ (Node 20/21: run with --experimental-websocket).
 //   env BROWSER: path of the browser (default: Chrome on macOS, Edge on Windows, google-chrome / chromium on Linux)
 //   env GPU=1: real GPU (otherwise SwiftShader, a software renderer: fine for logic, wrong for performance)
+//   env DPR: devicePixelRatio of the page (default 1; 1.25, 1.5... as a screen scaled by Windows or a phone): the scale
+//      of the browser (--force-device-scale-factor), not only its emulation, which measures the pixels of the screen
+//      in CSS pixels (ResizeObserver devicePixelContentBoxSize)
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -30,6 +33,7 @@ export async function launch(port = 9333) {
     ...(process.env.GPU ? [...GPU_FLAGS, '--enable-gpu', '--ignore-gpu-blocklist'] : ['--enable-unsafe-swiftshader', '--use-angle=swiftshader']),
     // (the sounds of the games play, unheard: Hammerfest, Rock Faller)
     '--autoplay-policy=no-user-gesture-required', '--mute-audio',
+    ...(process.env.DPR ? ['--force-device-scale-factor=' + process.env.DPR] : []),
     'about:blank',
   ], { stdio: 'ignore' })
   let targets
@@ -72,7 +76,7 @@ export async function launch(port = 9333) {
   })
   await send('Runtime.enable')
   await send('Page.enable')
-  await send('Emulation.setDeviceMetricsOverride', { width: 640, height: 720, deviceScaleFactor: 1, mobile: false })
+  await send('Emulation.setDeviceMetricsOverride', { width: 640, height: 720, deviceScaleFactor: +(process.env.DPR || 1), mobile: false })
 
   const b = {
     send, consoleLines, sleep,
