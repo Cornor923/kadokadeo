@@ -382,7 +382,8 @@ class BitmapData {
 	// composed only once, by its last filter). OVERLAY: the 2 x src x dst of OverlayBlend when the game registered it (its
 	// filter puts the picture over 50 % grey), else the SCREEN of BlendMode
 	static function overlayFilter(b:BlendMode):Dynamic {
-		return b == OVERLAY && untyped renderer().state.blendModes[OverlayBlend.MODE] != null ? new OverlayBlend() : null;
+		// (`untyped` takes the whole expression after it: without the brackets, false for any other blend)
+		return (b == OVERLAY && (untyped renderer().state.blendModes[OverlayBlend.MODE]) != null) ? new OverlayBlend() : null;
 	}
 
 	static function pixiBlend(b:BlendMode):Int {
