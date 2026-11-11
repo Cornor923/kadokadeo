@@ -774,7 +774,9 @@ class SpriteLibBitmap {
 		var t = a[frame];
 		if (t == null) {
 			var g = getGroup(k);
-			t = g.frames[frame] == null ? pixi.core.textures.Texture.EMPTY : arkadeo.BitmapData.subTexture(base, getRectangle(k, frame));
+			// (1/64 of a texel in: the slices of an atlas touch each other, the next one is never read at a screen scale of
+			// 125 or 150 %)
+			t = g.frames[frame] == null ? pixi.core.textures.Texture.EMPTY : arkadeo.BitmapData.subTexture(base, getRectangle(k, frame), 1 / 64);
 			a[frame] = t;
 		}
 		return t;

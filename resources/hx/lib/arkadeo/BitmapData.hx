@@ -820,8 +820,10 @@ class BitmapData {
 	}
 
 	// the part r of a texture (in the space of its original frame: the trim of a packed frame kept, nothing where the packer
-	// cut transparent pixels away)
-	public static function subTexture(t:Dynamic, r:Rectangle):Dynamic {
+	// cut transparent pixels away). inset (a fraction of a texel): the picture and its quad pulled in by it on every side,
+	// for a slice of an atlas without padding shown at any scale (a screen at 125 %: an edge falling on the centre of a
+	// pixel would read the next row of the atlas there)
+	public static function subTexture(t:Dynamic, r:Rectangle, ?inset:Float = 0):Dynamic {
 		var trimX = t.trim != null ? t.trim.x : 0.0, trimY = t.trim != null ? t.trim.y : 0.0;
 		var fw:Float = t.frame.width, fh:Float = t.frame.height;
 		var x0 = Math.max(r.x, trimX), y0 = Math.max(r.y, trimY);
@@ -830,8 +832,9 @@ class BitmapData {
 		if (x1 <= x0 || y1 <= y0)
 			return js.Syntax.code("new PIXI.Texture({0}.baseTexture, new PIXI.Rectangle({0}.frame.x, {0}.frame.y, 1, 1), {1}, new PIXI.Rectangle(0, 0, 0, 0))", t,
 				orig);
-		var frame = js.Syntax.code("new PIXI.Rectangle({0}, {1}, {2}, {3})", t.frame.x + x0 - trimX, t.frame.y + y0 - trimY, x1 - x0, y1 - y0);
-		var trim = js.Syntax.code("new PIXI.Rectangle({0}, {1}, {2}, {3})", x0 - r.x, y0 - r.y, x1 - x0, y1 - y0);
+		var e = inset, w = x1 - x0 - 2 * inset, h = y1 - y0 - 2 * inset;
+		var frame = js.Syntax.code("new PIXI.Rectangle({0}, {1}, {2}, {3})", t.frame.x + x0 - trimX + e, t.frame.y + y0 - trimY + e, w, h);
+		var trim = js.Syntax.code("new PIXI.Rectangle({0}, {1}, {2}, {3})", x0 - r.x + e, y0 - r.y + e, w, h);
 		return js.Syntax.code("new PIXI.Texture({0}.baseTexture, {1}, {2}, {3})", t, frame, orig, trim);
 	}
 
