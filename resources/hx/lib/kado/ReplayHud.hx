@@ -1477,6 +1477,8 @@ class ReplayHud extends Container {
 		});
 		// Match the high-DPI renderer before measuring labels for the layout.
 		t.resolution = KadoKadeoManager.kkm.renderer.resolution;
+		// (then follow it, as a PIXI text does: it changes with the size of the canvas, KadoKadeoManager.fitResolution)
+		untyped t._autoResolution = true;
 		return t;
 	}
 

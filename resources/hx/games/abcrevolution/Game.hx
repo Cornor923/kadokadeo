@@ -995,9 +995,11 @@ class TouchKeys extends ASprite {
 		var r = canvas.getBoundingClientRect();
 		if (r.width <= 0 || r.height <= 0)
 			return -1;
-		// canvas 600 x 640: the game is the 600 x 600 top, 2 px per Flash pixel
-		var x = (e.clientX - r.left) * canvas.width / r.width / Game.K;
-		var y = (e.clientY - r.top) * canvas.height / r.height / Game.K;
+		// canvas 600 x 640: the game is the 600 x 600 top, 2 px per Flash pixel (the logical size: canvas.width is the size
+		// of the picture, devicePixelRatio and the size on the screen included)
+		var screen = KadoKadeoManager.kkm.screen;
+		var x = (e.clientX - r.left) * screen.width / r.width / Game.K;
+		var y = (e.clientY - r.top) * screen.height / r.height / Game.K;
 		for (i in 0...keys.length) {
 			var k = keys[i];
 			if (x >= k.x - GAP && x < k.x + KW + GAP && y >= k.y - GAP && y < k.y + KH + GAP)

@@ -163,7 +163,9 @@ watch(clock.frame, (frame, previous) => {
 
     <div ref="gameBox" class="max-w-full w-fit max-h-full h-fit m-auto overflow-y-auto pt-5">
       <div class="flex flex-col">
-        <div class="relative game-interface-1 mx-auto max-w-full shrink-0" :class="[run.game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado']">
+        <!-- the width of the game and its frame, as on the page of a game (GamePlayer.vue): without it, the canvas
+             would take the size of its picture, which follows its size on the screen (KadoKadeoManager) -->
+        <div class="relative game-interface-1 mx-auto max-w-full shrink-0" :class="[run.game.is_arkadeo ? 'aspect-arkadeo' : 'aspect-kadokado']" style="width: 646px">
           <GamesGameScript
             ref="gameScript"
             :game="replayGame"
