@@ -3,10 +3,11 @@
 
 Charlotte's Quest is drawn at 1 canvas pixel per Flash pixel (the Arkadeo game area: 600 x 460), so the textures are at
 1 px per Flash pixel (clipexport res 0.5, K = 2) from the FFDec export of the shapes at zoom 4, except what the game
-scales up (the bricks of the background up to x3.6, the splashes x4 to x5: drawn at 4 to 5 px per Flash pixel). Their
-images are drawn 1.5 times finer (PHYS: the sheets at scale 1.5, sharp on a page zoomed to 150 % or on a high density
-screen; the sizes the game knows do not change), except the bricks, the splashes and the bitmaps of the game (LO:
-sheets at scale 1).
+scales up (the bricks of the background up to x3.6, the splashes x4 to x5: drawn at 4 px per Flash pixel). The images
+are drawn 1.5 times finer (PHYS: the sheets at scale 1.5, sharp on a page zoomed to 150 % or on a high density screen;
+the sizes the game knows do not change). One scale for the whole spritesheet: the spritesheets of the old versions
+(resources/js/games/builds/atlas.mjs, the replays) take the scale of its first sheet for all its frames. The bricks and
+splashes keep their 4 px per Flash pixel (res 4 / (K x PHYS) in their defs).
   - the variants of the enemies share their parts: the frame script of each part (gfx_fla.pacmansmc_155, globe_90,
     moustiquecorps_124...) shows the frame of the flag the frame script of the symbol sets on it (lib.Pacman: norm_,
     lib.Badman: bad_, lib.Shootman: shooter_, lib.Eye2: bad_, lib.Guepe: guepe_): the parts are exported on that frame;
@@ -28,7 +29,7 @@ sheets at scale 1).
   - the bitmaps of the game (shadow2.png, clouds2.png) at their native size;
   - the font "def" 16 (Game.createField): its glyphs, white (tinted by the game);
   - levels.png (the plans of the rooms, read by Room.generate) and the texts (texts.fr.xml) for Data.hx.
-Writes <out>/src (images), <out>/pivots.json, <out>/clips.json, <out>/meta.json and <out>/lo.txt (the LO animations).
+Writes <out>/src (images), <out>/pivots.json, <out>/clips.json and <out>/meta.json.
 usage: charlottesquest_assets.py <archive folder Arkadeo/games/charlotteQuest> <out dir>
 """
 import os, sys, json, shutil, math, zlib
@@ -122,11 +123,11 @@ for p in PAC_PARTS + EYE_PARTS + MOU_PARTS:
 
 E = C.Exporter(G, SRC, '', CUSTOM)
 meta = {}
-# the images drawn at 1.5 px per pixel of their textures (the sheets at scale 1.5: sharp on a page at 150 %), except LO:
-# the bricks and splashes (already finer: 4 px per Flash pixel) and the bitmaps of the game, in sheets at scale 1
+# the images drawn at 1.5 px per pixel of their textures (the sheets at scale 1.5: sharp on a page at 150 %)
 PHYS = 1.5
 E.phys = PHYS
-LO = []
+# (the bricks and splashes, scaled up by the game: 4 px per Flash pixel, as before the sheets at 1.5)
+RES4 = 4.0 / (C.K * PHYS)
 
 
 def place_of(parent, name=None, char=None):
@@ -394,16 +395,11 @@ def frames_of(name, sid_, res=0.5, frames=None, white=False, filters=None, silho
     return n
 
 
-E.phys = 1.0
-frames_of('Brick', sid('Brick'), res=2)
+frames_of('Brick', sid('Brick'), res=RES4)
 # (Room.draw: the bricks of the bubble themes coloured by Color.getColorizeCT, a colour transform with offsets)
-frames_of('Brick2', sid('Brick2'), res=2, silhouettes=True)
-E.phys = PHYS
+frames_of('Brick2', sid('Brick2'), res=RES4, silhouettes=True)
 frames_of('DecorBG', sid('DecorBG'))
-E.phys = 1.0
-frames_of('Splash1', sid('Splash1'), res=2, white=True)
-E.phys = PHYS
-LO += ['Brick', 'Brick2', 'Brick2W', 'Splash1']
+frames_of('Splash1', sid('Splash1'), res=RES4, white=True)
 frames_of('Room', sid('Room'))
 frames_of('Rainbow', sid('Rainbow'))
 frames_of('Shoot', sid('Shoot'))
@@ -430,11 +426,10 @@ def cache100(name, cls):
 cache100('Herbes', 'DecorHerbes')
 cache100('Bones', 'DecorBones')
 
-# the bitmaps of the game (@:bitmap): drawn at their native size, stretched by the game
+# the bitmaps of the game (@:bitmap): their native pixels, stretched by the game (to 600 x 460: their size does not matter)
 for png in ('shadow2', 'clouds2'):
     im = Image.open(os.path.join(ARCH, 'gfx', png + '.png')).convert('RGBA')
     write_images(png, [im], (0, 0))
-    LO.append(png)
 
 # ---------------------------------------------------------------- the font "def" 16 (Game.createField)
 FONTS = swffont.read_fonts(W + 'game.swf')
@@ -490,7 +485,6 @@ meta['tourelle_smc'] = [round(v, 4) for v in m0_of(place_of(TOURELLE, name='_smc
 
 json.dump(E.clips, open(os.path.join(OUT, 'clips.json'), 'w'), separators=(',', ':'))
 json.dump(E.pivots, open(os.path.join(OUT, 'pivots.json'), 'w'), indent=0)
-open(os.path.join(OUT, 'lo.txt'), 'w', newline='\n').write(''.join(n + '\n' for n in LO))
 json.dump(meta, open(os.path.join(OUT, 'meta.json'), 'w'), indent=1)
 tot = sum(E.area.values())
 print('anims %d, area %.2f Mpx' % (len(E.area), tot / 1e6))
