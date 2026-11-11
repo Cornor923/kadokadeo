@@ -11,7 +11,7 @@ class Heap<T>
 	
 	public inline function getBuffer() { return buffer; }
 	
-	public inline var length(get_length, never) : Int;
+	public var length(get, never) : Int;
 	
 	public function new()  
 	{
@@ -173,6 +173,7 @@ class Heap<T>
 		buffer.splice( 0, buffer.length);
 	}
 	
+	#if gx_unit_test
 	public static function unitTest()
 	{
 		var h0 = new Heap();
@@ -327,4 +328,5 @@ class Heap<T>
 		}
 		
 	}
+	#end
 }

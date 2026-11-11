@@ -234,6 +234,240 @@ class BSprite extends flash.display.Sprite {
 	}
 }
 #end
+#if (js && !macro)
+/**
+ * (arkadeo, the AS3 games) BSprite on the AS3 display list of arkadeo: a Sprite and its child Bitmap `bmp` showing a frame
+ * of the atlas, placed by the pivot like the original (whole pixels). The frame is a texture cut from the picture of the
+ * sheet, the same texture for every sprite showing it (SpriteLibBitmap.getTexture): nothing is copied, where each sprite of
+ * the original copied its frame into its own BitmapData. ALL is a List like the original's: a sprite created by the end of
+ * an anim is updated in the same updateAll.
+ */
+class BSprite extends arkadeo.Sprite {
+	public static var ALL:List<BSprite> = new List();
+
+	public var lib(default, null):Null<SpriteLibBitmap>;
+	public var libGroup(default, null):Null<String>;
+	public var frame(default, null):Int;
+
+	var bmp:arkadeo.Bitmap;
+	var destroyed:Bool;
+
+	var animCursor:Int;
+	var frameCpt:Float;
+	var animId:Null<String>;
+	var animFrames:Array<Int>;
+	var animPlays:Int;
+
+	public var onEndAnim:Null<Void->Void>;
+	public var onLoopAnim:Null<Void->Void>;
+	public var killAfterAnim:Bool;
+	public var defaultAnim:Null<String>;
+
+	var needUpdate:Bool;
+	var pivotCoord:Null<{x:Float, y:Float}>; // coordinates
+	var pivotFactor:Null<{xr:Float, yr:Float}>; // 0-1 (based on actual width/height)
+
+	public function new(?l:SpriteLibBitmap, ?g:String, ?frame = 0) {
+		super();
+		lib = l;
+		libGroup = g;
+		destroyed = false;
+		animFrames = [];
+		animCursor = 0;
+		animPlays = 0;
+		needUpdate = false;
+
+		bmp = new arkadeo.Bitmap();
+		addChild(bmp);
+
+		if (lib != null)
+			setCenter(lib.defaultCenterX, lib.defaultCenterY);
+		else
+			setCenter(0, 0);
+
+		if (libGroup != null)
+			initBitmap();
+
+		frameCpt = 0;
+		killAfterAnim = false;
+		setFrame(frame);
+	}
+
+	// (the original filtered the pixels of its own copy of the frame: here the filter of the picture)
+	public inline function applyFilter(f:arkadeo.BitmapFilter) {
+		bmp.filters = bmp.filters.concat([f]);
+	}
+
+	public function swap(?lib:SpriteLibBitmap, k:String, ?frame = 0) {
+		if (lib != null)
+			this.lib = lib;
+		if (lib == null && this.lib == null)
+			throw "This sprite is not associated with any lib";
+		libGroup = k;
+		initBitmap();
+		setFrame(frame);
+		stopAnim();
+	}
+
+	// (the original made a BitmapData of the size of the group: the size the pivot is computed from)
+	function initBitmap() {
+		var g = lib.getGroup(libGroup);
+		bmp.setTexture(lib.getTexture(libGroup, 0), g.wid, g.hei);
+		applyPivot();
+	}
+
+	public function toString() {
+		return "BSprite_" + libGroup + "[" + frame + "]";
+	}
+
+	public inline function randomFrame(?rndFunc:Int->Int) {
+		if (lib != null && libGroup != null) {
+			if (rndFunc == null)
+				rndFunc = kado.Seed.randomVfx;
+			setFrame(rndFunc(lib.countFrames(libGroup)));
+		}
+	}
+
+	public function setFrame(f:Int) {
+		frame = f;
+		if (!destroyed && lib != null && libGroup != null) {
+			var g = lib.getGroup(libGroup);
+			bmp.setTexture(lib.getTexture(libGroup, f), g.wid, g.hei);
+		}
+	}
+
+	public inline function setPivotCoord(x:Float, y:Float) {
+		pivotCoord = {x: x, y: y}
+		pivotFactor = null;
+		applyPivot();
+	}
+
+	public inline function setCenter(xRatio:Float, yRatio:Float) {
+		pivotCoord = null;
+		pivotFactor = {xr: xRatio, yr: yRatio};
+		applyPivot();
+	}
+
+	function applyPivot() {
+		var px = bmp.x, py = bmp.y;
+		if (pivotCoord != null) {
+			px = -Math.round(pivotCoord.x);
+			py = -Math.round(pivotCoord.y);
+		} else if (pivotFactor != null) {
+			px = Std.int(-bmp.width * pivotFactor.xr);
+			py = Std.int(-bmp.height * pivotFactor.yr);
+		}
+		// (a new pivot is drawn at once, not slid to)
+		if (px != bmp.x || py != bmp.y) {
+			bmp.x = px;
+			bmp.y = py;
+			bmp.snap();
+		}
+	}
+
+	public inline function totalFrames() {
+		return lib.getGroup(libGroup).frames.length;
+	}
+
+	inline function startUpdates() {
+		if (!needUpdate)
+			ALL.push(this);
+		needUpdate = true;
+	}
+
+	inline function stopUpdates() {
+		if (needUpdate)
+			ALL.remove(this);
+		needUpdate = false;
+	}
+
+	public function destroy() {
+		if (!destroyed) {
+			destroyed = true;
+			detach();
+			stopUpdates();
+			// (what the code drew in it out of the GPU: the bullets, the lasers)
+			releaseGpu();
+		}
+	}
+
+	public function stopAnim(?frame:Int) {
+		animFrames = [];
+		animId = null;
+		if (frame != null)
+			setFrame(frame);
+		stopUpdates();
+		if (defaultAnim != null)
+			playAnim(defaultAnim);
+	}
+
+	public function playAnim(id:String, ?plays = 999999) {
+		if (id == animId || lib == null || libGroup == null)
+			return;
+		animId = id;
+		frameCpt = 0;
+		animCursor = 0;
+		animPlays = plays;
+		animFrames = lib.getAnim(libGroup, id);
+		startUpdates();
+		setFrame(animFrames[0]);
+	}
+
+	public inline function offsetAnimFrame(?randFunc:Int->Int) {
+		if (randFunc == null)
+			animCursor = kado.Seed.randomVfx(animFrames.length);
+		else
+			animCursor = randFunc(animFrames.length);
+	}
+
+	public inline function isPlaying(id) {
+		return animId == id;
+	}
+
+	public inline function hasAnim() {
+		return animId != null;
+	}
+
+	function updateAnim(?tmod = 1.0) {
+		if (animFrames.length > 0) {
+			frameCpt += tmod;
+
+			while (!destroyed && frameCpt > 1) {
+				frameCpt--;
+				animCursor++;
+				if (animCursor >= animFrames.length) {
+					animCursor = 0;
+					animPlays--;
+					if (animPlays <= 0) {
+						if (killAfterAnim)
+							destroy();
+						else
+							stopAnim();
+
+						if (onEndAnim != null) {
+							var cb = onEndAnim;
+							onEndAnim = null;
+							cb();
+						}
+					} else {
+						setFrame(animFrames[animCursor]);
+						if (onLoopAnim != null)
+							onLoopAnim();
+					}
+				} else
+					setFrame(animFrames[animCursor]);
+			}
+		}
+	}
+
+	public static function updateAll(?tmod = 1.0) {
+		for (s in ALL)
+			s.updateAnim(tmod);
+	}
+}
+
+typedef SpriteBitmapGroup = {wid:Int, hei:Int, frames:Array<{x:Int, y:Int}>, anims:Map<String, Array<Int>>};
+#end
 
 /** LIBRARY ********************************************************************************************/
 #if flash
@@ -445,10 +679,211 @@ class SpriteLibBitmap {
 		}
 		return l.join("\n");
 	}
+	#elseif (js && !macro)
+	// (arkadeo) the atlas: a picture of the sheet (arkadeo.BitmapData.fromTexture), cut by the slices of the game into
+	// textures made once per frame (getTexture)
+	public var source:arkadeo.BitmapData;
+
+	var base:Dynamic;
+	var groups:Map<String, SpriteBitmapGroup>;
+	var currentGroup:Null<SpriteBitmapGroup>;
+	var frameRandDraw:Map<String, Array<Int>>;
+	var textures:Map<String, Array<Dynamic>>;
+
+	public var defaultCenterX(default, null):Float;
+	public var defaultCenterY(default, null):Float;
+
+	var gridX:Int;
+	var gridY:Int;
+
+	public function new(bd:arkadeo.BitmapData) {
+		source = bd;
+		base = bd.getTexture();
+		groups = new Map();
+		frameRandDraw = new Map();
+		textures = new Map();
+		defaultCenterX = 0;
+		defaultCenterY = 0;
+		gridX = gridY = 16;
+	}
+
+	public inline function setDefaultCenter(cx, cy) {
+		defaultCenterX = cx;
+		defaultCenterY = cy;
+	}
+
+	public function setSliceGrid(w, h) {
+		gridX = w;
+		gridY = h;
+	}
+
+	public inline function getGroup(?k:String):SpriteBitmapGroup {
+		return if (k == null) {
+			if (currentGroup == null)
+				throw "No group selected previously";
+			else
+				currentGroup;
+		} else if (groups.exists(k)) groups.get(k); else throw "Unknown group " + k;
+	}
+
+	public inline function getGroups() {
+		return groups;
+	}
+
+	public inline function getAnim(k, id) {
+		var g = getGroup(k);
+		if (!g.anims.exists(id))
+			throw "Unknown anim '" + id + "' in '" + k + "'";
+		else
+			return g.anims.get(id);
+	}
+
+	public inline function getAnimDuration(k, id) {
+		return getAnim(k, id).length;
+	}
+
+	public function createGroup(k:String, wid:Int, hei:Int) {
+		if (groups.exists(k))
+			throw "group " + k + " already exists";
+		groups.set(k, {
+			wid: wid,
+			hei: hei,
+			frames: new Array(),
+			anims: new Map(),
+		});
+		return setCurrentGroup(k);
+	}
+
+	inline function setCurrentGroup(k:String) {
+		currentGroup = getGroup(k);
+		return getGroup();
+	}
+
+	public inline function getRectangle(k:String, ?frame = 0) {
+		var g = getGroup(k);
+		return new arkadeo.Rectangle(g.frames[frame].x, g.frames[frame].y, g.wid, g.hei);
+	}
+
+	// the texture of a frame (made once: every sprite showing this frame shares it)
+	public function getTexture(k:String, ?frame = 0):Dynamic {
+		var a = textures.get(k);
+		if (a == null) {
+			a = [];
+			textures.set(k, a);
+		}
+		var t = a[frame];
+		if (t == null) {
+			var g = getGroup(k);
+			t = g.frames[frame] == null ? pixi.core.textures.Texture.EMPTY : arkadeo.BitmapData.subTexture(base, getRectangle(k, frame));
+			a[frame] = t;
+		}
+		return t;
+	}
+
+	public inline function getRandomFrame(k:String, ?randFunc:Int->Int) {
+		if (randFunc == null)
+			randFunc = kado.Seed.randomVfx;
+
+		return if (frameRandDraw.exists(k)) {
+			var a = frameRandDraw.get(k);
+			a[randFunc(a.length)];
+		} else randFunc(countFrames(k));
+	}
+
+	public inline function countFrames(k:String) {
+		return getGroup(k).frames.length;
+	}
+
+	public inline function exists(k, ?frame = 0) {
+		if (!groups.exists(k))
+			return false;
+		else if (frame >= getGroup(k).frames.length)
+			return false;
+		else
+			return true;
+	}
+
+	public inline function get(k:String, ?frame = 0):BSprite {
+		return new BSprite(this, k, frame);
+	}
+
+	public inline function getAndPlay(k:String, animId:String, ?plays = 9999999):BSprite {
+		var s = new BSprite(this, k);
+		s.playAnim(animId, plays);
+		return s;
+	}
+
+	public inline function getRandom(k:String, ?randFunc:Int->Int):BSprite {
+		return get(k, getRandomFrame(k, randFunc));
+	}
+
+	// (copyPixels of the original, over the pixels: drawn with the other frames of the same picture in one render)
+	public function drawIntoBitmap(bd:arkadeo.BitmapData, x:Float, y:Float, k:String, ?frame = 0, ?centerX:Float, ?centerY:Float) {
+		if (centerX == null)
+			centerX = defaultCenterX;
+		if (centerY == null)
+			centerY = defaultCenterY;
+		var r = getRectangle(k, frame);
+		bd.drawFrame(getTexture(k, frame), x - Std.int(r.width * centerX), y - Std.int(r.height * centerY));
+	}
+
+	public function getBitmapData(k:String, ?frame = 0, ?padding = 0) {
+		var r = getRectangle(k, frame);
+		var bd = new arkadeo.BitmapData(Std.int(r.width + padding * 2), Std.int(r.height + padding * 2), true, 0x0);
+		drawIntoBitmap(bd, padding, padding, k, frame, 0, 0);
+		return bd;
+	}
+
+	function sliceCustom(groupName:String, frame:Int, x:Int, y:Int, wid:Int, hei:Int) {
+		var g = if (exists(groupName)) getGroup(groupName) else createGroup(groupName, wid, hei);
+
+		if (wid != g.wid)
+			throw "ERROR: width mismatch for frame " + frame + " in group " + groupName;
+
+		if (hei != g.hei)
+			throw "ERROR: height mismatch for frame " + frame + " in group " + groupName;
+
+		g.frames[frame] = {x: x, y: y};
+	}
+
+	public function slice(groupName:String, x:Int, y:Int, wid:Int, hei:Int, ?repeatX = 1, ?repeatY = 1) {
+		var g = createGroup(groupName, wid, hei);
+		setCurrentGroup(groupName);
+		for (iy in 0...repeatY)
+			for (ix in 0...repeatX)
+				g.frames.push({x: x + ix * g.wid, y: y + iy * g.hei});
+	}
+
+	public function sliceGrid(groupName:String, gx:Int, gy:Int, ?repeatX = 1, ?repeatY = 1) {
+		var g = createGroup(groupName, gridX, gridY);
+		setCurrentGroup(groupName);
+		for (iy in 0...repeatY)
+			for (ix in 0...repeatX)
+				g.frames.push({x: g.wid * (gx + ix), y: g.hei * (gy + iy)});
+	}
+
+	public function sliceMore(x:Int, y:Int, ?repeatX = 1, ?repeatY = 1) {
+		var g = getGroup();
+		for (iy in 0...repeatY)
+			for (ix in 0...repeatX)
+				g.frames.push({x: x + ix * g.wid, y: y + iy * g.hei});
+	}
+
+	public function toString() {
+		var l = [];
+		for (k in getGroups().keys()) {
+			var g = getGroup(k);
+			var a = 0;
+			for (ak in g.anims)
+				a++;
+			l.push(k + " (" + g.wid + "x" + g.hei + ") : " + g.frames.length + " frame(s), " + a + " anim(s)");
+		}
+		return l.join("\n");
+	}
 	#end
 
 	public function __defineAnim(name:String, anim:Array<{f:Int, d:Int}>) {
-		#if flash
+		#if (flash || (js && !macro))
 		if (currentGroup == null)
 			throw "No current group.";
 
@@ -465,7 +900,7 @@ class SpriteLibBitmap {
 	}
 
 	/** SHOEBOX IMPORT ********************************************************************************************/
-	#if !macro
+	#if (flash && !macro)
 	public static function parseShoeBoxXml(xmlString:String, source:BitmapData, ?importSequencesAsFrames = true) {
 		var lib = new SpriteLibBitmap(source);
 		var xml = new haxe.xml.Fast(Xml.parse(xmlString));
@@ -503,6 +938,7 @@ class SpriteLibBitmap {
 	}
 	#end
 
+	#if flash
 	public static function parseShoeBoxXml2(xmlString:String, ?importSequencesAsFrames = true) {
 		var slices = new Array();
 		var xml = new haxe.xml.Fast(Xml.parse(xmlString));
@@ -563,7 +999,7 @@ class SpriteLibBitmap {
 		return slices;
 	}
 
-	@:macro public static function importShoeBox(xmlUrl:String) {
+	macro public static function importShoeBox(xmlUrl:String) {
 		var p = Context.currentPos();
 
 		xmlUrl = StringTools.replace(xmlUrl, "\\", "/");
@@ -606,12 +1042,14 @@ class SpriteLibBitmap {
 		return macro mt.deepnight.SpriteLibBitmap.parseShoeBoxXml($fileContentExpr, $newSourceExpr);
 	}
 
+	#end
+
 	var i = 5;
 
 	/** MACRO ********************************************************************************************/
 	// SYNTAX: frame(duration) > start-end(duration > frame(duration)
 	// EXAMPLE: defineAnim( "walk", 0-5(2) > 6(1) > 7(2) );
-	@:macro public function defineAnim(ethis:Expr, animName:Expr, ?baseFrame:Expr, ?def:Expr):Expr {
+	macro public function defineAnim(ethis:Expr, animName:Expr, ?baseFrame:Expr, ?def:Expr):Expr {
 		// Parameters
 		if (isNull(def) && isNull(baseFrame))
 			error("animation definition is required", def.pos);

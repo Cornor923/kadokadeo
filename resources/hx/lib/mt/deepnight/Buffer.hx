@@ -378,5 +378,30 @@ class Buffer {
 
 	// (the scene is drawn by PIXI with the rest of the display list)
 	public function update() {}
+
+	// a point of render (the mouse over the game) in the space of the scene, whole pixels (Green Witch)
+	public function globalToLocal(x:Float, y:Float) {
+		return {
+			x: Std.int((x - render.x) / upscale),
+			y: Std.int((y - render.y) / upscale),
+		};
+	}
+
+	public function localToGlobal(x:Float, y:Float) {
+		return {
+			x: Std.int(x * upscale + render.x),
+			y: Std.int(y * upscale + render.y),
+		};
+	}
+
+	// the hand over what can be clicked (a live game only: the cursor of the page)
+	public function setHandCursor(b:Bool) {
+		var k = kado.KadoKadeoManager.kkm;
+		if (k == null || k.replay.isPlayingReplay())
+			return;
+		var canvas:Dynamic = k.canvas;
+		if (canvas != null && canvas.style != null)
+			canvas.style.cursor = b ? "pointer" : "";
+	}
 }
 #end

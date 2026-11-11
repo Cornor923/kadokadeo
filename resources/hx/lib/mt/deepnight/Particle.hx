@@ -274,6 +274,8 @@ class Particle extends arkadeo.Sprite {
 					if (p.onKill != null)
 						p.onKill();
 					p.detach();
+					// (its drawing out of the GPU: a particle is not shown again)
+					p.releaseGpu();
 				} else {
 					if (p.onUpdate != null)
 						p.onUpdate();

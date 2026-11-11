@@ -1,9 +1,7 @@
 package mt.deepnight;
 
-#if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
-#end
 
 #if flash
 import flash.media.Sound;
@@ -351,16 +349,115 @@ class Sfx {
 		return sfx;
 	}
 	
+	#elseif (js && !macro)
+	// (arkadeo, the AS3 games) a sound of public/assets/sound/<game>/ (importDirectory) played by kado.GameSounds (Web Audio:
+	// each file decoded once, a buffer source per play, nothing while a replay is sought, keys M / B): its volume times the
+	// one of its channel, its panning; a loop is the music of the game
+	static var CHANNELS:Map<Int, Float> = new Map();
+	static var GLOBAL_VOLUME = 1.0;
+
+	var name:String;
+	var volume:Float;
+	var panning:Float;
+	var channel:Int;
+	var looping:Bool;
+
+	public function new(name:String) {
+		this.name = name;
+		volume = 1;
+		panning = 0;
+		channel = 0;
+		looping = false;
+	}
+
+	public function toString() {
+		return "Sfx " + name;
+	}
+
+	// the volumes of the channels and the global volume back to 1 (a new game)
+	public static function reset() {
+		CHANNELS = new Map();
+		GLOBAL_VOLUME = 1;
+	}
+
+	public function play(?vol:Float, ?pan:Float) {
+		if (vol == null)
+			vol = volume;
+		if (pan == null)
+			pan = panning;
+		start(false, vol, pan);
+		return this;
+	}
+
+	public function playOnChannel(channelId:Int, ?vol:Float, ?pan:Float) {
+		channel = channelId;
+		return play(vol, pan);
+	}
+
+	public function playLoopOnChannel(channelId:Int, ?loops = 9999, ?vol:Float, ?pan:Float, ?startOffset = 0.) {
+		channel = channelId;
+		start(true, vol == null ? volume : vol, 0);
+		return this;
+	}
+
+	public function playLoop(?loops = 9999, ?vol:Float, ?startOffset = 0.) {
+		start(true, vol == null ? volume : vol, 0);
+		return this;
+	}
+
+	public function setChannel(channelId:Int) {
+		channel = channelId;
+	}
+
+	function start(loop:Bool, vol:Float, pan:Float) {
+		var v = vol * getChannelVolume(channel) * GLOBAL_VOLUME;
+		looping = loop;
+		if (loop)
+			kado.GameSounds.playMusic(name, v);
+		else if (v > 0)
+			kado.GameSounds.play(name, v, pan);
+	}
+
+	public function stop() {
+		if (looping)
+			kado.GameSounds.stopMusic();
+		looping = false;
+	}
+
+	public static function setChannelVolume(channelId:Int, v:Float) {
+		CHANNELS.set(channelId, v);
+	}
+
+	public static function getChannelVolume(channelId:Int):Float {
+		return CHANNELS.exists(channelId) ? CHANNELS.get(channelId) : 1;
+	}
+
+	public static function setGlobalVolume(v:Float) {
+		GLOBAL_VOLUME = v;
+	}
+
+	// one of the sounds, at random (the random of the effects)
+	public static function playOne(randList:Array<?Float->Sfx>, ?vol = 1.0) {
+		var s = randList[kado.Seed.randomVfx(randList.length)]();
+		s.play(vol);
+		return s;
+	}
 	#end
 	
 	
-	@:macro public static function importDirectory( dir : String ) {
+	// the sounds of a folder (wav / mp3): an object with a function per sound returning its Sfx (playing it at once when a
+	// volume is given). JS (arkadeo): `dir` is relative to the folder of the compilation (public/assets/sound/<game>), the
+	// sounds of GameSounds; the object also has `_names`, the names to give GameSounds.init
+	macro public static function importDirectory( dir : String ) {
 		var p = Context.currentPos();
-		var sounds = [];
+		var sounds : Array<haxe.macro.Expr.ObjectField> = [];
+		var names : Array<Expr> = [];
 		var r_names = ~/[^A-Za-z0-9]+/g;
 		var found = false;
-		for( cp in Context.getClassPath() ) {
-			var path = cp+dir;
+		// (the defines of the target are not the ones of the macros)
+		var isJs = Context.defined("js");
+		var dirs = isJs ? [dir] : [for( cp in Context.getClassPath() ) cp+dir];
+		for( path in dirs ) {
 			if( !sys.FileSystem.exists(path) || !sys.FileSystem.isDirectory(path) )
 				continue;
 			found = true;
@@ -369,7 +466,15 @@ class Sfx {
 				if( ext != "wav" && ext != "mp3" ) continue;
 				var name = f.substr(0,f.length-4);
 				name = r_names.replace(name,"_");
+				if( Lambda.exists(sounds, function(o) return o.field==name) ) continue;
 				
+				var file = f.substr(0, f.length-4);
+				var newSfxExpr : Expr;
+				if( isJs ) {
+				names.push({ expr : EConst(CString(file)), pos : p });
+				newSfxExpr = macro new mt.deepnight.Sfx($v{file});
+				}
+				else {
 				#if disableSfx
 				var soundType = {
 					pos : p,
@@ -396,7 +501,8 @@ class Sfx {
 				Context.defineType(soundType);
 
 				var newSoundExpr = { expr : ENew({pack:soundType.pack, name:soundType.name, params:[]}, []), pos:p }
-				var newSfxExpr = { expr : ENew( { pack:["mt","deepnight"], name:"Sfx", params:[]}, [newSoundExpr] ), pos:p }
+				newSfxExpr = { expr : ENew( { pack:["mt","deepnight"], name:"Sfx", params:[]}, [newSoundExpr] ), pos:p }
+				}
 				
 				//var tbool = TPath({pack:[],name:"Bool",params:[]});
 				var tfloat = TPath({pack:[],name:"Float",params:[]});
@@ -419,11 +525,13 @@ class Sfx {
 					},
 					params : [],
 				}
-				var wrapperExpr : Expr = { pos:p, expr:EFunction(name, f) }
+				var wrapperExpr : Expr = { pos:p, expr:EFunction(FAnonymous, f) }
 				sounds.push({ field:name, expr:wrapperExpr });
 			}
 		}
 		if( !found ) Context.error("File not found "+dir, p);
+		if( isJs )
+			sounds.push({ field:"_names", expr:{ pos:p, expr:EArrayDecl(names) } });
 		return { pos : p, expr : EObjectDecl(sounds) };
 	}
 	
