@@ -329,6 +329,22 @@ class DisplayObject {
 		}
 	}
 
+	// the GPU buffers of the drawings (PIXI.Graphics) of this object and of its children freed: PIXI keeps them for the whole
+	// page otherwise (an object taken off the display list is not destroyed: the effects of a fight pile up), uploaded again
+	// if the object is drawn again
+	public function releaseGpu() {
+		releaseNode(node);
+	}
+
+	static function releaseNode(n:Dynamic) {
+		if (Std.isOfType(n, pixi.core.graphics.Graphics) && n.geometry != null)
+			n.geometry.dispose();
+		var ch:Array<Dynamic> = n.children;
+		if (ch != null)
+			for (c in ch)
+				releaseNode(c);
+	}
+
 	// ---------------------------------------------------------------- display list
 	public function detach() {
 		if (parent != null)

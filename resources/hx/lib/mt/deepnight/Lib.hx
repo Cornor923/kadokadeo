@@ -429,6 +429,25 @@ class Lib {
 		bmp.transform.matrix = m;
 		return bmp;
 	}
+
+	// (arkadeo) a BitmapData of width x height filled with the picture `source` repeated from (0, 0)
+	public static function createTexture(source:arkadeo.BitmapData, width:Int, height:Int, autoDisposeSource:Bool):arkadeo.BitmapData {
+		var bd = new arkadeo.BitmapData(width, height, source.transparent, 0x0);
+		var t = source.getTexture();
+		for (x in 0...Math.ceil(width / source.width))
+			for (y in 0...Math.ceil(height / source.height))
+				bd.drawFrame(t, x * source.width, y * source.height);
+		// (drawn now: the source may go)
+		bd.getTexture();
+		if (autoDisposeSource)
+			source.dispose();
+		return bd;
+	}
+
+	// (arkadeo) the picture mirrored
+	public static function flipBitmap(bd:arkadeo.BitmapData, flipX:Bool, flipY:Bool) {
+		bd.flip(flipX, flipY);
+	}
 	#end
 
 	// Credits : http://brianin3d.blogspot.fr/2008/11/haxe-bresenhams-line-drawing-algorithm.html

@@ -41,6 +41,7 @@ class Flash {
 		GlowFilter.style = FLASH;
 		FlashGlow.maxStageScale = 1;
 		BitmapData.gpuScaleMode = 1;
+		BitmapData.perlinFractal = false;
 		MovieClip.all = [];
 		Clip.reset();
 	}
@@ -57,6 +58,8 @@ class Flash {
 
 	public static function display(root:DisplayObject, frac:Float) {
 		root.show(frac);
+		// (the BitmapData changed during the step: shown again, one upload each)
+		BitmapData.flushAll();
 	}
 
 	// twips (1/20 px): the x / y of a Flash display object (truncated)

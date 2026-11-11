@@ -521,6 +521,17 @@ class Color {
 		]);
 	}
 
+	// the saturation (-1 -> 1) of the flash9 version, in arkadeo
+	public static function getSaturationFilter(ratio:Float):arkadeo.ColorMatrixFilter {
+		var matrix:Array<Float> = if (ratio > 0) [
+			1 + ratio,    -ratio,         0, 0, 0,
+			   -ratio, 1 + ratio,         0, 0, 0,
+			        0,    -ratio, 1 + ratio, 0, 0,
+			        0,         0,         0, 1, 0,
+		]; else getDesaturateMatrix(-ratio);
+		return new arkadeo.ColorMatrixFilter(matrix);
+	}
+
 	// (the name of the same filter in the mt lib of Fafi 360)
 	public static inline function getColorizeFilter(col:Int, ?ratioNewColor = 1.0, ?ratioOldColor = 1.0) {
 		return getColorizeMatrixFilter(col, ratioNewColor, ratioOldColor);

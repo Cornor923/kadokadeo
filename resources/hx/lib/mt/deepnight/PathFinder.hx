@@ -5,13 +5,13 @@ import mt.gx.algo.Heap;
 typedef AStarPoint = {x:Int, y:Int, parent:AStarPoint, goalDist:Float, homeDist:Float};
 
 private class AStarList {
-	var hash:IntHash<AStarPoint>;
+	var hash:Map<Int,AStarPoint>;
 	var heap:Heap<AStarPoint>;
 
 	public var length(default, null):Int;
 
 	public function new() {
-		hash = new IntHash();
+		hash = new Map();
 		heap = new Heap();
 		length = 0;
 	}
@@ -60,7 +60,7 @@ class PathFinder {
 	var openList:AStarList;
 	var closedList:AStarList;
 
-	var cache:IntHash<Array<{x:Int, y:Int}>>;
+	var cache:Map<Int,Array<{x:Int, y:Int}>>;
 	var diagonals:Bool;
 
 	public var statNoCache:Int;
@@ -84,7 +84,7 @@ class PathFinder {
 	}
 
 	public inline function resetCache() {
-		cache = new IntHash();
+		cache = new Map();
 	}
 
 	public function resetCollisions() {
@@ -256,15 +256,16 @@ class PathFinder {
 		}
 	}
 
+	// (Haxe 4: colMap is indexed [x][y], the String keys of a half done change never compiled)
 	public function setSquareCollision(x, y, w, h, ?b = true) {
 		for (ix in x...x + w)
 			for (iy in y...y + h)
-				colMap.set('${ix},${iy}', b);
+				colMap[ix][iy] = b;
 		resetCache();
 	}
 
 	public inline function setCollision(x:Int, y:Int, ?b = true) {
-		colMap.set('${x},${y}', b);
+		colMap[x][y] = b;
 		resetCache();
 	}
 
@@ -272,11 +273,11 @@ class PathFinder {
 		if (x < 0 || x >= wid || y < 0 || y >= hei)
 			return true;
 		else
-			return colMap.get('${x},${y}');
+			return colMap[x][y] == true;
 	}
 
 	inline function getCollisionFast(x:Int, y:Int) {
-		return colMap.get('${x},${y}');
+		return colMap[x][y] == true;
 	}
 
 	public function bresenham(x0:Int, y0:Int, x1:Int, y1:Int) {
