@@ -101,6 +101,12 @@ class KadoKadeoManager extends Application {
 	var fpsFrames:Int = 0;
 	var fpsSampleStartMs:Float = 0;
 
+	// the picture drawn at the pixels the canvas covers on the screen (followDisplaySize)
+	static inline var MAX_RESOLUTION = 4;
+
+	var displayObserver:Dynamic = null;
+	var displayResizeListener:Dynamic = null;
+
 	public var sheet:pixi.core.textures.Spritesheet;
 
 	public var score:ProtectedInt = 0;
@@ -124,7 +130,8 @@ class KadoKadeoManager extends Application {
 			view: canvas,
 			width: params.canvasWidth,
 			height: params.canvasHeight,
-			// Keep logical coordinates at 600 x 640; Vue controls the CSS size.
+			// Keep logical coordinates at 600 x 640; Vue controls the CSS size (the resolution then follows it:
+			// followDisplaySize).
 			resolution: Math.max(1, Browser.window.devicePixelRatio),
 			backgroundColor: 0x80c0e6e9
 		});
@@ -132,6 +139,9 @@ class KadoKadeoManager extends Application {
 		this.gameClass = gameClass;
 		this.params = params;
 		this.headless = params.headless == true && params.replayData != null;
+		if (!headless) {
+			followDisplaySize();
+		}
 		this.endRunClient = new KadoEndRun();
 		this.runFlow = new KadoRunFlow(params);
 		this.root = new ASprite();
@@ -701,8 +711,97 @@ class KadoKadeoManager extends Application {
 		untyped Ticker.system.remove(systemTickerListener);
 		Browser.document.removeEventListener("visibilitychange", onVisibilityChange);
 		untyped Ticker.system.stop();
+		stopFollowingDisplaySize();
 		this.root = null;
 		super.destroy(removeView);
+	}
+
+	// DISPLAY SIZE
+	// The picture is drawn at the pixels the canvas covers on the screen: its CSS width (given by the page) x
+	// devicePixelRatio, not its logical size x devicePixelRatio that the browser would stretch again (an Arkadeo game
+	// shown 696 CSS pixels wide at 125 %: 750 pixels drawn for 870 on the screen, blurred). Only the picture changes: the
+	// logical size (screen), the inputs and the game stay the same. Never below the logical size (a game shown smaller:
+	// reduced by the browser, as before), nor above MAX_RESOLUTION.
+	function followDisplaySize():Void {
+		if (js.Syntax.typeof(untyped Browser.window.ResizeObserver) == "undefined") {
+			return;
+		}
+		var observer:Dynamic = js.Syntax.code("new ResizeObserver({0})", (entries:Array<Dynamic>) -> {
+			var box:Array<Dynamic> = entries[entries.length - 1].devicePixelContentBoxSize;
+			fitResolution(box != null && box.length > 0 ? box[0].inlineSize : null);
+		});
+		try {
+			// the size in pixels of the screen, measured again when devicePixelRatio changes (zoom of the page)
+			observer.observe(canvas, {box: "device-pixel-content-box"});
+		} catch (e:Dynamic) {
+			// (Safari) the CSS size, and devicePixelRatio read again when the window changes (the zoom resizes it)
+			observer.observe(canvas);
+			displayResizeListener = (_) -> fitResolution(null);
+			Browser.window.addEventListener("resize", displayResizeListener);
+		}
+		displayObserver = observer;
+	}
+
+	function stopFollowingDisplaySize():Void {
+		if (displayObserver != null) {
+			displayObserver.disconnect();
+			displayObserver = null;
+		}
+		if (displayResizeListener != null) {
+			Browser.window.removeEventListener("resize", displayResizeListener);
+			displayResizeListener = null;
+		}
+	}
+
+	// devicePixels: the width of the canvas in pixels of the screen (ResizeObserver), else its CSS width x
+	// devicePixelRatio
+	function fitResolution(devicePixels:Null<Float>):Void {
+		var r:Dynamic = untyped this.renderer;
+		if (r == null || canvas == null || displayObserver == null) {
+			return;
+		}
+		var cssWidth = canvas.getBoundingClientRect().width;
+		if (!(cssWidth > 0)) {
+			return;
+		}
+		var dpr = Browser.window.devicePixelRatio;
+		var estimate = cssWidth * (dpr > 0 ? dpr : 1);
+		// (the pixels of the screen differ by a pixel at most, rounded; not at all in an emulated devicePixelRatio, the
+		// device mode of DevTools: the CSS pixels)
+		if (devicePixels == null || !(Math.abs(devicePixels - estimate) < 1.5)) {
+			devicePixels = estimate;
+		}
+		var w = screen.width;
+		var pixels = Math.max(w, Math.min(w * MAX_RESOLUTION, Math.round(devicePixels)));
+		var res = pixels / w;
+		// (PIXI cuts screen x resolution to an integer: never a pixel less)
+		if (Std.int(w * res) != pixels) {
+			res = (pixels + 0.5) / w;
+		}
+		if (Std.int(w * res) == canvas.width && Std.int(screen.height * res) == canvas.height) {
+			return;
+		}
+		var previous:Float = r.resolution;
+		setResolution(res);
+		if (Math.abs(canvas.getBoundingClientRect().width - cssWidth) > 0.5) {
+			// the page gives the canvas the size of its picture (no CSS width): followed, it would grow without end. As
+			// before: the resolution of the start, no more followed
+			setResolution(previous);
+			stopFollowingDisplaySize();
+		}
+		// (the canvas was cleared: drawn again before the browser shows it)
+		render();
+	}
+
+	function setResolution(res:Float):Void {
+		var r:Dynamic = untyped this.renderer;
+		r.resolution = res;
+		// (the hit tests of PIXI: the pointer in pixels of the canvas, divided by this resolution)
+		var interaction:Dynamic = r.plugins != null ? r.plugins.interaction : null;
+		if (interaction != null) {
+			interaction.resolution = res;
+		}
+		r.resize(screen.width, screen.height);
 	}
 
 	// REPLAY SEEKING
@@ -762,7 +861,9 @@ class KadoKadeoManager extends Application {
 	function freezeSeek():Void {
 		if (seekFreeze == null && root != null) {
 			var r:Dynamic = untyped this.renderer;
-			var tex:pixi.core.textures.Texture = r.generateTexture(root, 1, 1, new pixi.core.math.shapes.Rectangle(0, 0, screen.width, gameAreaHeight()));
+			// (at the resolution of the canvas: the same pixels as the picture it replaces)
+			var tex:pixi.core.textures.Texture = r.generateTexture(root, 1, r.resolution,
+				new pixi.core.math.shapes.Rectangle(0, 0, screen.width, gameAreaHeight()));
 			seekFreeze = new pixi.core.sprites.Sprite(tex);
 			stage.addChildAt(seekFreeze, stage.getChildIndex(root) + 1);
 			seekStartMs = Browser.window.performance.now();
