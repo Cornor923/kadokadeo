@@ -159,7 +159,8 @@ class GameSounds {
 		stepCount++;
 	}
 
-	public static function play(name:String, ?volume:Float = 1) {
+	// pan: -1 (left) to 1 (right), Flash's panning (Green Witch: the sounds of what is left or right of the witch)
+	public static function play(name:String, ?volume:Float = 1, ?pan:Float = 0) {
 		if (ctx == null || !soundsOn || quiet())
 			return;
 		var b = buffers.get(name);
@@ -170,12 +171,19 @@ class GameSounds {
 		lastStep.set(name, stepCount);
 		var src = ctx.createBufferSource();
 		src.buffer = b;
+		var out:Dynamic = sfxGain;
+		if (pan != 0 && ctx.createStereoPanner != null) {
+			var p = ctx.createStereoPanner();
+			p.pan.value = pan < -1 ? -1 : (pan > 1 ? 1 : pan);
+			p.connect(out);
+			out = p;
+		}
 		if (volume == 1) {
-			src.connect(sfxGain);
+			src.connect(out);
 		} else {
 			var g = ctx.createGain();
 			g.gain.value = volume;
-			g.connect(sfxGain);
+			g.connect(out);
 			src.connect(g);
 		}
 		src.start(0);
