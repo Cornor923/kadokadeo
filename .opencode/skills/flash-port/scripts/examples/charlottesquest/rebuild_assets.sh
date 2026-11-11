@@ -18,7 +18,7 @@ grep -E "WARN|clips [0-9]|font " assets.log || true
 $PY "$HERE/charlottesquest_data.py" "$W/out" "$REPO/resources/hx/games/charlottesquest/Data.hx"
 rm -rf sheet && mkdir sheet
 # 2040, not 2048: a power-of-two sheet gets mipmaps that bleed into the neighbouring sprites
-PACK_MAX=2040 $PY "$T/pack_multi.py" out/src sheet/charlottesquest out/pivots.json | tail -1
+PACK_MAX=2040 PACK_SCALE=1.5 PACK_LO_FILE=out/lo.txt $PY "$T/pack_multi.py" out/src sheet/charlottesquest out/pivots.json | tail -1
 D="$REPO/public/assets/img/content/charlottesquest"
 rm -rf "$D" && mkdir -p "$D"
 cp sheet/charlottesquest-*.json sheet/charlottesquest-*.png "$D/"

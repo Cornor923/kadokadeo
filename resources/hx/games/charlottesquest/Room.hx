@@ -75,6 +75,16 @@ class Room {
 	public var shop:Null<{cx:Int, cy:Int}> = null;
 	public var arrival:Null<{cx:Int, cy:Int}> = null;
 
+	// a bitmap of the room (splashes, background, walls); sharp: drawn at the resolution of the screen, its bricks are
+	// finer than the Flash pixels (only the display changes). The background stays at the Flash pixels: darkened and
+	// colourised by the game, its bricks glow (blur 16 each): 4 times the pixels to filter for nothing to see
+	static function picture(sharp:Bool):BitmapData {
+		var b = new BitmapData(CWID * GRID + PADDING * 2, CHEI * GRID + PADDING * 2, true, 0x0);
+		if (sharp)
+			b.gpuResolution = BitmapData.screenScale();
+		return b;
+	}
+
 	public function new(x, y, k:RoomKind) {
 		distance = DISTANCE++;
 		ALL[distance] = this;
@@ -335,7 +345,7 @@ class Room {
 
 		// (a new one at each step, like the original: the previous one freed)
 		var old = splashes.bitmapData;
-		splashes.bitmapData = new BitmapData(CWID * GRID + PADDING * 2, CHEI * GRID + PADDING * 2, true, 0x0);
+		splashes.bitmapData = picture(true);
 		if (old != null)
 			old.dispose();
 		splashes.blendMode = BlendMode.SCREEN;
@@ -391,7 +401,7 @@ class Room {
 
 		// Cache bitmap fond
 		if (drawStep == 4) {
-			bg.bitmapData = new BitmapData(CWID * GRID + PADDING * 2, CHEI * GRID + PADDING * 2, true, 0x0);
+			bg.bitmapData = picture(false);
 			var bd = bg.bitmapData;
 			var m = new Matrix();
 			m.translate(PADDING, PADDING);
@@ -511,7 +521,7 @@ class Room {
 		if (drawStep == 2) {
 			while (addList.length > 0)
 				drawCont.addChild(addList.splice(rseed.random(addList.length), 1)[0]);
-			walls.bitmapData = new BitmapData(CWID * GRID + PADDING * 2, CHEI * GRID + PADDING * 2, true, 0x0);
+			walls.bitmapData = picture(true);
 			var bd = walls.bitmapData;
 			var m = new Matrix();
 			m.translate(PADDING, PADDING);
