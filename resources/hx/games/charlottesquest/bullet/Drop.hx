@@ -5,6 +5,11 @@ class Drop extends Bullet {
 
 	var scale:Float;
 
+	// the stretch of the _smc of lib.Blood (the drop falling): kept here and given to it at each update, the timeline
+	// of the clip places it again at each of its frames (in Flash, the code took it over). The _smc is a picture of the
+	// sheet (one frame), not a nested clip: clip.get, not getClip
+	var smcScaleY = 0.1;
+
 	public function new() {
 		super();
 
@@ -23,7 +28,7 @@ class Drop extends Bullet {
 		mc = new MovieClip("Blood");
 		spr.addChild(mc);
 		mc.scaleX = mc.scaleY = 0;
-		mc.getClip("_smc")._yscale = 0.1 * 100;
+		stretch();
 		mc.y = -7;
 	}
 
@@ -41,8 +46,14 @@ class Drop extends Bullet {
 			mc.scaleY = mc.scaleX;
 		}
 		mc.rotation *= 0.95;
-		var smc = mc.getClip("_smc");
-		if (smc._yscale / 100 < 3)
-			smc._yscale += gravity * 27 * 100;
+		if (smcScaleY < 3)
+			smcScaleY += gravity * 27;
+		stretch();
+	}
+
+	function stretch() {
+		var smc = mc.clip.get("_smc");
+		if (smc != null)
+			smc._yscale = smcScaleY * 100;
 	}
 }
