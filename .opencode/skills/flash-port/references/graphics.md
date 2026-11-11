@@ -290,3 +290,14 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   the hand of the clock turned by the code with its drop shadow): `Exporter.effects` (+ `shadows` for the drop shadows),
   applied by `arkadeo.Clip` (`bl`, `fl`); a nested clip the code colours (`mt.fx.Radiate` on the `_col` of the clock)
   needs its white silhouettes: `Exporter.white_for`.
+- A clip the code drives through a named nested clip whose placement carries filters (Charlotte's Quest: the `_smc` of
+  each pose of lib.Charlotte, an outline, a contrast colour matrix and a drop shadow over the unicorn and its moving parts):
+  a CLIP layer would drop them, and a glow baked in each part would draw outlines inside the picture. Draw the nested clip
+  frame by frame with its nested clips playing with it and the filters wrapped around the whole picture (a simple Clip
+  written by the asset script, `flat_timeline_clip` of `charlottesquest_assets.py`), or give an export the filters of its
+  placement with `Exporter.wrap_for = {sid: filters}` (every picture of that sprite's export drawn through them).
+- Variants of a symbol chosen by AS3 frame scripts of its parts that read a flag of their grandparent (Charlotte's Quest:
+  `if (MovieClip(parent.parent).bad_) gotoAndStop(2)`): no frame script runs in the FFDec sprite export (the variants come
+  out mixed): export each variant with its parts forced on their frame (`ctrl` by sid).
+- `SWF.inner_filters = True` draws the inner glows / drop shadows of the timelines (`Renderer.draw` passes it to
+  `apply_filter`).

@@ -248,12 +248,18 @@ class TextField extends DisplayObject {
 
 	function lineWidth(l:String):Float {
 		var w = 0.0;
+		var ls = letterSpacing();
 		for (i in 0...l.length) {
 			var j = font.idx.get(l.charAt(i));
 			if (j != null)
-				w += font.def.adv[j];
+				w += font.def.adv[j] + ls;
 		}
 		return w;
+	}
+
+	// TextFormat.letterSpacing: px added after each glyph (Charlotte's Quest: 1)
+	inline function letterSpacing():Float {
+		return defaultTextFormat != null && defaultTextFormat.letterSpacing != null ? defaultTextFormat.letterSpacing : 0;
 	}
 
 	// the colour of a glyph through the multipliers of the colour transform of the field (an embedded font: Trigo's combo
@@ -322,6 +328,7 @@ class TextField extends DisplayObject {
 		var d = font.def;
 		var y = 2 + d.ascent;
 		var ci = 0;
+		var ls = letterSpacing();
 		// (added in one call: the anti-cheat of KadoKadeo reads a stack trace by addChild of raw PIXI objects)
 		var glyphs:Array<Dynamic> = [];
 		for (l in lines) {
@@ -344,7 +351,7 @@ class TextField extends DisplayObject {
 				s.x = x;
 				s.y = y;
 				glyphs.push(s);
-				x += d.adv[j];
+				x += d.adv[j] + ls;
 			}
 			ci += l.length + 1;
 			y += lh;
