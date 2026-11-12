@@ -39,6 +39,9 @@ class Game implements kado.GameInterface {
 	var isReplayMode:Bool;
 	var hoverSide:Bool;
 	var hoverY:Int;
+	// replay: its events with their frame, and the next one to apply
+	var replayEvents:Array<{frame:Int, event:Dynamic}>;
+	var replayCursor:Int;
 
 	public function new(root:ASprite, ?isReplay:Bool = false) {
 		isReplayMode = isReplay;
@@ -47,6 +50,8 @@ class Game implements kado.GameInterface {
 			recordInputs: false,
 			recordEvents: true,
 		});
+		replayEvents = isReplay ? KadoKadeoManager.kkm.replay.getReplayEvents() : [];
+		replayCursor = 0;
 
 		dmanager = new DepthManager(root);
 		dmanager.attach("bg", 0);
@@ -235,6 +240,18 @@ class Game implements kado.GameInterface {
 		}
 	}
 
+	// replay: the live game applies a hover / click at once, where it reads the mouse (recordHover, recordClick), and
+	// the manager records it on the next frame (recordEvent without a frame). Applied at the same point of the frame
+	// before the one it is recorded on, not at the start of that one (consumeEvents): the gems of the step moved
+	// meanwhile, a click did not drop the token at the same moment, the replay gave another score.
+	function applyReplayEventsOfStep():Void {
+		var frame = KadoKadeoManager.kkm.replay.getCurrentFrame() + 1;
+		while (replayCursor < replayEvents.length && replayEvents[replayCursor].frame <= frame) {
+			applyReplayEvent(replayEvents[replayCursor].event);
+			replayCursor++;
+		}
+	}
+
 	function recordHover(side:Bool, y:Int):Void {
 		if (isReplayMode || side == hoverSide && y == hoverY)
 			return;
@@ -396,10 +413,6 @@ class Game implements kado.GameInterface {
 	}
 
 	public function update(delta:Float):Void {
-		for (event in KadoKadeoManager.kkm.replay.consumeEvents()) {
-			applyReplayEvent(event);
-		}
-
 		if (start_timer > 0) {
 			start_timer -= Timer.deltaT;
 			if (start_timer <= 0)
@@ -428,6 +441,8 @@ class Game implements kado.GameInterface {
 
 		var side = (MouseManager.getX() < KadoKadeoManager.I(150));
 		var cy = Std.int(Math.max(Math.min((MouseManager.getY() - Cs.POSY) / Cs.CELL_SIZE, Cs.LVL_HEIGHT - 1), 0));
+		if (isReplayMode)
+			applyReplayEventsOfStep();
 		recordHover(side, cy);
 
 		side = hoverSide;
