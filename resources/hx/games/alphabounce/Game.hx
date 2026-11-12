@@ -118,6 +118,7 @@ class Game implements kado.GameInterface {
 	var frameCount:Int;
 	var lastMx:Int;
 	var lastMy:Int;
+	var hasLastMouse:Bool;
 	var onPointerDown:Dynamic;
 
 	public function new(root:ASprite, ?isReplay:Bool = false) {
@@ -146,8 +147,9 @@ class Game implements kado.GameInterface {
 		frameCount = 0;
 		mcs = [];
 		pm = new Matrix();
-		lastMx = MouseManager.getX();
-		lastMy = MouseManager.getY();
+		// not read here: the live game reads the pointer of the page, its replay the position recorded on frame 0. Taken
+		// at frame 0 (readInputs), the same in both (a move there was a pad under the mouse in the live game only)
+		hasLastMouse = false;
 		flPress = false;
 		flClick = false;
 
@@ -266,8 +268,9 @@ class Game implements kado.GameInterface {
 	// the next frame: the pad sees it pressed once)
 	function readInputs() {
 		var mx = MouseManager.getX(), my = MouseManager.getY();
-		if (mx != lastMx || my != lastMy)
+		if (hasLastMouse && (mx != lastMx || my != lastMy))
 			mouseMove();
+		hasLastMouse = true;
 		lastMx = mx;
 		lastMy = my;
 		if (pendingUp) {
