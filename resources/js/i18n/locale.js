@@ -1,9 +1,15 @@
 // The language of the page, given by the server (App\Support\LocaleResolver), and the choice of the player.
+import { t } from './index'
+
 const AUTOMATIC = 'auto'
 // a page without a language (the admin panel, the replay verifier) is in French; fr-FR: the format the site always had
 const INTL_LOCALES = { fr: 'fr-FR' }
 
 export const pageLocale = () => window.Kado?.locale ?? 'fr'
+
+export const siteLanguages = () => window.Kado?.locales ?? ['fr']
+
+export const languageName = (language) => t(`language.${language}`)
 
 // a text the server gives in each language ({ fr, en }), French when the page's one is not written
 export const inPageLanguage = (texts) => texts[pageLocale()] ?? texts.fr

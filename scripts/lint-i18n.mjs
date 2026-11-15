@@ -127,6 +127,9 @@ const withoutComments = (code) =>
     .replaceAll(/\/\*[\s\S]*?\*\//g, '')
     .replaceAll(/(^|\s)\/\/.*$/gm, '')
 
+// `language.${name}`: a group written out, then what the code chooses in it
+const BUILT_KEY = /^`((?:[^`$.]+\.)+)\$\{[^`]*\}`$/
+
 export function findUsageProblems(code, frenchKeys, file) {
   const readable = withoutComments(code)
   const quotedArguments = [
@@ -135,9 +138,15 @@ export function findUsageProblems(code, frenchKeys, file) {
     ...[...readable.matchAll(/:keypath="([^"]*)"/g)].map((match) => match[1]),
   ]
   return quotedArguments.flatMap((argument) => {
+    const group = argument.match(BUILT_KEY)?.[1]
+    if (group !== undefined) {
+      return [...frenchKeys].some((key) => key.startsWith(group))
+        ? []
+        : [`${file}: the group ${group.slice(0, -1)} is not in resources/lang/${SOURCE_LANGUAGE}/site.json`]
+    }
     const key = argument.match(/^(['"])([^'"]+)\1$/)?.[2]
     if (key === undefined) {
-      return [`${file}: the key ${argument || '(none)'} is not a literal: use a table of literal keys`]
+      return [`${file}: the key ${argument || '(none)'} is not a literal, nor built in a group (\`group.\${name}\`)`]
     }
     return frenchKeys.has(key) ? [] : [`${file}: the key ${key} is not in resources/lang/${SOURCE_LANGUAGE}/site.json`]
   })

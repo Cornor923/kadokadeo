@@ -19,7 +19,10 @@ const sidebarOpen = ref(false)
     <NavTopBar @menu="sidebarOpen = true" />
     <header id="topPage" class="mx-auto w-full max-w-5xl h-[100px] flex relative justify-center z-10">
       <div class="flex flex-col items-center justify-center">
-        <img src="/gfx/logoBasic.png" :alt="$t('common.site_name')" class="h-fit w-auto mx-auto mb-5" />
+        <div class="flex items-center mx-auto mb-5 md:relative md:block">
+          <NavLanguageFlags class="-mr-2 md:absolute md:right-full md:top-1/2 md:-translate-y-1/2" />
+          <img src="/gfx/logoBasic.png" :alt="$t('common.site_name')" class="h-fit w-auto min-w-0" />
+        </div>
         <Starbar v-if="authStore.isAuthenticated" />
       </div>
       <template v-if="authStore.isAuthenticated">

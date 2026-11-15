@@ -46,6 +46,7 @@ class LocaleResolverTest extends TestCase
             'a refused language' => ['en;q=0, fr;q=0.5', 'fr'],
             'only refused languages' => ['en;q=0', 'fr'],
             'a language not supported: French during the beta' => ['de', 'fr'],
+            'the automatic choice of an account is not a language' => ['auto, en;q=0.5', 'en'],
             'any language' => ['*', 'fr'],
             'no header' => [null, 'fr'],
             'an empty header' => ['', 'fr'],

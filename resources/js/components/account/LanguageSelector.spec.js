@@ -17,9 +17,9 @@ vi.mock('@/i18n/reload', () => ({ reloadPage: () => reload() }))
 
 const TEXTS = { language: { title: 'Langue', auto: 'Automatique', fr: 'Français', en: 'English (beta)' } }
 
-function renderSelector({ enabled = true, locale = 'fr' } = {}) {
+function renderSelector({ enabled = true, locale = 'fr', locales = ['fr', 'en'] } = {}) {
   window.evts = new EventTarget()
-  window.Kado = { i18n_enabled: enabled, locale: 'fr' }
+  window.Kado = { i18n_enabled: enabled, locale: 'fr', locales }
   const pinia = createPinia()
   setActivePinia(pinia)
   useAuthStore().user = { locale }
@@ -45,6 +45,12 @@ test('with the languages on, the player reads the three choices', () => {
     'Français',
     'English (beta)',
   ])
+})
+
+test('the choices are the languages of the site', () => {
+  renderSelector({ locales: ['fr'] })
+
+  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Automatique', 'Français'])
 })
 
 test('the choice shown is the one of the account', () => {

@@ -209,8 +209,19 @@ test('a key known in French is accepted', () => {
 
 test('a key that is not a literal is rejected', () => {
   codeIsRejected('t(key)')
-  codeIsRejected('t(`login.${name}`)')
   codeIsRejected('<i18n-t :keypath="key" />')
+})
+
+// the group is checked, its keys cannot be: what the variable gives is the business of the code
+test('a key built in a group known in French is accepted', () => {
+  codeIsAccepted('t(`language.${language}`)', ['language.fr'])
+  codeIsAccepted('$t(`login.errors.${code}`)', ['login.errors.denied'])
+})
+
+test('a key built in a group missing in French is rejected', () => {
+  codeIsRejected('t(`languages.${language}`)', ['language.fr'])
+  codeIsRejected('t(`lang${uage}`)', ['language.fr'])
+  codeIsRejected('t(`${group}.title`)', ['login.title'])
 })
 
 test('the function t itself is not a use of a key', () => {

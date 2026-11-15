@@ -21,6 +21,7 @@
             // the language of the page (App\Support\LocaleResolver); the choice of it is shown when the languages are on
             locale: @json(App\Support\LocaleResolver::forRequest(request())),
             i18n_enabled: @json(app(App\Settings\SiteSettings::class)->i18n_enabled),
+            locales: @json(array_map(fn (App\Enums\LocalePreference $language) => $language->value, App\Enums\LocalePreference::languages())),
             public_key: '{{ str_replace("\n", "\\n", app(App\Services\RunService::class)->getPublicKey()) }}',
             achievements_enabled: @json(app(App\Settings\SiteSettings::class)->achievements_enabled),
             // the clans are open (App\Settings\ClanSettings::$enabled), else their pages say "Prochainement disponible"

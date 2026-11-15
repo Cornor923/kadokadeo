@@ -1,6 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { chooseLocale, inPageLanguage, intlLocale, languageChangedByLogin, pageLocale } from './locale'
+import { chooseLocale, inPageLanguage, intlLocale, languageChangedByLogin, pageLocale, siteLanguages } from './locale'
 
 beforeEach(() => {
   delete window.Kado
@@ -74,4 +74,14 @@ test('a text not written in the language of the page shows the French one', () =
   window.Kado = { locale: 'en' }
 
   expect(inPageLanguage({ fr: 'Bonjour' })).toBe('Bonjour')
+})
+
+test('the page gives the languages of the site', () => {
+  window.Kado = { locales: ['fr', 'en'] }
+
+  expect(siteLanguages()).toEqual(['fr', 'en'])
+})
+
+test('a page without languages has French only', () => {
+  expect(siteLanguages()).toEqual(['fr'])
 })

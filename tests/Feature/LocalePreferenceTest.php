@@ -72,6 +72,13 @@ class LocalePreferenceTest extends TestCase
             ->assertSee('i18n_enabled: true', false);
     }
 
+    public function test_a_page_gives_the_languages_of_the_site(): void
+    {
+        $this->get('/games')
+            ->assertOk()
+            ->assertSee('locales: ["fr","en"]', false);
+    }
+
     public function test_the_account_of_the_player_wins_in_the_page(): void
     {
         $this->setSettings(SiteSettings::class, ['i18n_enabled' => true]);

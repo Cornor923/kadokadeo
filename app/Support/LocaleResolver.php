@@ -15,8 +15,6 @@ final class LocaleResolver
     // the texts are written in French: the language of the site when the languages are off
     private const SOURCE_LANGUAGE = 'fr';
 
-    private const SUPPORTED_LANGUAGES = ['fr', 'en'];
-
     // French while English is in beta
     private const LANGUAGE_OF_OTHER_BROWSERS = 'fr';
 
@@ -51,9 +49,9 @@ final class LocaleResolver
     private static function browserLanguage(?string $acceptLanguage): ?string
     {
         foreach (AcceptHeader::fromString($acceptLanguage ?? '')->all() as $accepted) {
-            $language = strtolower(explode('-', $accepted->getValue())[0]);
-            if ($accepted->getQuality() > 0 && in_array($language, self::SUPPORTED_LANGUAGES, true)) {
-                return $language;
+            $language = LocalePreference::tryFrom(strtolower(explode('-', $accepted->getValue())[0]));
+            if ($accepted->getQuality() > 0 && in_array($language, LocalePreference::languages(), true)) {
+                return $language->value;
             }
         }
 
