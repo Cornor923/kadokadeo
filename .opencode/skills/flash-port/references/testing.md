@@ -189,6 +189,9 @@ node harness/rc.mjs check $KKP_WORK/rc_base.jsonl 9341      # "state 60% SAME | 
   The browser profile is per port (`kk-cdp-profile-<port>`): two sessions using the same `PORT` share one browser
   (the second script drives the first one's page, `CDP timeout` errors on both sides). Several sessions at the same
   time: give each its own range of ports, and check a port is free (`curl 127.0.0.1:<port>/json`) before using it.
+  `cdp.mjs` removes the profile (50 to 350 MB) when the script ends: `close()`, an error, `process.exit`, Ctrl+C. A
+  script killed outright (`kill -9`, the timeout of a shell) leaves it in the temporary folder: remove it with its
+  browser.
 - Debug build for the tests (`__over`, seed 123), production build only to check it compiles (`build.sh <game> prod`
   overwrites the harness build: build the debug one again before the next test, a production build waits for a site
   context).
