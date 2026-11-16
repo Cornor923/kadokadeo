@@ -3,7 +3,7 @@
 //   env BROWSER: path of the browser (default: Chrome on macOS, Edge on Windows, google-chrome / chromium on Linux)
 //   env GPU=1: real GPU (otherwise SwiftShader, a software renderer: fine for logic, wrong for performance)
 import { spawn } from 'node:child_process'
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -15,6 +15,14 @@ const CANDIDATES = {
 const BROWSER = process.env.BROWSER || (CANDIDATES[process.platform] || []).find((p) => existsSync(p))
 const GPU_FLAGS = { darwin: ['--use-angle=metal'], win32: ['--use-angle=d3d11'], linux: ['--use-angle=gl'] }[process.platform] || []
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// the browsers still open: killed and their profile removed when the script ends in any way (an error, process.exit,
+// Ctrl+C). Each profile takes 50 to 350 MB of the temporary folder: left there, one per port and per run
+const open = new Set()
+process.on('exit', () => { for (const end of open) end() })
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(signal, () => process.exit(1))
+}
 
 export async function launch(port = 9333) {
   if (!BROWSER) throw new Error('no Chromium browser found: set BROWSER=<path of chrome / msedge / chromium>')
@@ -32,6 +40,14 @@ export async function launch(port = 9333) {
     '--autoplay-policy=no-user-gesture-required', '--mute-audio',
     'about:blank',
   ], { stdio: 'ignore' })
+  const exited = new Promise((r) => proc.once('exit', r))
+  const end = () => {
+    open.delete(end)
+    if (proc.exitCode === null && proc.signalCode === null) proc.kill()
+    // retried: the processes of the browser (GPU, renderers) release its files a little after it quits
+    try { rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }) } catch {}
+  }
+  open.add(end)
   let targets
   for (let i = 0; i < 100; i++) {
     try {
@@ -112,9 +128,10 @@ export async function launch(port = 9333) {
       writeFileSync(path, Buffer.from(r.data, 'base64'))
     },
     async close() {
-      try { await send('Browser.close') } catch {}
+      try { await send('Browser.close', {}, 3000) } catch {}
+      await Promise.race([exited, sleep(3000)])
       ws.close()
-      proc.kill()
+      end()
     },
   }
   return b
