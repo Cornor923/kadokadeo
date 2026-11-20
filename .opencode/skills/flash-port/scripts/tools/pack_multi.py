@@ -3,6 +3,9 @@
 - trim (1px margin), 1px extrude, identical frames aliased (autoAlias)
 - skyline packing on sheets of at most MAX x MAX; the first sheet holds every animation and every
   sheet lists the others in meta.related_multi_packs (like TexturePacker MultiPackAuto)
+- PACK_SCALE: pixels of the images per pixel of their textures (meta.scale of every sheet: PIXI gives the textures
+  their size divided by it), images drawn finer than the pixels of the game. One scale for all the sheets: the
+  spritesheets of the old versions (resources/js/games/builds/atlas.mjs) take the scale of the first one
 usage: pack_multi.py <src dir> <out base name (…/name)> <pivots.json>
 """
 import os, sys, re, json, hashlib
@@ -11,6 +14,7 @@ from PIL import Image
 
 SRC, OUT_BASE, PIVOTS_FILE = sys.argv[1], sys.argv[2], sys.argv[3]
 MAX = int(os.environ.get('PACK_MAX', '2048'))
+SCALE = os.environ.get('PACK_SCALE', '1')
 EXT = 1
 MARGIN = 1
 pivots = json.load(open(PIVOTS_FILE))
@@ -179,11 +183,12 @@ for si, sh in enumerate(sheets):
               '\t"image": "%s.png",' % sh['file'],
               '\t"format": "RGBA8888",',
               '\t"size": {"w":%d,"h":%d},' % (sh['W'], sh['H']),
-              '\t"scale": "1"' + (',' if others else '')]
+              '\t"scale": "%s"' % SCALE + (',' if others else '')]
     if others:
         lines.append('\t"related_multi_packs": [%s]' % ', '.join('"%s"' % o for o in others))
     lines += ['}', '}']
     open('%s-%d.json' % (OUT_BASE, si), 'w', newline='\n').write('\n'.join(lines) + '\n')
     json.load(open('%s-%d.json' % (OUT_BASE, si)))
 
-print('%d frames, %d unique, %d sheets: %s' % (len(sprites), len(unique), len(sheets), ', '.join('%dx%d' % (s['W'], s['H']) for s in sheets)))
+print('%d frames, %d unique, %d sheets%s: %s' % (len(sprites), len(unique), len(sheets), '' if SCALE == '1' else ' at scale ' + SCALE,
+                                                ', '.join('%dx%d' % (s['W'], s['H']) for s in sheets)))

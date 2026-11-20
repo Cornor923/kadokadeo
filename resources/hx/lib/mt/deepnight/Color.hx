@@ -521,6 +521,18 @@ class Color {
 		]);
 	}
 
+	// the contrast (-1 -> 1) of the flash9 version, in arkadeo
+	public static function getContrastFilter(ratio:Float):arkadeo.ColorMatrixFilter {
+		var m = 1 + ratio * 1.5;
+		var o = -64 * ratio;
+		return new arkadeo.ColorMatrixFilter([
+			m, 0, 0, 0, o,
+			0, m, 0, 0, o,
+			0, 0, m, 0, o,
+			0, 0, 0, 1, 0,
+		]);
+	}
+
 	// the saturation (-1 -> 1) of the flash9 version, in arkadeo
 	public static function getSaturationFilter(ratio:Float):arkadeo.ColorMatrixFilter {
 		var matrix:Array<Float> = if (ratio > 0) [

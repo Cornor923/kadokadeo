@@ -594,7 +594,8 @@ class Renderer:
                     if f['type'] == 'blur' and getattr(self.swf, 'blur_filter', False):
                         layer = blur_layer(layer, f, Z)
                     else:
-                        layer = apply_filter(layer, f, Z)
+                        # (inner glows / drop shadows: opt-in, SWF.inner_filters = True)
+                        layer = apply_filter(layer, f, Z, inner=getattr(self.swf, 'inner_filters', False))
                 if len(cmd) > 4:
                     layer = apply_cx(layer, cmd[4])
                 if cmd[3] == 'lighten' and getattr(self.swf, 'lighten', False):

@@ -12,6 +12,7 @@ import pixi.core.textures.Texture;
  * drawn by a filter of the object, which reads what the object drew: per channel, with b what is under the picture (the
  * background of Flash) and s the picture, b < 0.5 ? 2 s b : 1 - 2 (1 - s) (1 - b), mixed by the alpha of the picture.
  * The picture covers the space of the object from (0, 0) to (width, height) (outside of it nothing changes).
+ * difference: Flash's DIFFERENCE instead, |b - s| per channel (BitmapData.draw with BlendMode.DIFFERENCE).
  */
 class OverlayFilter extends Filter {
 	var width:Float;
@@ -19,7 +20,7 @@ class OverlayFilter extends Filter {
 	var map:PixiMatrix;
 	var inv:PixiMatrix;
 
-	public function new(picture:Texture, width:Float, height:Float) {
+	public function new(picture:Texture, width:Float, height:Float, ?difference:Bool = false) {
 		var m = new PixiMatrix();
 		// (a picture of a sheet: its frame in the texture of the sheet)
 		var bt = picture.baseTexture;
@@ -27,12 +28,31 @@ class OverlayFilter extends Filter {
 		super(null, FRAG, {
 			uPicture: picture,
 			uMap: m,
-			uFrame: [f.x / bt.width, f.y / bt.height, f.width / bt.width, f.height / bt.height]
+			uFrame: [f.x / bt.width, f.y / bt.height, f.width / bt.width, f.height / bt.height],
+			uAlpha: 1.0,
+			uMode: difference ? 1.0 : 0.0
 		});
 		map = m;
 		inv = new PixiMatrix();
 		this.width = width;
 		this.height = height;
+	}
+
+	// the alpha of the picture (Charlotte's Quest: the plasma faded in, alpha 0 to 0.4)
+	public var alpha(get, set):Float;
+
+	inline function get_alpha():Float
+		return uniforms.uAlpha;
+
+	inline function set_alpha(v:Float):Float
+		return uniforms.uAlpha = v;
+
+	// another picture (a BitmapData drawn again: its texture)
+	public function setPicture(picture:Texture) {
+		var bt = picture.baseTexture;
+		var f = picture.frame;
+		uniforms.uPicture = picture;
+		uniforms.uFrame = [f.x / bt.width, f.y / bt.height, f.width / bt.width, f.height / bt.height];
 	}
 
 	// a pixel of the filter -> the picture (like the sprite masks of PIXI, FilterSystem.calculateSpriteMatrix): the screen
@@ -67,6 +87,8 @@ uniform sampler2D uSampler;
 uniform sampler2D uPicture;
 uniform mat3 uMap;
 uniform vec4 uFrame;
+uniform float uAlpha;
+uniform float uMode;
 
 void main(void) {
 	vec4 b = texture2D(uSampler, vTextureCoord);
@@ -84,8 +106,8 @@ void main(void) {
 	vec3 cs = p.rgb / p.a;
 	vec3 lo = 2.0 * cs * cb;
 	vec3 hi = 1.0 - 2.0 * (1.0 - cs) * (1.0 - cb);
-	vec3 o = mix(lo, hi, step(0.5, cb));
-	gl_FragColor = vec4(mix(cb, o, p.a) * b.a, b.a);
+	vec3 o = uMode > 0.5 ? abs(cb - cs) : mix(lo, hi, step(0.5, cb));
+	gl_FragColor = vec4(mix(cb, o, p.a * uAlpha) * b.a, b.a);
 }
 ";
 }

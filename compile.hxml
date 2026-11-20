@@ -251,5 +251,8 @@ trigo.Game
 -js ./resources/js/games/greenwitch.js
 greenwitch.Game
 --next
+-js ./resources/js/games/charlottesquest.js
+charlottesquest.Game
+--next
 -js ./resources/js/games/labrute.js
 labrute.Game

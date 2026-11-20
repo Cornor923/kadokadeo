@@ -22,6 +22,13 @@ class BitmapData {
 	// the scale mode of the RenderTextures (Flash.reset: smoothed; 0 for the pixel art games)
 	public static var gpuScaleMode:Int = 1;
 
+	// this picture smoothed on the GPU whatever gpuScaleMode, set before it moves to the GPU: a picture of a game of
+	// pixels shown bigger than its pixels (screenScale above 1: the zoom of the page, a high density screen), smoothed
+	// instead of blocky (Charlotte's Quest: its rooms). Drawing it at the resolution of the screen instead (a
+	// RenderTexture of 2 px per Flash pixel, the filters drawn into it at 2 too) cost up to 6 times more per frame on an
+	// integrated GPU
+	public var gpuSmoothing = false;
+
 	public var width:Int;
 	public var height:Int;
 	public var transparent:Bool;
@@ -613,7 +620,7 @@ class BitmapData {
 	public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, ?channelOptions:Int = 7, ?grayScale:Bool = false, ?offsets:Dynamic):Void {
 		flushQueues();
 		if (perlinFractal) {
-			fractalNoiseInto(baseX, baseY, numOctaves, randomSeed, fractalNoise, channelOptions, grayScale);
+			fractalNoiseInto(baseX, baseY, numOctaves, randomSeed, fractalNoise, channelOptions, grayScale, offsets);
 			return;
 		}
 		var a = ints != null ? ints : new Int32Array(width * height);
@@ -639,7 +646,8 @@ class BitmapData {
 		written(a);
 	}
 
-	function fractalNoiseInto(baseX:Float, baseY:Float, octaves:Int, seed:Int, fractal:Bool, channels:Int, gray:Bool) {
+	// (offsets: Flash's offsets of each octave, in pixels: Charlotte's Quest moves its plasma with them)
+	function fractalNoiseInto(baseX:Float, baseY:Float, octaves:Int, seed:Int, fractal:Bool, channels:Int, gray:Bool, ?offsets:Dynamic) {
 		// the gradients: a permutation of 256 drawn by an LCG of the seed
 		var st = (seed & 0x7FFFFFFF) + 1;
 		inline function next():Int {
@@ -691,7 +699,12 @@ class BitmapData {
 						continue;
 					var sum = 0.0, amp = 1.0, tot = 0.0, fx = 1 / baseX, fy = 1 / baseY;
 					for (o in 0...octaves) {
-						var n = noise(x * fx, y * fy, o + c * 13);
+						var ox = 0.0, oy = 0.0;
+						if (offsets != null && o < offsets.length) {
+							ox = offsets[o].x;
+							oy = offsets[o].y;
+						}
+						var n = noise((x + ox) * fx, (y + oy) * fy, o + c * 13);
 						sum += (fractal ? n : Math.abs(n)) * amp;
 						tot += amp;
 						amp *= 0.5;
@@ -737,6 +750,7 @@ class BitmapData {
 	public function clone():BitmapData {
 		flushQueues();
 		var b = new BitmapData(width, height, transparent, 0x0);
+		b.gpuSmoothing = gpuSmoothing;
 		if (rt != null || texSrc != null) {
 			b.toGpu();
 			b.drawTexture(getTexture(), null, null, null);
@@ -853,11 +867,27 @@ class BitmapData {
 		return kado.KadoKadeoManager.kkm.renderer;
 	}
 
+	// pixels of the screen per pixel of the game: the resolution of the page (its zoom, the density of the screen) times
+	// the enlargement of the canvas by the page (600 px wide shown wider)
+	public static function screenScale():Float {
+		var r:Dynamic = renderer();
+		var k:Float = r.resolution;
+		var view:Dynamic = r.view;
+		if (view != null && view.clientWidth > 0 && r.screen.width > 0)
+			k *= view.clientWidth / r.screen.width;
+		return k;
+	}
+
+	// a RenderTexture of w x h pixels for this picture (its scale mode)
+	function newRt(w:Float, h:Float):Dynamic {
+		return js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", w, h, gpuSmoothing ? 1 : gpuScaleMode);
+	}
+
 	// the picture moves to a RenderTexture (what the canvas had drawn first), shown from then on by the Bitmaps
 	function toGpu() {
 		if (rt != null)
 			return;
-		rt = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", width, height, gpuScaleMode);
+		rt = newRt(width, height);
 		if (texSrc != null) {
 			var s = new pixi.core.sprites.Sprite(texSrc);
 			renderer().render(s, {renderTexture: rt, clear: true});
@@ -894,7 +924,7 @@ class BitmapData {
 	// a copy of the RenderTexture (to draw this picture into itself)
 	function copyTexture():Dynamic {
 		toGpu();
-		var c:Dynamic = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", width, height, gpuScaleMode);
+		var c:Dynamic = newRt(width, height);
 		var s = new pixi.core.sprites.Sprite(rt);
 		renderer().render(s, {renderTexture: c, clear: true});
 		s.destroy();
@@ -952,6 +982,10 @@ class BitmapData {
 	// renders `o` (a PIXI object at its own place) into the RenderTexture with these extra filters and this blend; the
 	// blends of its leaves and filters are put back after
 	function renderWith(o:Dynamic, extra:Array<Dynamic>, blend:BlendMode, ?transform:Matrix) {
+		if (blend == DIFFERENCE) {
+			renderDifference(o, extra, transform);
+			return;
+		}
 		var saved:Array<Dynamic> = [];
 		var flts:Array<Dynamic> = o.filters;
 		var ov = overlayFilter(blend);
@@ -974,6 +1008,25 @@ class BitmapData {
 		for (l in saved)
 			l.o.blendMode = l.b;
 		o.filters = flts;
+	}
+
+	// Flash's DIFFERENCE (Charlotte's Quest: the clouds of the background): `o` drawn alone into a picture of this size, then
+	// combined with the pixels under it by an OverlayFilter in difference mode (PIXI has no such blend)
+	function renderDifference(o:Dynamic, extra:Array<Dynamic>, ?transform:Matrix) {
+		var tmp:Dynamic = newRt(width, height);
+		var flts:Array<Dynamic> = o.filters;
+		var all:Array<Dynamic> = (flts == null ? [] : flts.copy()).concat(extra);
+		o.filters = all.length > 0 ? all : null;
+		renderer().render(o, {renderTexture: tmp, clear: true, transform: transform != null ? transform.toPixi() : null});
+		o.filters = flts;
+		var base = copyTexture();
+		var s = new pixi.core.sprites.Sprite(base);
+		s.filters = [new OverlayFilter(tmp, width, height, true)];
+		untyped s.filterArea = new pixi.core.math.shapes.Rectangle(0, 0, width, height);
+		renderer().render(s, {renderTexture: rt, clear: true});
+		s.destroy();
+		base.destroy(true);
+		tmp.destroy(true);
 	}
 
 	function drawTexture(t:Dynamic, matrix:Matrix, ct:ColorTransform, blend:BlendMode) {
@@ -1006,7 +1059,7 @@ class BitmapData {
 	// alphaBd at alphaPoint, drawn over it with the blend DST_IN), in a new RenderTexture of the size of r
 	function maskedPiece(source:BitmapData, r:Rectangle, alphaBd:BitmapData, alphaPoint:Point):Dynamic {
 		var w = Std.int(r.width), h = Std.int(r.height);
-		var tmp:Dynamic = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", w, h, gpuScaleMode);
+		var tmp:Dynamic = newRt(w, h);
 		var sub:Dynamic = subTexture(source.getTexture(), r);
 		var s = new pixi.core.sprites.Sprite(sub);
 		renderer().render(s, {renderTexture: tmp, clear: true});
@@ -1024,8 +1077,7 @@ class BitmapData {
 
 	// the region r of this picture in a new RenderTexture of its size
 	function regionCopy(r:Rectangle):Dynamic {
-		var tmp:Dynamic = js.Syntax.code("PIXI.RenderTexture.create({width: {0}, height: {1}, scaleMode: {2}})", Std.int(r.width), Std.int(r.height),
-			gpuScaleMode);
+		var tmp:Dynamic = newRt(Std.int(r.width), Std.int(r.height));
 		var sub:Dynamic = subTexture(getTexture(), r);
 		var s = new pixi.core.sprites.Sprite(sub);
 		renderer().render(s, {renderTexture: tmp, clear: true});

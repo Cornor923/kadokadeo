@@ -118,6 +118,9 @@ class Exporter:
         # every CUT / CLIP / MASK layer at this resolution (None: the one its scale needs); with a SWF rendered with
         # `nearest` at the zoom K x fixed_res, the textures are the Flash pixels and the matrices are applied at run time
         self.fixed_res = None
+        # pixels of the images per pixel of their textures: the images drawn finer than the resolution of the defs (the
+        # sheet says so, pack_multi PACK_SCALE: PIXI gives the textures their size divided by it); the defs do not change
+        self.phys = 1.0
         self.frames_for = {}           # sid -> frames used by the game in nested clips (as `frames` of export)
         # nested sprites exported with their white silhouettes (as `white` of export): a nested clip the code colours
         # (Trigo: the _col disk of the clock, tinted by mt.fx.Radiate)
@@ -141,6 +144,10 @@ class Exporter:
         # a named instance driven by the code is a nested clip even with a single frame (Fafi 360: the code plays the
         # _skin / _shoes of every pose of a player, some have one picture); off: a single picture is a CUT layer
         self.code_clips = False
+        # sid -> filters of its placement drawn on each picture of that sprite's export (Charlotte's Quest: the outline and
+        # the colour matrix of the unicorn, moved off the placement); empty: none (the renders made before it)
+        self.wrap_for = {}
+        self._wrap = None
 
     # ------------------------------------------------------------------ helpers
     @staticmethod
@@ -235,8 +242,11 @@ class Exporter:
 
     # ------------------------------------------------------------------ rendering
     def render(self, cmd_lists, scale, margin=0.5, G=None):
-        """command lists drawn on a common canvas at `scale` px per world unit -> (images, registration px)"""
+        """command lists drawn on a common canvas at `scale` px per world unit (x phys) -> (images, registration px)"""
         G = G or self.G
+        scale = scale * self.phys
+        if self._wrap:
+            cmd_lists = [[('layer', c, self._wrap, None)] if c else c for c in cmd_lists]
         rd = R.Renderer(G, scale)
         bb = None
         for cmds in cmd_lists:
@@ -395,9 +405,17 @@ class Exporter:
         sub = self.subtree(sid)
         ctrl = {k: v for k, v in ctrl.items() if k in sub}
         vkey = (sid, tuple(sorted((str(k), str(v)) for k, v in ctrl.items())), strategy, tuple(code), tuple(frames or ()),
-                cx_key(cx), res, tuple(cut_depths), white, stack)
+                cx_key(cx), res, tuple(cut_depths), white, stack) + ((repr(self.wrap_for[sid]),) if sid in self.wrap_for else ())
         if vkey in self.variants:
             return self.variants[vkey]
+        outer_wrap = self._wrap
+        self._wrap = self.wrap_for.get(sid)
+        try:
+            return self._export(sid, name, ctrl, strategy, code, frames, cx, res, cut_depths, white, stack, vkey)
+        finally:
+            self._wrap = outer_wrap
+
+    def _export(self, sid, name, ctrl, strategy, code, frames, cx, res, cut_depths, white, stack, vkey):
         G = self.G
         sd = G.sprites[sid]
         n = sd.nframes
