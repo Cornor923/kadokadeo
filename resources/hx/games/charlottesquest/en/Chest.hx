@@ -101,7 +101,7 @@ class Chest extends Enemy {
 			m.scale(0.9, 0.9);
 			m.translate(pt.x - r.walls.x, pt.y - r.walls.y);
 			spr.filters = [Color.getColorizeMatrixFilter(game.bgColor, 0.7, 0.3)];
-			if (r.ready)
+			if (r.ready && !r.freed)
 				r.walls.bitmapData.draw(spr, m, new ColorTransform(1, 1, 1, 0.5));
 		}
 		super.onDie();

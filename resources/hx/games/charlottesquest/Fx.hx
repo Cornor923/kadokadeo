@@ -162,7 +162,8 @@ class Fx {
 		var col = 0xC66FD2;
 		var col = 0x8A2F97;
 		var r = game.getRoomAt(x, y);
-		if (r == null || !r.ready)
+		// (an enemy killed over a room already left: its pictures are freed, the original drew into its bitmap unseen)
+		if (r == null || !r.ready || r.freed)
 			return;
 
 		var wrapper = new Sprite();

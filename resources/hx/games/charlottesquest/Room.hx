@@ -56,6 +56,8 @@ class Room {
 
 	public var kind:RoomKind;
 	public var ready:Bool;
+	// its pictures freed once it left the screen (detach): nothing is drawn into them any more
+	public var freed = false;
 
 	// (the bitmaps of the herbs and bones: frames of the sheet, see Data.cache / Herbes, Bones)
 	var extraCache:RandList<{a:String, f:Int}>;
@@ -309,6 +311,7 @@ class Room {
 			splashes.alpha = mcCont.alpha = walls.alpha = bg.alpha;
 		}
 		a.onEnd = function() {
+			freed = true;
 			bg.parent.removeChild(bg);
 			splashes.parent.removeChild(splashes);
 			mcCont.parent.removeChild(mcCont);
