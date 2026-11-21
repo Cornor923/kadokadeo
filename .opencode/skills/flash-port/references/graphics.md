@@ -301,6 +301,11 @@ Look at the pages (and show them to the user) before saying the graphics are rig
   out mixed): export each variant with its parts forced on their frame (`ctrl` by sid).
 - `SWF.inner_filters = True` draws the inner glows / drop shadows of the timelines (`Renderer.draw` passes it to
   `apply_filter`).
+- `SWF.mask_shape_only = True`: a mask keeps what its shape covers whatever the alpha of its fill (Flash: a stencil). Off,
+  its alpha multiplies the masked items: the notes of Charlotte's Quest (lib.Billet, its mask filled at 40 %) came out pale,
+  their colour matrices working on a see-through picture. Compare a doubtful colour with FFDec
+  (`-format sprite:png -export sprite`), which applies the filters like Flash; Ruffle in a headless browser drew no
+  colour matrix.
 - Sharp on a page at 125 / 150 % or a high density screen (the canvas of an Arkadeo game is 600 x 500 at the resolution
   of the page, and the site may show it wider): textures at 1 px per Flash pixel are enlarged there. Charlotte's Quest
   draws its images finer than its defs say: `Exporter.phys = 1.5` (every `render` 1.5 times finer, the defs and

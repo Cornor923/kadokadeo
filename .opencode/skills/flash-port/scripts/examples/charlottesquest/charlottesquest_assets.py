@@ -57,6 +57,7 @@ G.flash_replace = True
 G.blur_filter = True       # the BlurFilters of the timelines (Puf, the wings, the bubbles, the power-ups)
 G.blur_filters = True      # (their margin in the bounds)
 G.inner_filters = True     # the inner glows / drop shadows of the timelines
+G.mask_shape_only = True   # the masks by their shape (lib.Billet: its mask filled at 40 % made the notes pale)
 
 
 def symbol_classes(path):
