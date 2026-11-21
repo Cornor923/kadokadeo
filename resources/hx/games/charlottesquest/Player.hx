@@ -384,14 +384,14 @@ class Player extends Entity {
 				mc.gotoAndStop(playerAnim);
 				mc.getClip("_smc").stop();
 			}
-		} else
-			// (Arkadeo HTML5 port) an animation that reached its last frame starts again: the original stayed on it (nextFrame
-			// stops on the last frame; the loops of the wait, up and down animations are their frame scripts), Charlotte stayed
-			// leaning while left or right was held
-			if (smc.currentFrame >= smc.totalFrames)
-				smc.gotoAndStop(1);
-			else
-				smc.nextFrame();
+		} else if (smc.currentFrame < smc.totalFrames)
+			smc.nextFrame();
+		else if (playerAnim == "left" || playerAnim == "right")
+			// (Arkadeo HTML5 port) the left / right animation that reached its last frame starts again: the original stayed on
+			// it (nextFrame stops on the last frame), Charlotte stayed leaning while left or right was held. The loops of the
+			// wait, up and down animations are their frame scripts; the big unicorn of the Uber stays big on its last frame
+			// (stop() of biglicorn), its _smc playing on its own (Charlotte and her hair)
+			smc.gotoAndStop(1);
 
 		// Bouclier
 		var shield = hasCD("shield");
